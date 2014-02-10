@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Ant build script
+-->
+<project default="all" name="persona-php-client" basedir=".">
+
+    <property name="src.dir" location="src"/>
+    <property name="vendor.dir" location="vendor"/>
+
+    <property name="test.dir" location="test"/>
+    <property name="unit.test.dir" location="${test.dir}/unit"/>
+    <property name="integration.test.dir" location="${test.dir}/integration"/>
+
+    <property name="build.dir" location="build"/>
+    <property name="coverage.dir" location="${build.dir}/coverage"/>
+
+    <target name="all" depends="init, test"/>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${coverage.dir}"/>
+    </target>
+
+    <target name="init" depends="install-composer" description="Set up the local environment, download required libs through Composer etc">
+        <!-- Check for updates to Composer -->
+        <exec executable="php" failonerror="true">
+            <arg value="composer.phar"/>
+            <arg value="self-update"/>
+        </exec>
+
+        <!-- Install dependencies through Composer -->
+        <exec executable="php" failonerror="true">
+            <arg value="composer.phar"/>
+            <arg value="update"/>
+        </exec>
+    </target>
+
+    <target name="check-composer">
+        <echo>Checking to see if composer.phar exists...</echo>
+        <available file="composer.phar" property="composer.exists"/>
+    </target>
+
+    <target name="install-composer" depends="check-composer" unless="composer.exists">
+        <echo>Installing composer...</echo>
+        <exec executable="sh">
+            <arg value="-c"/>
+            <arg value="curl -sS https://getcomposer.org/installer | php"/>
+        </exec>
+    </target>
+
+    <target name="test" depends="clean, unittest, integrationtest" description="Run all the tests"/>
+
+    <target name="coverage" depends="clean" description="Run code coverage over the unit tests">
+        <exec dir="${test.dir}" executable="${vendor.dir}/bin/phpunit" failonerror="true">
+            <arg line="--coverage-html ${coverage.dir}"/>
+        </exec>
+    </target>
+
+    <target name="unittest" depends="clean">
+        <exec dir="${unit.test.dir}" executable="${vendor.dir}/bin/phpunit" failonerror="true">
+            <arg line="--log-junit ${build.dir}/unittest-report.xml"/>
+        </exec>
+    </target>
+
+    <target name="integrationtest" depends="clean">
+        <exec dir="${integration.test.dir}" executable="${vendor.dir}/bin/phpunit" failonerror="true">
+            <arg line="--log-junit ${build.dir}/integrationtest-report.xml"/>
+        </exec>
+    </target>
+
+</project>

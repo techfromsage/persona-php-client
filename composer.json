@@ -1,0 +1,25 @@
+{
+	"name": "talis/persona-php-client",
+	"description": "This is a php client library for Persona supporting generation, validation and caching of Oauth Tokens",
+	"keywords": ["persona", "php", "client library"],
+	"homepage": "https://github.com/talis/persona-php-client",
+	"type": "library",
+	"license": "MIT",
+	"authors":[
+		{
+			"name":"Nadeem Shabir",
+			"email": "ns@talis.com",
+			"homepage":"http://engineering.talis.com"
+		}
+	],
+	"require":{
+		"php": ">=5.3.0",
+		"phpunit/phpunit": ">=3.7.0@stable",
+		"monolog/monolog": ">=1.5.0" 
+	},
+	"autoload":{
+		"psr-0": {
+            "persona-client": "src"
+        }
+	}
+}

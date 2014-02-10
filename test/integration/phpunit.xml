@@ -1,0 +1,17 @@
+<phpunit>
+    <php>
+        <ini name="memory_limit" value="512M"/>
+    </php>
+
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">../../src</directory>
+        </whitelist>
+    </filter>
+
+    <testsuites>
+        <testsuite name="Persona-Client-PHP_Integration_Tests">
+            <directory>.</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
