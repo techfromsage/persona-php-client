@@ -1,5 +1,5 @@
 <?php
-namespace persona-client;
+namespace personaclient;
 
 class PersonaClient {
 
