@@ -14,7 +14,6 @@ class PersonaClientIntegrationTest extends TestBase {
      * @var personaclient\PersonaClient
      */
     private $personaClient;
-
     private $clientId = "primate";
     private $clientSecret = "bananas";
 
@@ -53,20 +52,116 @@ class PersonaClientIntegrationTest extends TestBase {
         $this->assertEquals("primate", $tokenDetails['scope']);
     }
 
-    function testObtainNewTokenThrowsExceptionForInvalidScope(){
+    function testObtainNewTokenThrowsExceptionIfNoCredentials(){
+        $this->setExpectedException('Exception', 'You must specify clientId, and clientSecret to obtain a new token');
+        $tokenDetails = $this->personaClient->obtainNewToken(null, null, array("scope"=>"wibble"));
+    }
+
+    function testObtainNewTokenThrowsExceptionIfInvalidScope(){
         $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
         $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"wibble"));
     }
 
-    /**
-     * The simplest validate test
-     * We obtain a new token, and then validate it explicitly.
-     */
-    function testValidateToken(){
+    function testObtainNewTokenReturnsAccessTokenIfSetOnCookie() {
+        $_COOKIE['access_token'] = json_encode( array("access_token"=> "my token", "expires_in"=>999, "token_type"=>"some token type", "scope"=>"example"));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+
+        $this->assertEquals("my token", $tokenDetails['access_token']);
+        $this->assertEquals(999, $tokenDetails['expires_in']);
+        $this->assertEquals("some token type", $tokenDetails['token_type']);
+        $this->assertEquals("example", $tokenDetails['scope']);
+    }
+
+    function testValidateTokenThrowsExceptionNoTokenToValidate() {
+        // Should throw exception if you dont pass in a token to validate
+        // AND it cant find a token on $_SERVER, $_GET or $_POST
+        $this->setExpectedException('Exception', 'No OAuth token supplied');
+        $this->personaClient->validateToken();
+    }
+
+    function testValidateTokenReturnsFalseIfTokenIsNotValid(){
+        $this->assertFalse(
+            $this->personaClient->validateToken(array("access_token"=>"my token"))
+        );
+    }
+
+    function testValidateTokenWithPersonaAndCache(){
+        // here we obtain a new token and then immediately validate it
         $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
+
+        // first validation call is validated by persona
         $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken(array("access_token"=>$token)));
+        // second validation call should be validated by the cache
         $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken(array("access_token"=>$token)));
+    }
+
+    function testValidateTokenInGET(){
+        // here we obtain a new token we want to validate
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $_GET = array('access_token' => $token);
+
+        // first validation call is validated by persona
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+        // second validation call should be validated by the cache
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
+    }
+
+    function testValidateTokenInPOST(){
+        // here we obtain a new token we want to validate
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $_POST = array('access_token' => $token);
+        // first validation call is validated by persona
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+        // second validation call should be validated by the cache
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
+    }
+
+
+    function testValidateTokenInSERVER(){
+        // here we obtain a new token we want to validate
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $_SERVER = array("HTTP_BEARER" => "Bearer " . $token);
+
+        // first validation call is validated by persona
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+        // second validation call should be validated by the cache
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
+    }
+
+    function testValidateTokenInSERVERThrowsMalformedException(){
+        // here we obtain a new token we want to validate
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $_SERVER = array("HTTP_BEARER" => $token); // header value must contain string Bearer which this doesnt
+
+        $this->setExpectedException('Exception', 'Malformed auth header');
+        // first validation call is validated by persona
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+    }
+
+    function testValidateScopedToken(){
+        // here we obtain a new token and then immediately validate it
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"primate"));
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        // first validation call is validated by persona
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken(array("access_token"=>$token, "scope"=>"primate")));
+        // second validation call should be validated by the cache
+        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken(array("access_token"=>$token, "scope"=>"primate")));
+
     }
 }

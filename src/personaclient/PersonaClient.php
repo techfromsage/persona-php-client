@@ -140,7 +140,7 @@ class PersonaClient {
             $headers[$header] = $value;
         }
         if (isset($headers['Bearer'])) {
-            if (!preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
+            if (!preg_match('/Bearer\s(\S+)/', $headers['Bearer'], $matches)) {
                 throw new \Exception('Malformed auth header');
             }
             return $matches[1];
