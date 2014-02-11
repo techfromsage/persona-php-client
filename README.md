@@ -22,9 +22,9 @@ Install the module via composer, by adding the following to your projects ``comp
 ```
 then update composer:
 
-``bash
+```bash
 $ php composer.phar update
-``
+```
 
 To use the module in your code do the following
 ```php
