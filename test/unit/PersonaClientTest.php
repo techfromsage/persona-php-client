@@ -46,15 +46,4 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_db' => 2,
         ));
     }
-
-    function testFoo(){
-        $personaClient = new \personaclient\PersonaClient(array(
-            'persona_host' => 'http://persona',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
-        ));
-    }
-
 }

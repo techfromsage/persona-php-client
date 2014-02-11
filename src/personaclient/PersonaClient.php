@@ -23,7 +23,7 @@ class PersonaClient {
      *      tokencache_redis_host: (string) the host address of redis token cache
      *      tokencache_redis_port: (integer) the port number the redis host ist listening
      *      tokencache_redis_db: (integer) the database to connnect to</pre>
-     * @throws InvalidArgumentException if any of the required config parameters are missing
+     * @throws \InvalidArgumentException if any of the required config parameters are missing
      */
     public function __construct($config) {
         if($this->checkConfig($config)){
@@ -31,7 +31,12 @@ class PersonaClient {
         };
     }
 
-    public function validateToken($scope=null, $token=null){
+    /**
+     * @param null|string $token
+     * @param null|string $scope
+     * @return bool true if the token is valid
+     */
+    public function validateToken($token=null, $scope=null){
         if(empty($token)){
             $token = $this->getTokenFromRequest();
         }
@@ -42,14 +47,12 @@ class PersonaClient {
         }
 
         $reply = $this->getCacheClient()->get("access_token:".$cacheKey);
-        echo "checked cache\n";
         if($reply == 'OK'){
             // verified by cache
             return true;
         } else {
             // verify against persona
             $url = $this->config['persona_host'].$this->config['persona_oauth_route'].'/'.$token;
-            echo "$url\n";
             if(!empty($scope)){
                 $url .= '?scope=' . $scope;
             }
@@ -65,8 +68,27 @@ class PersonaClient {
         }
     }
 
-    public function obtainNewToken(){
+    /**
+     * @param null $scope
+     * @return array
+     */
+    public function obtainNewToken($scope = null) {
+        if(!isset($_COOKIE['access_token'])) {
+            $query = array(
+                'grant_type'    => 'client_credentials',
+                'client_id'     => 'primate',
+                'client_secret' => 'bananas'
+            );
 
+            if(!empty($scope)){
+                $query['scope'] = $scope;
+            }
+
+            $url = $this->config['persona_host'].$this->config['persona_oauth_route'];
+            return $this->personaObtainNewToken($url, $query);
+        } else {
+            return json_decode($_COOKIE['access_token'],true);
+        }
     }
 
     /* Protected functions */
@@ -156,8 +178,15 @@ class PersonaClient {
         return $this->tokenCacheClient;
     }
 
+    /**
+     * This method wraps the curl request that is made to persona and
+     * returns true or false depending on whether or not persona was
+     * able to validate the token.
+     *
+     * @param $url string this is the full qualified url that will be hit
+     * @return bool true if persona responds that the token was valid
+     */
     protected function personaCheckTokenIsValid($url){
-        //$request = curl_init($this->config['persona_host'].$this->config['persona_oauth_route'].'/'.$token);
         $request = curl_init($url);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($request, CURLOPT_TIMEOUT, 30);
@@ -171,6 +200,15 @@ class PersonaClient {
         }
     }
 
+    /**
+     * Method that wraps the curl post request to persona for obtaining a new
+     * token.
+     *
+     * @param $url string the persona endpoint to make the request against
+     * @param $query array the set of parameters that will make up the post fields
+     * @return array json decoded array containing the response body from persona
+     * @throws \Exception if persona was unable to generate a token
+     */
     protected function personaObtainNewToken($url, $query){
         $curlOptions = array(
             CURLOPT_POST            => true,
