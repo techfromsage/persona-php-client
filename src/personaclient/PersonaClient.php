@@ -2,6 +2,10 @@
 namespace personaclient;
 
 class PersonaClient {
+
+    const VERIFIED_BY_PERSONA   =  'verified_by_persona';
+    const VERIFIED_BY_CACHE     =  'verified_by_cache';
+
     /**
      * Cached connection to redis
      * @var \Predis\Client
@@ -30,58 +34,82 @@ class PersonaClient {
             $this->config = $config;
         };
     }
-
     /**
-     * @param null|string $token
-     * @param null|string $scope
-     * @return bool true if the token is valid
+     * Validates the specified token/scope if you supply as a parameters.
+     * Otherwise calls the internal method getTokenFromRequest() in order to
+     * extract the token from $_SERVER, $_GET or $_POST
+     *
+     * @param array $params a set of optional parameters you can pass to this method <pre>
+     *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
+     *      scope: (string) specify this if you wish to validate a scoped token
+     * @return bool|string will return FALSE if could not validate the token. If it did validate the token it will return VERIFIED_BY_CACHE | VERIFIED_BY_PERSONA
+     * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      */
-    public function validateToken($token=null, $scope=null){
-        if(empty($token)){
+    public function validateToken($params = array()){
+
+        $token = null;
+
+        if(isset($params['access_token']) || !empty($params['access_token'])){
+            $token = $params['access_token'];
+        } else {
             $token = $this->getTokenFromRequest();
         }
 
         $cacheKey = $token;
-        if(!empty($scope)){
-            $cacheKey .= '@' . $scope;
+        if(isset($params['scope']) && !empty($params['scope'])){
+            $cacheKey .= '@' . $params['scope'];
         }
 
         $reply = $this->getCacheClient()->get("access_token:".$cacheKey);
         if($reply == 'OK'){
             // verified by cache
-            return true;
+            return self::VERIFIED_BY_CACHE;
         } else {
             // verify against persona
             $url = $this->config['persona_host'].$this->config['persona_oauth_route'].'/'.$token;
-            if(!empty($scope)){
-                $url .= '?scope=' . $scope;
+
+            if(isset($params['scope']) && !empty($params['scope'])){
+                $url .= '?scope=' . $params['scope'];
             }
 
             if($this->personaCheckTokenIsValid($url)){
                 // verified by persona, now cache the token
                 $this->getCacheClient()->set("access_token:".$cacheKey, 'OK');
                 $this->getCacheClient()->expire("access_token:".$cacheKey, 60);
-                return true;
+                return self::VERIFIED_BY_PERSONA;
             } else {
-                return false;
+                return FALSE;
             }
         }
     }
 
     /**
-     * @param null $scope
-     * @return array
+     * Use this method to generate a new token. Works by first checking to see if a cookie is set containing the
+     * access_token, if so this is returned. If there is no cookie we request a new one from persona. You must
+     * specify client credentials to do this, for that reason this method will throw an exception if the credentials are missing.
+
+     * @param $clientId
+     * @param $clientSecret
+     * @param array $params a set of optional parameters you can pass into this method <pre>
+     *          scope: (string) to obtain a new scoped token </pre>
+     * @return array containing the token details
+     * @throws Exception if we were unable to generate a new token or if credentials were missing
      */
-    public function obtainNewToken($scope = null) {
+    public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
         if(!isset($_COOKIE['access_token'])) {
+
+            if( empty($clientId) || empty($clientSecret)){
+                throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
+            }
+
             $query = array(
                 'grant_type'    => 'client_credentials',
-                'client_id'     => 'primate',
-                'client_secret' => 'bananas'
+                'client_id'     => $clientId,
+                'client_secret' => $clientSecret
             );
 
-            if(!empty($scope)){
-                $query['scope'] = $scope;
+            if(isset($params['scope']) && !empty($params['scope'])){
+                $query['scope'] = $params['scope'];
             }
 
             $url = $this->config['persona_host'].$this->config['persona_oauth_route'];
