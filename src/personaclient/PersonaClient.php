@@ -91,12 +91,14 @@ class PersonaClient {
      * @param $clientId
      * @param $clientSecret
      * @param array $params a set of optional parameters you can pass into this method <pre>
-     *          scope: (string) to obtain a new scoped token </pre>
+     *          scope: (string) to obtain a new scoped token
+     *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token (and setting a new cookie with the resultant token) </pre>
      * @return array containing the token details
      * @throws Exception if we were unable to generate a new token or if credentials were missing
      */
     public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
-        if(!isset($_COOKIE['access_token'])) {
+        $useCookies = (!isset($params['useCookies'])) ? true : $params['useCookies']; // default to true
+        if(!$useCookies || ($useCookies && !isset($_COOKIE['access_token']))) {
 
             if( empty($clientId) || empty($clientSecret)){
                 throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
@@ -113,7 +115,9 @@ class PersonaClient {
             }
 
             $url = $this->config['persona_host'].$this->config['persona_oauth_route'];
-            return $this->personaObtainNewToken($url, $query);
+            $token =  $this->personaObtainNewToken($url, $query);
+            if ($useCookies) $this->setTokenCookie($token);
+            return $token;
         } else {
             return json_decode($_COOKIE['access_token'],true);
         }
@@ -261,5 +265,14 @@ class PersonaClient {
         {
             throw new \Exception("Could not retrieve OAuth response code");
         }
+    }
+
+    /**
+     * Method to set the token cookie, for mocking
+     * @param $token
+     */
+    protected function setTokenCookie($token)
+    {
+        if (!headers_sent()) setcookie("access_token",json_encode($token),time()+$token['expires_in']);
     }
 }
