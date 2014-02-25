@@ -72,6 +72,16 @@ class PersonaClientIntegrationTest extends TestBase {
         $this->assertEquals("example", $tokenDetails['scope']);
     }
 
+    function testObtainNewTokenReturnsNewAccessTokenIfSetOnCookieButUseCookieFalse(){
+        $_COOKIE['access_token'] = json_encode( array("access_token"=> "my token", "expires_in"=>999, "token_type"=>"some token type", "scope"=>"example"));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret,array("useCookies"=>false));
+
+        $this->assertNotEquals("my token", $tokenDetails['access_token']);
+        $this->assertNotEquals(999, $tokenDetails['expires_in']);
+        $this->assertNotEquals("some token type", $tokenDetails['token_type']);
+        $this->assertNotEquals("example", $tokenDetails['scope']);
+    }
+
     function testValidateTokenThrowsExceptionNoTokenToValidate() {
         // Should throw exception if you dont pass in a token to validate
         // AND it cant find a token on $_SERVER, $_GET or $_POST

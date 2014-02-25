@@ -46,4 +46,5 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_db' => 2,
         ));
     }
+
 }
