@@ -1,7 +1,7 @@
 persona-php-client
 ==================
 
-This is a php client library for Talis Persona supporting generation, validation and caching of Oauth tokens
+This is a php client library for Talis Persona supporting generation, validation and caching of oauth tokens
 
 ## Getting Started
 
