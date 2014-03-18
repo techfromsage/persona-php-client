@@ -47,6 +47,40 @@ class PersonaClientTest extends TestBase {
         ));
     }
 
+    function testMissingUrlThrowsException(){
+        $this->setExpectedException('InvalidArgumentException',
+            'No url provided to sign'
+        );
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        date_default_timezone_set('UTC');
+        $signedUrl = $personaClient->presignUrl('','mysecretkey',null);
+
+    }
+
+    function testMissingSecretThrowsException(){
+        $this->setExpectedException('InvalidArgumentException',
+            'No secret provided to sign with'
+        );
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        date_default_timezone_set('UTC');
+        $signedUrl = $personaClient->presignUrl('http://someurl','',null);
+
+    }
+
     function testPresignUrlNoExpiry() {
         $personaClient = new \personaclient\PersonaClient(array(
             'persona_host' => 'localhost',

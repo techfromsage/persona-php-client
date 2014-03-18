@@ -130,6 +130,12 @@ class PersonaClient {
      * @param $secret string
      */
     public function presignUrl($url,$secret,$expiry=null) {
+        if(empty($url)){
+            throw new \InvalidArgumentException("No url provided to sign");
+        }
+        if(empty($secret)){
+            throw new \InvalidArgumentException("No secret provided to sign with");
+        }
         if ($expiry==null) $expiry = "+15 minutes";
 
         $expParam = (strpos($url,'?')===FALSE) ? "?":"&";
