@@ -340,9 +340,10 @@ class PersonaClient {
      * @return string
      */
     protected function removeQuerystringVar($url, $key) {
+        $anchor = (strpos($url,'#')!==false) ? substr($url,strpos($url,'#')) : null;
         $url = preg_replace('/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&');
         $url = substr($url, 0, -1);
-        return $url;
+        return (empty($anchor)) ? $url : $url.$anchor;
     }
 
 }

@@ -61,7 +61,7 @@ class PersonaClientTest extends TestBase {
         $this->assertContains('?expires=',$signedUrl);
     }
 
-    function testPresignUrlNoExpiryHash() {
+    function testPresignUrlNoExpiryAnchor() {
         $personaClient = new \personaclient\PersonaClient(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -95,7 +95,7 @@ class PersonaClientTest extends TestBase {
         $this->assertContains('?myparam=foo&expires=',$signedUrl);
     }
 
-    function testPresignUrlNoExpiryHashExistingQueryString() {
+    function testPresignUrlNoExpiryAnchorExistingQueryString() {
         $personaClient = new \personaclient\PersonaClient(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -127,7 +127,7 @@ class PersonaClientTest extends TestBase {
         $this->assertEquals('http://someurl/someroute?expires=1234567890&signature=5be20a17931f220ca03d446a25748a9ef707cd508c753760db11f1f95485f1f6',$signedUrl);
     }
 
-    function testPresignUrlWithExpiryHash() {
+    function testPresignUrlWithExpiryAnchor() {
         $personaClient = new \personaclient\PersonaClient(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -153,7 +153,7 @@ class PersonaClientTest extends TestBase {
         $this->assertEquals('http://someurl/someroute?myparam=foo&expires=1234567890&signature=7675bae38ddea8c2236d208a5003337f926af4ebd33aac03144eb40c69d58804',$signedUrl);
     }
 
-    function testPresignUrlWithExpiryHashExistingQuerystring() {
+    function testPresignUrlWithExpiryAnchorExistingQuerystring() {
         $personaClient = new \personaclient\PersonaClient(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -166,7 +166,7 @@ class PersonaClientTest extends TestBase {
         $this->assertEquals('http://someurl/someroute?myparam=foo&expires=1234567890&signature=f871db0896f6e893b607d2987ccc838786114b9778b4dbae2b554c2faf9486a1#myAnchor',$signedUrl);
     }
 
-    function testIsPresignedUrlValidWithExpiryHashExistingQuerystring() {
+    function testIsPresignedUrlValidTimeInFuture() {
         $personaClient = new \personaclient\PersonaClient(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -175,6 +175,82 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_db' => 2,
         ));
 
-        $this->assertTrue($personaClient->isPresignedUrlValid('http://someurl/someroute?myparam=foo&expires=1234567890&signature=f871db0896f6e893b607d2987ccc838786114b9778b4dbae2b554c2faf9486a1#myAnchor','mysecretkey'));
+        $presignedUrl = $personaClient->presignUrl('http://someurl/someroute','mysecretkey',"+5 minutes");
+
+        $this->assertTrue($personaClient->isPresignedUrlValid($presignedUrl,'mysecretkey'));
+    }
+
+    function testIsPresignedUrlValidTimeInFutureExistingParams() {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo','mysecretkey',"+5 minutes");
+
+        $this->assertTrue($personaClient->isPresignedUrlValid($presignedUrl,'mysecretkey'));
+    }
+
+    function testIsPresignedUrlValidTimeInFutureExistingParamsAnchor() {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
+
+        $this->assertTrue($personaClient->isPresignedUrlValid($presignedUrl,'mysecretkey'));
+    }
+
+    function testIsPresignedUrlValidTimeInPastExistingParamsAnchor() {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"-5 minutes");
+
+        $this->assertFalse($personaClient->isPresignedUrlValid($presignedUrl,'mysecretkey'));
+    }
+
+    function testIsPresignedUrlValidRemoveExpires() {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
+
+        $presignedUrl = str_replace('expires=','someothervar=',$presignedUrl);
+
+        $this->assertFalse($personaClient->isPresignedUrlValid($presignedUrl,'mysecretkey'));
+    }
+
+    function testIsPresignedUrlValidRemoveSig() {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
+
+        $presignedUrl = str_replace('signature=','someothervar=',$presignedUrl);
+
+        $this->assertFalse($personaClient->isPresignedUrlValid($presignedUrl,'mysecretkey'));
     }
 }
