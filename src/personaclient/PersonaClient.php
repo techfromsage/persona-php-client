@@ -123,6 +123,39 @@ class PersonaClient {
         }
     }
 
+    /**
+     * Signs the given $url plus an $expiry param with the $secret and returns it
+     * @param $url string
+     * @param $expiry int|string defaults to '+15 minutes'
+     * @param $secret string
+     */
+    public function presignUrl($url,$secret,$expiry=null) {
+        if ($expiry==null) $expiry = "+15 minutes";
+
+        $expParam = (strpos($url,'?')===FALSE) ? "?":"&";
+        $expParam .= (is_int($expiry)) ? "expires=".$expiry : "expires=".strtotime($expiry);
+        if (strpos($url,'#')!==FALSE) {
+            $url = substr_replace($url, $expParam, strpos($url,'#'), 0);
+        } else {
+            $url .= $expParam;
+        }
+
+        $sig = $this->getSignature($url,$secret);
+
+        $sigParam = (strpos($url,'?')===FALSE) ? "?signature=".$sig : "&signature=".$sig;
+        if (strpos($url,'#')!==FALSE) {
+            $url = substr_replace($url, $sigParam, strpos($url,'#'), 0);
+        } else {
+            $url .= $sigParam;
+        }
+
+        return $url;
+    }
+
+    public function isPresignedUrlValid($url,$secret) {
+        return true;
+    }
+
     /* Protected functions */
 
     /**
@@ -275,4 +308,15 @@ class PersonaClient {
     {
         if (!headers_sent()) setcookie("access_token",json_encode($token),time()+$token['expires_in']);
     }
+
+    /**
+     * Returns a signature for the given $msg
+     * @param $msg
+     * @param $secret
+     * @return string
+     */
+    protected function getSignature($msg,$secret) {
+        return hash_hmac('sha256',$msg,$secret);
+    }
+
 }
