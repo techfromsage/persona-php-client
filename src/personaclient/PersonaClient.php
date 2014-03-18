@@ -153,7 +153,20 @@ class PersonaClient {
     }
 
     public function isPresignedUrlValid($url,$secret) {
-        return true;
+        $urlParts = parse_url($url);
+        parse_str($urlParts['query']);
+
+        // no expires?
+        if (!isset($expires)) return false;
+
+        // no signature?
+        if (!isset($signature)) return false;
+
+        // $expires less than current time?
+        if (intval($expires)<time()) return false;
+
+        // still here? Check sig
+        return ($signature == $this->getSignature($this->removeQuerystringVar($url,"signature"),$secret));
     }
 
     /* Protected functions */
@@ -317,6 +330,19 @@ class PersonaClient {
      */
     protected function getSignature($msg,$secret) {
         return hash_hmac('sha256',$msg,$secret);
+    }
+
+    /**
+     * Utility function to remove a querystring param from a $url
+     * @param $url
+     * @param $key
+     * @see http://www.addedbytes.com/blog/code/php-querystring-functions/
+     * @return string
+     */
+    protected function removeQuerystringVar($url, $key) {
+        $url = preg_replace('/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&');
+        $url = substr($url, 0, -1);
+        return $url;
     }
 
 }

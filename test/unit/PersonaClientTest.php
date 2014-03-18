@@ -165,4 +165,16 @@ class PersonaClientTest extends TestBase {
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',1234567890);
         $this->assertEquals('http://someurl/someroute?myparam=foo&expires=1234567890&signature=f871db0896f6e893b607d2987ccc838786114b9778b4dbae2b554c2faf9486a1#myAnchor',$signedUrl);
     }
+
+    function testIsPresignedUrlValidWithExpiryHashExistingQuerystring() {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+
+        $this->assertTrue($personaClient->isPresignedUrlValid('http://someurl/someroute?myparam=foo&expires=1234567890&signature=f871db0896f6e893b607d2987ccc838786114b9778b4dbae2b554c2faf9486a1#myAnchor','mysecretkey'));
+    }
 }
