@@ -123,6 +123,58 @@ class PersonaClient {
         }
     }
 
+    /**
+     * Signs the given $url plus an $expiry param with the $secret and returns it
+     * @param $url string
+     * @param $expiry int|string defaults to '+15 minutes'
+     * @param $secret string
+     */
+    public function presignUrl($url,$secret,$expiry=null) {
+        if(empty($url)){
+            throw new \InvalidArgumentException("No url provided to sign");
+        }
+        if(empty($secret)){
+            throw new \InvalidArgumentException("No secret provided to sign with");
+        }
+        if ($expiry==null) $expiry = "+15 minutes";
+
+        $expParam = (strpos($url,'?')===FALSE) ? "?":"&";
+        $expParam .= (is_int($expiry)) ? "expires=".$expiry : "expires=".strtotime($expiry);
+        if (strpos($url,'#')!==FALSE) {
+            $url = substr_replace($url, $expParam, strpos($url,'#'), 0);
+        } else {
+            $url .= $expParam;
+        }
+
+        $sig = $this->getSignature($url,$secret);
+
+        $sigParam = (strpos($url,'?')===FALSE) ? "?signature=".$sig : "&signature=".$sig;
+        if (strpos($url,'#')!==FALSE) {
+            $url = substr_replace($url, $sigParam, strpos($url,'#'), 0);
+        } else {
+            $url .= $sigParam;
+        }
+
+        return $url;
+    }
+
+    public function isPresignedUrlValid($url,$secret) {
+        $urlParts = parse_url($url);
+        parse_str($urlParts['query']);
+
+        // no expires?
+        if (!isset($expires)) return false;
+
+        // no signature?
+        if (!isset($signature)) return false;
+
+        // $expires less than current time?
+        if (intval($expires)<time()) return false;
+
+        // still here? Check sig
+        return ($signature == $this->getSignature($this->removeQuerystringVar($url,"signature"),$secret));
+    }
+
     /* Protected functions */
 
     /**
@@ -275,4 +327,29 @@ class PersonaClient {
     {
         if (!headers_sent()) setcookie("access_token",json_encode($token),time()+$token['expires_in']);
     }
+
+    /**
+     * Returns a signature for the given $msg
+     * @param $msg
+     * @param $secret
+     * @return string
+     */
+    protected function getSignature($msg,$secret) {
+        return hash_hmac('sha256',$msg,$secret);
+    }
+
+    /**
+     * Utility function to remove a querystring param from a $url
+     * @param $url
+     * @param $key
+     * @see http://www.addedbytes.com/blog/code/php-querystring-functions/
+     * @return string
+     */
+    protected function removeQuerystringVar($url, $key) {
+        $anchor = (strpos($url,'#')!==false) ? substr($url,strpos($url,'#')) : null;
+        $url = preg_replace('/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&');
+        $url = substr($url, 0, -1);
+        return (empty($anchor)) ? $url : $url.$anchor;
+    }
+
 }
