@@ -287,4 +287,80 @@ class PersonaClientTest extends TestBase {
 
         $this->assertFalse($personaClient->isPresignedUrlValid($presignedUrl,'mysecretkey'));
     }
+
+    function testUseCacheFalseOnObtainToken() {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+
+        $mockClient->expects($this->once())->method("personaObtainNewToken")->will($this->returnValue(array("access_token"=>"foo","expires"=>"100","scopes"=>"su")));
+        $mockClient->expects($this->never())->method("getCacheClient");
+
+        $mockClient->obtainNewToken('client_id','client_secret',array('useCache'=>false));
+    }
+
+    function testUseCacheTrueOnObtainToken() {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+
+        $mockCache = $this->getMock('\Predis\Client',array("get"),array());
+        $mockCache->expects($this->once())->method("get")->will($this->returnValue('{"access_token":"foo","expires":1000,"scopes":"su"}'));
+
+        $mockClient->expects($this->never())->method("personaObtainNewToken");
+        $mockClient->expects($this->once())->method("getCacheClient")->will($this->returnValue($mockCache));
+
+        $token = $mockClient->obtainNewToken('client_id','client_secret');
+        $this->assertEquals($token['access_token'],"foo");
+    }
+
+    function testUseCacheDefaultTrueOnObtainToken() {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+
+        $mockCache = $this->getMock('\Predis\Client',array("get"),array());
+        $mockCache->expects($this->once())->method("get")->will($this->returnValue('{"access_token":"foo","expires":1000,"scopes":"su"}'));
+
+        $mockClient->expects($this->never())->method("personaObtainNewToken");
+        $mockClient->expects($this->once())->method("getCacheClient")->will($this->returnValue($mockCache));
+
+        $token = $mockClient->obtainNewToken('client_id','client_secret');
+        $this->assertEquals($token['access_token'],"foo");
+    }
+
+    function testUseCacheNotInCacheObtainToken() {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken','cacheToken'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+
+        $mockCache = $this->getMock('\Predis\Client',array("get"),array());
+        $mockCache->expects($this->once())->method("get")->will($this->returnValue(''));
+
+        $expectedToken = array("access_token"=>"foo","expires"=>"100","scopes"=>"su");
+        $cacheKey = "obtain_token:".hash_hmac('sha256','client_id','client_secret');
+
+        $mockClient->expects($this->once())->method("getCacheClient")->will($this->returnValue($mockCache));
+        $mockClient->expects($this->once())->method("personaObtainNewToken")->will($this->returnValue($expectedToken));
+        $mockClient->expects($this->once())->method("cacheToken")->with($cacheKey,$expectedToken,$expectedToken['expires']-60);
+
+        $token = $mockClient->obtainNewToken('client_id','client_secret');
+        $this->assertEquals($token['access_token'],"foo");
+    }
 }

@@ -92,16 +92,29 @@ class PersonaClient {
      * @param $clientSecret
      * @param array $params a set of optional parameters you can pass into this method <pre>
      *          scope: (string) to obtain a new scoped token
-     *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token (and setting a new cookie with the resultant token) </pre>
+     *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token (and setting a new cookie with the resultant token)
+     *          useCache: (boolean) default true, to enable checking the cache for recently created tokens, instead of querying persona direct each time </pre>
      * @return array containing the token details
      * @throws Exception if we were unable to generate a new token or if credentials were missing
      */
     public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
         $useCookies = (!isset($params['useCookies'])) ? true : $params['useCookies']; // default to true
+        $useCache = (!isset($params['useCache'])) ? true : $params['useCache']; // default to true
+        $cacheKey = ($useCache) ? "obtain_token:".hash_hmac('sha256', $clientId, $clientSecret) : '';
+
         if(!$useCookies || ($useCookies && !isset($_COOKIE['access_token']))) {
 
             if( empty($clientId) || empty($clientSecret)){
                 throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
+            }
+
+            if ($useCache) {
+                // check cache, if exists then use that instead and return
+                $existingToken = json_decode($this->getCacheClient()->get($cacheKey),true);
+                if (!empty($existingToken)) {
+                    if ($useCookies) $this->setTokenCookie($existingToken);
+                    return $existingToken;
+                }
             }
 
             $query = array(
@@ -116,6 +129,11 @@ class PersonaClient {
 
             $url = $this->config['persona_host'].$this->config['persona_oauth_route'];
             $token =  $this->personaObtainNewToken($url, $query);
+
+            if ($useCache) {
+                $this->cacheToken($cacheKey,$token,$token['expires']-60);
+            }
+
             if ($useCookies) $this->setTokenCookie($token);
             return $token;
         } else {
@@ -127,7 +145,7 @@ class PersonaClient {
      * Signs the given $url plus an $expiry param with the $secret and returns it
      * @param $url string
      * @param $expiry int|string defaults to '+15 minutes'
-     * @param $secret string
+     * @param $secret string(@
      */
     public function presignUrl($url,$secret,$expiry=null) {
         if(empty($url)){
@@ -176,6 +194,21 @@ class PersonaClient {
     }
 
     /* Protected functions */
+
+    /**
+     * To allow mocking of the redis transaction
+     * @param $cacheKey
+     * @param $token
+     * @param $expiryTime
+     */
+    protected function cacheToken($cacheKey,$token,$expiryTime) {
+        // cache this freshly obtained token so we don't have to round-trip to persona again
+        $this->getCacheClient()->transaction(function($tx) use ($cacheKey, $token, $expiryTime) {
+            $tx->multi();
+            $tx->set(json_encode($cacheKey),$token);
+            $tx->expire($cacheKey,$expiryTime); // cache for token expiry minus 60s
+        });
+    }
 
     /**
      * Attempts to find an access token based on the current request.

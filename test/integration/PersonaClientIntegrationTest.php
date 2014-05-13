@@ -29,7 +29,7 @@ class PersonaClientIntegrationTest extends TestBase {
     }
 
     function testObtainNewToken(){
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
 
         $this->assertArrayHasKey('access_token', $tokenDetails, "should contain access_token");
         $this->assertArrayHasKey('expires_in', $tokenDetails, "should contain expires_in");
@@ -41,7 +41,7 @@ class PersonaClientIntegrationTest extends TestBase {
     }
 
     function testObtainNewTokenWithValidScope(){
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"primate") );
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"primate","useCache"=>false));
 
         $this->assertArrayHasKey('access_token', $tokenDetails, "should contain access_token");
         $this->assertArrayHasKey('expires_in', $tokenDetails, "should contain expires_in");
@@ -54,17 +54,17 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testObtainNewTokenThrowsExceptionIfNoCredentials(){
         $this->setExpectedException('Exception', 'You must specify clientId, and clientSecret to obtain a new token');
-        $tokenDetails = $this->personaClient->obtainNewToken(null, null, array("scope"=>"wibble"));
+        $tokenDetails = $this->personaClient->obtainNewToken(null, null, array("scope"=>"wibble","useCache"=>false));
     }
 
     function testObtainNewTokenThrowsExceptionIfInvalidScope(){
         $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"wibble"));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"wibble","useCache"=>false));
     }
 
     function testObtainNewTokenReturnsAccessTokenIfSetOnCookie() {
         $_COOKIE['access_token'] = json_encode( array("access_token"=> "my token", "expires_in"=>999, "token_type"=>"some token type", "scope"=>"example"));
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
 
         $this->assertEquals("my token", $tokenDetails['access_token']);
         $this->assertEquals(999, $tokenDetails['expires_in']);
@@ -74,7 +74,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testObtainNewTokenReturnsNewAccessTokenIfSetOnCookieButUseCookieFalse(){
         $_COOKIE['access_token'] = json_encode( array("access_token"=> "my token", "expires_in"=>999, "token_type"=>"some token type", "scope"=>"example"));
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret,array("useCookies"=>false));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret,array("useCookies"=>false,"useCache"=>false));
 
         $this->assertNotEquals("my token", $tokenDetails['access_token']);
         $this->assertNotEquals(999, $tokenDetails['expires_in']);
@@ -97,7 +97,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testValidateTokenWithPersonaAndCache(){
         // here we obtain a new token and then immediately validate it
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
@@ -109,7 +109,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testValidateTokenInGET(){
         // here we obtain a new token we want to validate
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
@@ -123,7 +123,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testValidateTokenInPOST(){
         // here we obtain a new token we want to validate
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
@@ -137,7 +137,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testValidateTokenInSERVER(){
         // here we obtain a new token we want to validate
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
@@ -151,7 +151,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testValidateTokenInSERVERThrowsMalformedException(){
         // here we obtain a new token we want to validate
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
@@ -164,7 +164,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function testValidateScopedToken(){
         // here we obtain a new token and then immediately validate it
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"primate"));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"primate","useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
