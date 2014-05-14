@@ -131,7 +131,7 @@ class PersonaClient {
             $token =  $this->personaObtainNewToken($url, $query);
 
             if ($useCache) {
-                $this->cacheToken($cacheKey,$token,$token['expires']-60);
+                $this->cacheToken($cacheKey,$token,$token['expires_in']-60);
             }
 
             if ($useCookies) $this->setTokenCookie($token);
