@@ -205,7 +205,7 @@ class PersonaClient {
         // cache this freshly obtained token so we don't have to round-trip to persona again
         $this->getCacheClient()->transaction(function($tx) use ($cacheKey, $token, $expiryTime) {
             $tx->multi();
-            $tx->set(json_encode($cacheKey),$token);
+            $tx->set($cacheKey,json_encode($token));
             $tx->expire($cacheKey,$expiryTime); // cache for token expiry minus 60s
         });
     }
