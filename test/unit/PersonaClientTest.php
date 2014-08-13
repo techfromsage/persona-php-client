@@ -353,12 +353,12 @@ class PersonaClientTest extends TestBase {
         $mockCache = $this->getMock('\Predis\Client',array("get"),array());
         $mockCache->expects($this->once())->method("get")->will($this->returnValue(''));
 
-        $expectedToken = array("access_token"=>"foo","expires"=>"100","scopes"=>"su");
+        $expectedToken = array("access_token"=>"foo","expires_in"=>"100","scopes"=>"su");
         $cacheKey = "obtain_token:".hash_hmac('sha256','client_id','client_secret');
 
         $mockClient->expects($this->once())->method("getCacheClient")->will($this->returnValue($mockCache));
         $mockClient->expects($this->once())->method("personaObtainNewToken")->will($this->returnValue($expectedToken));
-        $mockClient->expects($this->once())->method("cacheToken")->with($cacheKey,$expectedToken,$expectedToken['expires']-60);
+        $mockClient->expects($this->once())->method("cacheToken")->with($cacheKey,$expectedToken,40);
 
         $token = $mockClient->obtainNewToken('client_id','client_secret');
         $this->assertEquals($token['access_token'],"foo");
