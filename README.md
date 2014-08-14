@@ -16,7 +16,7 @@ Install the module via composer, by adding the following to your projects ``comp
         },
     ],
     "require" :{
-        "talis/persona-php-client": "0.1.1"
+        "talis/persona-php-client": "0.2.6"
     }
 }
 ```
@@ -53,3 +53,12 @@ $tokenDetails = $personaClient->obtainNewToken(
   array('useCookies'=>false)
 );
 ```
+
+If you would like to report stats, set the following environment variables:
+
+```
+STATSD_CONN=localhost:8125
+STATSD_PREFIX=dev.myapp
+```
+
+The prefix is optional, if not supplied all stats will be prefixed with `persona.php.client`
