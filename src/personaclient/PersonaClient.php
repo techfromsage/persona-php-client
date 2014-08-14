@@ -6,6 +6,9 @@ class PersonaClient {
     const VERIFIED_BY_PERSONA   =  'verified_by_persona';
     const VERIFIED_BY_CACHE     =  'verified_by_cache';
 
+    const STATSD_CONN = 'STATSD_CONN';
+    const STATSD_PREFIX = 'STATSD_PREFIX';
+
     /**
      * Cached connection to redis
      * @var \Predis\Client
@@ -17,6 +20,12 @@ class PersonaClient {
      * @var Array
      */
     private $config = null;
+
+    /**
+     * StatsD client
+     * @var \Domnikl\Statsd\Client
+     */
+    private $statsD;
 
     /**
      * Constructor
@@ -34,6 +43,29 @@ class PersonaClient {
             $this->config = $config;
         };
     }
+
+    /**
+     * Lazy-load statsD
+     * @return \Domnikl\Statsd\Client
+     */
+    public function getStatsD() {
+        if ($this->statsD==null) {
+            $connStr = getenv(self::STATSD_CONN);
+            if (!empty($connStr))  {
+                list($host,$port) = explode(":",$connStr);
+                $conn = new \Domnikl\Statsd\Connection\Socket($host,$port);
+            } else {
+                $conn = new \Domnikl\Statsd\Connection\Blackhole();
+            }
+            $this->statsD = new \Domnikl\Statsd\Client($conn);
+            $prefix = getenv(self::STATSD_PREFIX);
+            if (empty($prefix)) {
+                $prefix = "persona.php.client";
+            }
+            $this->statsD->setNamespace($prefix);
+        }
+        return $this->statsD;
+    }
     /**
      * Validates the specified token/scope if you supply as a parameters.
      * Otherwise calls the internal method getTokenFromRequest() in order to
@@ -46,7 +78,6 @@ class PersonaClient {
      * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      */
     public function validateToken($params = array()){
-
         $token = null;
 
         if(isset($params['access_token']) || !empty($params['access_token'])){
@@ -60,11 +91,15 @@ class PersonaClient {
             $cacheKey .= '@' . $params['scope'];
         }
 
+        $this->getStatsD()->startTiming("validateToken.cache.get");
         $reply = $this->getCacheClient()->get("access_token:".$cacheKey);
+        $this->getStatsD()->endTiming("validateToken.cache.get");
         if($reply == 'OK'){
+            $this->getStatsD()->increment("validateToken.cache.valid");
             // verified by cache
             return self::VERIFIED_BY_CACHE;
         } else {
+            $this->getStatsD()->increment("validateToken.cache.miss");
             // verify against persona
             $url = $this->config['persona_host'].$this->config['persona_oauth_route'].'/'.$token;
 
@@ -72,12 +107,17 @@ class PersonaClient {
                 $url .= '?scope=' . $params['scope'];
             }
 
+            $this->getStatsD()->startTiming("validateToken.rest.get");
             if($this->personaCheckTokenIsValid($url)){
+                $this->getStatsD()->endTiming("validateToken.rest.get");
+                $this->getStatsD()->increment("validateToken.rest.valid");
                 // verified by persona, now cache the token
                 $this->getCacheClient()->set("access_token:".$cacheKey, 'OK');
                 $this->getCacheClient()->expire("access_token:".$cacheKey, 60);
                 return self::VERIFIED_BY_PERSONA;
             } else {
+                $this->getStatsD()->endTiming("validateToken.rest.get");
+                $this->getStatsD()->increment("validateToken.rest.invalid");
                 return FALSE;
             }
         }
@@ -98,6 +138,8 @@ class PersonaClient {
      * @throws Exception if we were unable to generate a new token or if credentials were missing
      */
     public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
+        $this->getStatsD()->increment("obtainNewToken");
+
         $useCookies = (!isset($params['useCookies'])) ? true : $params['useCookies']; // default to true
         $useCache = (!isset($params['useCache'])) ? true : $params['useCache']; // default to true
         $cacheKey = ($useCache) ? "obtain_token:".hash_hmac('sha256', $clientId, $clientSecret) : '';
@@ -110,7 +152,9 @@ class PersonaClient {
 
             if ($useCache) {
                 // check cache, if exists then use that instead and return
+                $this->getStatsD()->startTiming("obtainNewToken.cache.get");
                 $existingToken = json_decode($this->getCacheClient()->get($cacheKey),true);
+                $this->getStatsD()->endTiming("obtainNewToken.cache.get");
                 if (!empty($existingToken)) {
                     if ($useCookies) $this->setTokenCookie($existingToken);
                     return $existingToken;
@@ -128,7 +172,9 @@ class PersonaClient {
             }
 
             $url = $this->config['persona_host'].$this->config['persona_oauth_route'];
+            $this->getStatsD()->startTiming("obtainNewToken.rest.get");
             $token =  $this->personaObtainNewToken($url, $query);
+            $this->getStatsD()->endTiming("obtainNewToken.rest.get");
 
             if ($useCache) {
                 $this->cacheToken($cacheKey,$token,$token['expires_in']-60);
@@ -148,6 +194,8 @@ class PersonaClient {
      * @param $secret string(@
      */
     public function presignUrl($url,$secret,$expiry=null) {
+        $this->getStatsD()->increment("presignUrl");
+
         if(empty($url)){
             throw new \InvalidArgumentException("No url provided to sign");
         }
@@ -164,7 +212,9 @@ class PersonaClient {
             $url .= $expParam;
         }
 
+        $this->getStatsD()->startTiming("presignUrl.sign");
         $sig = $this->getSignature($url,$secret);
+        $this->getStatsD()->endTiming("presignUrl.sign");
 
         $sigParam = (strpos($url,'?')===FALSE) ? "?signature=".$sig : "&signature=".$sig;
         if (strpos($url,'#')!==FALSE) {
@@ -190,7 +240,9 @@ class PersonaClient {
         if (intval($expires)<time()) return false;
 
         // still here? Check sig
-        return ($signature == $this->getSignature($this->removeQuerystringVar($url,"signature"),$secret));
+        $valid = ($signature == $this->getSignature($this->removeQuerystringVar($url,"signature"),$secret));
+        $this->getStatsD()->increment(($valid) ? "presignUrl.valid" : "presignUrl.invalid");
+        return $valid;
     }
 
     /* Protected functions */

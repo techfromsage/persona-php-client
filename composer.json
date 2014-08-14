@@ -14,9 +14,10 @@
 	],
 	"require":{
 		"php": ">=5.3.0",
-		"phpunit/phpunit": ">=3.7.0@stable",
-		"monolog/monolog": ">=1.5.0",
-        "predis/predis"  : "v0.8.5"
+		"phpunit/phpunit": "4.2.0",
+		"monolog/monolog": "1.5.0",
+        "predis/predis"  : "v0.8.5",
+        "domnikl/statsd": "1.0.2"
 	},
 	"autoload":{
 		"psr-0": {
