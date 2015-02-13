@@ -359,7 +359,7 @@ class PersonaClient {
         $request = curl_init($url);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($request, CURLOPT_TIMEOUT, 30);
-        curl_setopt($request, CURLOPT_CUSTOMREQUEST, 'HEAD');
+        curl_setopt($request, CURLOPT_NOBODY, true);
         curl_exec($request);
         $meta = curl_getinfo($request);
         if (isset($meta) && $meta['http_code']==204) {
