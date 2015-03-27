@@ -161,7 +161,13 @@ class PersonaClient {
             if ($useCache) {
                 // check cache, if exists then use that instead and return
                 $this->getStatsD()->startTiming("obtainNewToken.cache.get");
-                $existingToken = json_decode($this->getCacheClient()->get($cacheKey),true);
+                $cacheClient = $this->getCacheClient();
+                if($cacheClient)
+                {
+                    $existingToken = json_decode($cacheClient->get($cacheKey),true);
+                } else{
+                    $existingToken = false;
+                }
                 $this->getStatsD()->endTiming("obtainNewToken.cache.get");
                 if (!empty($existingToken)) {
                     if ($useCookies) $this->setTokenCookie($existingToken);
@@ -263,11 +269,15 @@ class PersonaClient {
      */
     protected function cacheToken($cacheKey,$token,$expiryTime) {
         // cache this freshly obtained token so we don't have to round-trip to persona again
-        $this->getCacheClient()->transaction(function($tx) use ($cacheKey, $token, $expiryTime) {
-            $tx->multi();
-            $tx->set($cacheKey,json_encode($token));
-            $tx->expire($cacheKey,$expiryTime); // cache for token expiry minus 60s
-        });
+        $cacheClient = $this->getCacheClient();
+        if($cacheClient)
+        {
+            $cacheClient->transaction(function($tx) use ($cacheKey, $token, $expiryTime) {
+                $tx->multi();
+                $tx->set($cacheKey,json_encode($token));
+                $tx->expire($cacheKey,$expiryTime); // cache for token expiry minus 60s
+            });
+        };
     }
 
     /**
