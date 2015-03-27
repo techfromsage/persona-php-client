@@ -92,7 +92,11 @@ class PersonaClient {
         }
 
         $this->getStatsD()->startTiming("validateToken.cache.get");
-        $reply = $this->getCacheClient()->get("access_token:".$cacheKey);
+        $cacheClient = $this->getCacheClient();
+        if($cacheClient)
+        {
+            $reply = $this->getCacheClient()->get("access_token:".$cacheKey);
+        }
         $this->getStatsD()->endTiming("validateToken.cache.get");
         if($reply == 'OK'){
             $this->getStatsD()->increment("validateToken.cache.valid");
@@ -112,8 +116,12 @@ class PersonaClient {
                 $this->getStatsD()->endTiming("validateToken.rest.get");
                 $this->getStatsD()->increment("validateToken.rest.valid");
                 // verified by persona, now cache the token
-                $this->getCacheClient()->set("access_token:".$cacheKey, 'OK');
-                $this->getCacheClient()->expire("access_token:".$cacheKey, 60);
+                if($cacheClient)
+                {
+                    $this->getCacheClient()->set("access_token:".$cacheKey, 'OK');
+                    $this->getCacheClient()->expire("access_token:".$cacheKey, 60);
+                }
+
                 return self::VERIFIED_BY_PERSONA;
             } else {
                 $this->getStatsD()->endTiming("validateToken.rest.get");
@@ -331,20 +339,45 @@ class PersonaClient {
     /**
      * Lazy Loader, returns a predis client instance
      *
-     * @return \Predis\Client a connected predis instance
+     * @return false|\Predis\Client a connected predis instance
      * @throws \Predis\Connection\ConnectionException if it cannot connect to the server specified
      */
     protected function getCacheClient(){
         if(!$this->tokenCacheClient){
-            $this->tokenCacheClient = new \Predis\Client(array(
-                'scheme'   => 'tcp',
-                'host'     => $this->config['tokencache_redis_host'],
-                'port'     => $this->config['tokencache_redis_port'],
-                'database' => $this->config['tokencache_redis_db']
-            ));
+
+            // Validate token cache config
+            if($this->validateTokenCacheConfig())
+            {
+                $this->tokenCacheClient = new \Predis\Client(array(
+                    'scheme'   => 'tcp',
+                    'host'     => $this->config['tokencache_redis_host'],
+                    'port'     => $this->config['tokencache_redis_port'],
+                    'database' => $this->config['tokencache_redis_db']
+                ));
+            } else
+            {
+                return false;
+            }
         }
 
         return $this->tokenCacheClient;
+    }
+
+    protected function validateTokenCacheConfig()
+    {
+        // If config values don't exist, fail
+        if(!isset($this->config['tokencache_redis_host']) || !isset($this->config['tokencache_redis_port']) || !isset($this->config['tokencache_redis_db']))
+        {
+            return false;
+        }
+        // If config values are empty, fail
+        if((isset($this->config['tokencache_redis_host']) && empty($this->config['tokencache_redis_host'])) ||
+            (isset($this->config['tokencache_redis_port']) && empty($this->config['tokencache_redis_port'])) ||
+            (isset($this->config['tokencache_redis_db']) && empty($this->config['tokencache_redis_db'])))
+        {
+            return false;
+        }
+        return true;
     }
 
     /**
