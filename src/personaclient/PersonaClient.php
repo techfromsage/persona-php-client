@@ -95,7 +95,7 @@ class PersonaClient {
         $cacheClient = $this->getCacheClient();
         if($cacheClient)
         {
-            $reply = $this->getCacheClient()->get("access_token:".$cacheKey);
+            $reply = $cacheClient->get("access_token:".$cacheKey);
         }
         $this->getStatsD()->endTiming("validateToken.cache.get");
         if($reply == 'OK'){
@@ -118,8 +118,8 @@ class PersonaClient {
                 // verified by persona, now cache the token
                 if($cacheClient)
                 {
-                    $this->getCacheClient()->set("access_token:".$cacheKey, 'OK');
-                    $this->getCacheClient()->expire("access_token:".$cacheKey, 60);
+                    $cacheClient->set("access_token:".$cacheKey, 'OK');
+                    $cacheClient->expire("access_token:".$cacheKey, 60);
                 }
 
                 return self::VERIFIED_BY_PERSONA;
