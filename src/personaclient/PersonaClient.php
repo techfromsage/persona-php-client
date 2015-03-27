@@ -365,19 +365,14 @@ class PersonaClient {
 
     protected function validateTokenCacheConfig()
     {
-        // If config values don't exist, fail
-        if(!isset($this->config['tokencache_redis_host']) || !isset($this->config['tokencache_redis_port']) || !isset($this->config['tokencache_redis_db']))
+        // Check if config values are all set and not empty
+        if((isset($this->config['tokencache_redis_host']) && !empty($this->config['tokencache_redis_host'])) &&
+            (isset($this->config['tokencache_redis_port']) && !empty($this->config['tokencache_redis_port'])) &&
+            (isset($this->config['tokencache_redis_db']) && !empty($this->config['tokencache_redis_db'])))
         {
-            return false;
+            return true;
         }
-        // If config values are empty, fail
-        if((isset($this->config['tokencache_redis_host']) && empty($this->config['tokencache_redis_host'])) ||
-            (isset($this->config['tokencache_redis_port']) && empty($this->config['tokencache_redis_port'])) ||
-            (isset($this->config['tokencache_redis_db']) && empty($this->config['tokencache_redis_db'])))
-        {
-            return false;
-        }
-        return true;
+        return false;
     }
 
     /**
