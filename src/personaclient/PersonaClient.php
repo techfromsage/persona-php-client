@@ -71,6 +71,9 @@ class PersonaClient {
      * Otherwise calls the internal method getTokenFromRequest() in order to
      * extract the token from $_SERVER, $_GET or $_POST
      *
+     * It will first attempt to validate the token against the tokencache if it is configured, if not the token i
+     * is validated using persona
+     *
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scope: (string) specify this if you wish to validate a scoped token
@@ -93,6 +96,7 @@ class PersonaClient {
 
         $this->getStatsD()->startTiming("validateToken.cache.get");
         $cacheClient = $this->getCacheClient();
+        $reply = null;
         if($cacheClient)
         {
             $reply = $cacheClient->get("access_token:".$cacheKey);
@@ -134,8 +138,10 @@ class PersonaClient {
     /**
      * Use this method to generate a new token. Works by first checking to see if a cookie is set containing the
      * access_token, if so this is returned. If there is no cookie we request a new one from persona. You must
-     * specify client credentials to do this, for that reason this method will throw an exception if the credentials are missing.
-
+     * specify client credentials to do this, for that reason this method will throw an exception if the
+     * credentials are missing. If configured, this method will also use the token cache for recently created tokens
+     * instead of going to Persona.
+     *
      * @param $clientId
      * @param $clientSecret
      * @param array $params a set of optional parameters you can pass into this method <pre>
@@ -373,6 +379,12 @@ class PersonaClient {
         return $this->tokenCacheClient;
     }
 
+    /**
+     * Validates that all required properties for the tokencache config have been set
+     * and do not contain an empty or null value
+     *
+     * @return bool true if the token cache config is valid, false otherwise
+     */
     protected function validateTokenCacheConfig()
     {
         // Check if config values are all set and not empty
