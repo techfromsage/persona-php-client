@@ -71,6 +71,9 @@ class PersonaClient {
      * Otherwise calls the internal method getTokenFromRequest() in order to
      * extract the token from $_SERVER, $_GET or $_POST
      *
+     * It will first attempt to validate the token against the tokencache if it is configured, if not the token i
+     * is validated using persona
+     *
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scope: (string) specify this if you wish to validate a scoped token
@@ -92,7 +95,12 @@ class PersonaClient {
         }
 
         $this->getStatsD()->startTiming("validateToken.cache.get");
-        $reply = $this->getCacheClient()->get("access_token:".$cacheKey);
+        $cacheClient = $this->getCacheClient();
+        $reply = null;
+        if($cacheClient)
+        {
+            $reply = $cacheClient->get("access_token:".$cacheKey);
+        }
         $this->getStatsD()->endTiming("validateToken.cache.get");
         if($reply == 'OK'){
             $this->getStatsD()->increment("validateToken.cache.valid");
@@ -112,8 +120,12 @@ class PersonaClient {
                 $this->getStatsD()->endTiming("validateToken.rest.get");
                 $this->getStatsD()->increment("validateToken.rest.valid");
                 // verified by persona, now cache the token
-                $this->getCacheClient()->set("access_token:".$cacheKey, 'OK');
-                $this->getCacheClient()->expire("access_token:".$cacheKey, 60);
+                if($cacheClient)
+                {
+                    $cacheClient->set("access_token:".$cacheKey, 'OK');
+                    $cacheClient->expire("access_token:".$cacheKey, 60);
+                }
+
                 return self::VERIFIED_BY_PERSONA;
             } else {
                 $this->getStatsD()->endTiming("validateToken.rest.get");
@@ -126,8 +138,10 @@ class PersonaClient {
     /**
      * Use this method to generate a new token. Works by first checking to see if a cookie is set containing the
      * access_token, if so this is returned. If there is no cookie we request a new one from persona. You must
-     * specify client credentials to do this, for that reason this method will throw an exception if the credentials are missing.
-
+     * specify client credentials to do this, for that reason this method will throw an exception if the
+     * credentials are missing. If configured, this method will also use the token cache for recently created tokens
+     * instead of going to Persona.
+     *
      * @param $clientId
      * @param $clientSecret
      * @param array $params a set of optional parameters you can pass into this method <pre>
@@ -153,7 +167,13 @@ class PersonaClient {
             if ($useCache) {
                 // check cache, if exists then use that instead and return
                 $this->getStatsD()->startTiming("obtainNewToken.cache.get");
-                $existingToken = json_decode($this->getCacheClient()->get($cacheKey),true);
+                $cacheClient = $this->getCacheClient();
+                if($cacheClient)
+                {
+                    $existingToken = json_decode($cacheClient->get($cacheKey),true);
+                } else{
+                    $existingToken = false;
+                }
                 $this->getStatsD()->endTiming("obtainNewToken.cache.get");
                 if (!empty($existingToken)) {
                     if ($useCookies) $this->setTokenCookie($existingToken);
@@ -255,11 +275,15 @@ class PersonaClient {
      */
     protected function cacheToken($cacheKey,$token,$expiryTime) {
         // cache this freshly obtained token so we don't have to round-trip to persona again
-        $this->getCacheClient()->transaction(function($tx) use ($cacheKey, $token, $expiryTime) {
-            $tx->multi();
-            $tx->set($cacheKey,json_encode($token));
-            $tx->expire($cacheKey,$expiryTime); // cache for token expiry minus 60s
-        });
+        $cacheClient = $this->getCacheClient();
+        if($cacheClient)
+        {
+            $cacheClient->transaction(function($tx) use ($cacheKey, $token, $expiryTime) {
+                $tx->multi();
+                $tx->set($cacheKey,json_encode($token));
+                $tx->expire($cacheKey,$expiryTime); // cache for token expiry minus 60s
+            });
+        };
     }
 
     /**
@@ -331,20 +355,46 @@ class PersonaClient {
     /**
      * Lazy Loader, returns a predis client instance
      *
-     * @return \Predis\Client a connected predis instance
+     * @return false|\Predis\Client a connected predis instance
      * @throws \Predis\Connection\ConnectionException if it cannot connect to the server specified
      */
     protected function getCacheClient(){
         if(!$this->tokenCacheClient){
-            $this->tokenCacheClient = new \Predis\Client(array(
-                'scheme'   => 'tcp',
-                'host'     => $this->config['tokencache_redis_host'],
-                'port'     => $this->config['tokencache_redis_port'],
-                'database' => $this->config['tokencache_redis_db']
-            ));
+
+            // Validate token cache config
+            if($this->validateTokenCacheConfig())
+            {
+                $this->tokenCacheClient = new \Predis\Client(array(
+                    'scheme'   => 'tcp',
+                    'host'     => $this->config['tokencache_redis_host'],
+                    'port'     => $this->config['tokencache_redis_port'],
+                    'database' => $this->config['tokencache_redis_db']
+                ));
+            } else
+            {
+                return false;
+            }
         }
 
         return $this->tokenCacheClient;
+    }
+
+    /**
+     * Validates that all required properties for the tokencache config have been set
+     * and do not contain an empty or null value
+     *
+     * @return bool true if the token cache config is valid, false otherwise
+     */
+    protected function validateTokenCacheConfig()
+    {
+        // Check if config values are all set and not empty
+        if((isset($this->config['tokencache_redis_host']) && !empty($this->config['tokencache_redis_host'])) &&
+            (isset($this->config['tokencache_redis_port']) && !empty($this->config['tokencache_redis_port'])) &&
+            (isset($this->config['tokencache_redis_db']) && !empty($this->config['tokencache_redis_db'])))
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
