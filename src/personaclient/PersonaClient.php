@@ -149,7 +149,7 @@ class PersonaClient {
      *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token (and setting a new cookie with the resultant token)
      *          useCache: (boolean) default true, to enable checking the cache for recently created tokens, instead of querying persona direct each time </pre>
      * @return array containing the token details
-     * @throws Exception if we were unable to generate a new token or if credentials were missing
+     * @throws \Exception if we were unable to generate a new token or if credentials were missing
      */
     public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
         $this->getStatsD()->increment("obtainNewToken");
@@ -211,7 +211,9 @@ class PersonaClient {
      * Signs the given $url plus an $expiry param with the $secret and returns it
      * @param $url string
      * @param $expiry int|string defaults to '+15 minutes'
-     * @param $secret string(@
+     * @param $secret string
+     * @return string
+     * @throws \InvalidArgumentException
      */
     public function presignUrl($url,$secret,$expiry=null) {
         $this->getStatsD()->increment("presignUrl");
@@ -246,6 +248,12 @@ class PersonaClient {
         return $url;
     }
 
+    /**
+     * Check if a presigned URL is valid
+     * @param string $url
+     * @param string $secret
+     * @return bool
+     */
     public function isPresignedUrlValid($url,$secret) {
         $urlParts = parse_url($url);
         parse_str($urlParts['query']);
@@ -263,6 +271,36 @@ class PersonaClient {
         $valid = ($signature == $this->getSignature($this->removeQuerystringVar($url,"signature"),$secret));
         $this->getStatsD()->increment(($valid) ? "presignUrl.valid" : "presignUrl.invalid");
         return $valid;
+    }
+
+    /**
+     * Get a user profile based off a gupid passed in
+     * @param string $gupid
+     * @param string $token
+     * @access public
+     * @return mixed
+     * @throws \InvalidArgumentException
+     * @throws \Exception
+     */
+    public function getUserByGupid($gupid, $token){
+        if(trim($gupid) === '')
+        {
+            throw new \InvalidArgumentException("Invalid gupid");
+        }
+        if(trim($token) === '')
+        {
+            throw new \InvalidArgumentException("Invalid token");
+        }
+        $url = $this->config['persona_host'].'/users/?gupid='.$gupid;
+        $user = $this->personaGetUser($url, $token);
+
+        if($user && !empty($user))
+        {
+            return $user;
+        } else
+        {
+            throw new \Exception('User profile not found');
+        }
     }
 
     /* Protected functions */
@@ -412,6 +450,7 @@ class PersonaClient {
         curl_setopt($request, CURLOPT_NOBODY, true);
         curl_exec($request);
         $meta = curl_getinfo($request);
+        curl_close($request);
         if (isset($meta) && $meta['http_code']==204) {
             return true;
         } else {
@@ -442,6 +481,7 @@ class PersonaClient {
 
         $response = curl_exec($curl);
         $headers = curl_getinfo($curl);
+        curl_close($curl);
 
         if (isset($headers['http_code']) && $headers['http_code']==200)
         {
@@ -487,4 +527,38 @@ class PersonaClient {
         return (empty($anchor)) ? $url : $url.$anchor;
     }
 
+    /**
+     * Get a persona user
+     * @param string $url
+     * @param string $token
+     * @access protected
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function personaGetUser($url, $token)
+    {
+        $curlOptions = array(
+            CURLOPT_URL             => $url,
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_FOLLOWLOCATION  => true,
+            CURLOPT_TIMEOUT         => 30,
+            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
+        );
+
+        $curl = curl_init();
+        curl_setopt_array($curl, $curlOptions);
+
+        $response = curl_exec($curl);
+        $headers = curl_getinfo($curl);
+        curl_close($curl);
+
+        if (isset($headers['http_code']) && $headers['http_code'] === 200)
+        {
+            $data = json_decode($response,true);
+            return $data;
+        } else
+        {
+            throw new \Exception("Could not retrieve OAuth response code");
+        }
+    }
 }
