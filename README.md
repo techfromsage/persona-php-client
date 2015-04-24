@@ -62,3 +62,13 @@ STATSD_PREFIX=dev.myapp
 ```
 
 The prefix is optional, if not supplied all stats will be prefixed with `persona.php.client`
+
+## Testing
+### Unit tests
+```
+ant unittest
+```
+### Integration Tests
+```
+ant integrationtest
+```
