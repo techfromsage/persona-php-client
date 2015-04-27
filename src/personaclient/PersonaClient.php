@@ -294,12 +294,43 @@ class PersonaClient {
         $url = $this->config['persona_host'].'/users/?gupid='.$gupid;
         $user = $this->personaGetUser($url, $token);
 
-        if($user && !empty($user))
+        if(isset($user) && !empty($user))
         {
             return $user;
         } else
         {
             throw new \Exception('User profile not found');
+        }
+    }
+
+    /**
+     * Get user profiles based off an array of guids
+     * @param array $guids
+     * @param string $token
+     * @access public
+     * @return array
+     * @throws \InvalidArgumentException
+     * @throws \Exception
+     */
+    public function getUserByGuids($guids, $token)
+    {
+        if(!is_array($guids))
+        {
+            throw new \InvalidArgumentException("Invalid guids");
+        }
+        if(trim($token) === '')
+        {
+            throw new \InvalidArgumentException("Invalid token");
+        }
+        $url = $this->config['persona_host'].'/users/?guids='.implode(',', $guids);
+        $users = $this->personaGetUser($url, $token);
+
+        if(isset($users) && !empty($users))
+        {
+            return $users;
+        } else
+        {
+            throw new \Exception('User profiles not found');
         }
     }
 
@@ -554,8 +585,7 @@ class PersonaClient {
 
         if (isset($headers['http_code']) && $headers['http_code'] === 200)
         {
-            $data = json_decode($response,true);
-            return $data;
+            return json_decode($response,true);
         } else
         {
             throw new \Exception("Could not retrieve OAuth response code");
