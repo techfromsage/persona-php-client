@@ -334,6 +334,110 @@ class PersonaClient {
         }
     }
 
+    /**
+     * Require authentication on your route
+     * @param string $sso
+     * @param string $provider
+     * @param string $statePrefix
+     * @param string $appId
+     * @access public
+     * @return void
+     */
+    public function requireAuth($sso, $provider, $statePrefix, $appId)
+    {
+        $_SESSION['loginSSO'] = $sso;
+        $_SESSION['loginAppId'] = $appId;
+        $_SESSION['loginProvider'] = $provider;
+        $_SESSION['loginStatePrefix'] = $statePrefix;
+
+        // Already authenticated
+        if($this->isLoggedIn())
+        {
+            return;
+        }
+
+        // Login
+        $this->login();
+    }
+
+    /**
+     * Authenticate a route
+     * @access public
+     * @return bool
+     */
+    public function authenticate()
+    {
+        if(isset($_REQUEST['persona:payload']))
+        {
+            $payload = json_decode(base64_decode($_REQUEST['persona:payload']),true);
+
+            if(!isset($_SESSION['loginState']) || $payload['state'] !==  $_SESSION['loginState'])
+            {
+                // Error with state - not authenticated
+                unset($_SESSION['loginState']);
+            } else
+            {
+                // Delete the login state ready for next login
+                unset($_SESSION['loginState']);
+
+                // Final step - validate the token
+                $_SESSION[$_SESSION['loginSSO']] = array(
+                    'token' => $payload['token'] ? $payload['token'] : false,
+                    'state' => $payload['state'] ? $payload['state'] : false,
+                    'guid' => $payload['guid'] ? $payload['guid'] : '',
+                    'gupid' => $payload['gupid'] ? $payload['gupid'] : array(),
+                    'profile' => $payload['profile'] ? $payload['profile'] : array(),
+                    'redirect' => $payload['redirect'] ? $payload['redirect'] : '',
+                    'statePrefix' => $_SESSION['loginStatePrefix'] ? $_SESSION['loginStatePreview'] : false
+                );
+
+                if($this->isLoggedIn())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get persistent ID
+     * @access public
+     * @return mixed
+     */
+    public function getPersistentId()
+    {
+        if(isset($_SESSION[$_SESSION['loginSSO']]['gupid']) && !empty($_SESSION[$_SESSION['loginSSO']]['gupid']))
+        {
+            // Loop through all gupids and match against the login provider - it should be
+            // the prefix of the persona profile
+            foreach($_SESSION[$_SESSION['loginSSO']]['gupid'] as $gupid)
+            {
+                if(strpos($gupid, $_SESSION['loginProvider']) === 0)
+                {
+                    return str_replace($_SESSION['loginProvider'].':', '', $gupid);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get a payload value if its set - this allows us to request the values that came back from
+     * the POST back to the callback URL of an application
+     * @param string $value
+     * @access public
+     * @return mixed
+     */
+    public function getPayloadValue($value)
+    {
+        if(isset($_SESSION[$_SESSION['loginSSO']]) && isset($_SESSION[$_SESSION['loginSSO']][$value]))
+        {
+            return $_SESSION[$_SESSION['loginSSO']][$value];
+        }
+        return false;
+    }
+
     /* Protected functions */
 
     /**
@@ -590,5 +694,37 @@ class PersonaClient {
         {
             throw new \Exception("Could not retrieve OAuth response code");
         }
+    }
+
+    protected function isLoggedIn()
+    {
+        if(isset($_SESSION[$_SESSION['loginSSO']]))
+        {
+            // Validate the token
+            if($this->validateToken(array('access_token' => $_SESSION[$_SESSION['loginSSO']]['token']['access_token'])))
+            {
+                // Valid token - all is ok
+                return true;
+            } else
+            {
+                // @todo Revalidate a token
+            }
+        }
+
+        // Not logged in
+        return false;
+    }
+
+    protected function login()
+    {
+        $loginState = uniqid($_SESSION['loginProvider']."::", true);
+        // Save login state in session
+        $_SESSION['loginState'] = $loginState;
+
+        // Add some params
+        $sso = $_SESSION['loginSSO'].'?redirectUri='.getenv('DRP_HOST').$_SERVER['REDIRECT_URL'].'&state='.$loginState.'&app='.$_SESSION['loginAppId'];
+
+        header("Location: ".$sso);
+        exit;
     }
 }
