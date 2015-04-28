@@ -42,6 +42,9 @@ $tokenDetails = $personaClient->obtainNewToken("your client id", "your client se
 
 // you can use it to validate a token
 $personaClient->validateToken(array("access_token"=>"some token"));
+
+// you can use it to get a user profile with the gupid
+$profile = $personaClient->getUserByGupid("google:123", "some token");
 ```
 
 By default, obtainNewToken will deal with managing a cookie to cache to oauth token, the expiry will match that returned by Persona. If you are using this library in a cookie-less environment (e.g. background job) you can disable this behaviour:
@@ -62,3 +65,13 @@ STATSD_PREFIX=dev.myapp
 ```
 
 The prefix is optional, if not supplied all stats will be prefixed with `persona.php.client`
+
+## Testing
+### Unit tests
+```
+ant unittest
+```
+### Integration Tests
+```
+ant integrationtest
+```

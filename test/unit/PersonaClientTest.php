@@ -363,4 +363,181 @@ class PersonaClientTest extends TestBase {
         $token = $mockClient->obtainNewToken('client_id','client_secret');
         $this->assertEquals($token['access_token'],"foo");
     }
+
+    function testGetUserByGupidEmptyGupidThrowsException(){
+        $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->getUserByGupid('', '');
+    }
+    function testGetUserByGupidEmptyTokenThrowsException(){
+        $this->setExpectedException('InvalidArgumentException', 'Invalid token');
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->getUserByGupid('123', '');
+    }
+    function testGetUserByGupidInvalidTokenThrowsException(){
+        $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->getUserByGupid('123', '456');
+    }
+    function testGetUserByGupidThrowsExceptionWhenGupidNotFound()
+    {
+        $this->setExpectedException('Exception', 'User profile not found');
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('personaGetUser')
+            ->will($this->returnValue(false));
+
+        $mockClient->getUserByGupid('123', '456');
+    }
+    function testGetUserByGupidReturnsUserWhenGupidFound()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $expectedResponse = array(
+            '_id' => '123',
+            'guid' => '456',
+            'gupids' => array('google:789'),
+            'created' => array(
+                'sec' => 1,
+                'u' => 2
+            ),
+            'profile' => array(
+                'email' => 'max@payne.com',
+                'name' => 'Max Payne'
+            )
+        );
+        $mockClient->expects($this->once())
+            ->method('personaGetUser')
+            ->will($this->returnValue($expectedResponse));
+
+        $user = $mockClient->getUserByGupid('123', '456');
+        $this->assertEquals('123', $user['_id']);
+        $this->assertEquals('456', $user['guid']);
+        $this->assertInternalType('array', $user['gupids']);
+        $this->assertCount(1, $user['gupids']);
+        $this->assertEquals('google:789', $user['gupids'][0]);
+        $this->assertInternalType('array', $user['created']);
+        $this->assertInternalType('array', $user['profile']);
+        $this->assertCount(2, $user['profile']);
+        $this->assertEquals('max@payne.com', $user['profile']['email']);
+        $this->assertEquals('Max Payne', $user['profile']['name']);
+    }
+
+    function testGetUserByGuidsInvalidGuidsThrowsException(){
+        $this->setExpectedException('InvalidArgumentException', 'Invalid guids');
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->getUserByGuids('', '');
+    }
+    function testGetUserByGuidsEmptyTokenThrowsException(){
+        $this->setExpectedException('InvalidArgumentException', 'Invalid token');
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->getUserByGuids(array('123'), '');
+    }
+    function testGetUserByGuidsInvalidTokenThrowsException(){
+        $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->getUserByGuids(array('123'), '456');
+    }
+    function testGetUserByGuidsThrowsExceptionWhenGuidsNotFound()
+    {
+        $this->setExpectedException('Exception', 'User profiles not found');
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('personaGetUser')
+            ->will($this->returnValue(false));
+
+        $mockClient->getUserByGuids(array('HK-47'), '456');
+    }
+    function testGetUserByGuidsReturnsUserWhenGuidsFound()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $expectedResponse = array(array(
+            '_id' => '123',
+            'guid' => '456',
+            'gupids' => array('google:789'),
+            'created' => array(
+                'sec' => 1,
+                'u' => 2
+            ),
+            'profile' => array(
+                'email' => 'max@payne.com',
+                'name' => 'Max Payne'
+            )
+        ));
+        $mockClient->expects($this->once())
+            ->method('personaGetUser')
+            ->will($this->returnValue($expectedResponse));
+
+        $users = $mockClient->getUserByGuids(array('123'), '456');
+        $this->assertCount(1, $users);
+        $this->assertEquals('123', $users[0]['_id']);
+        $this->assertEquals('456', $users[0]['guid']);
+        $this->assertInternalType('array', $users[0]['gupids']);
+        $this->assertCount(1, $users[0]['gupids']);
+        $this->assertEquals('google:789', $users[0]['gupids'][0]);
+        $this->assertInternalType('array', $users[0]['created']);
+        $this->assertInternalType('array', $users[0]['profile']);
+        $this->assertCount(2, $users[0]['profile']);
+        $this->assertEquals('max@payne.com', $users[0]['profile']['email']);
+        $this->assertEquals('Max Payne', $users[0]['profile']['name']);
+    }
 }
