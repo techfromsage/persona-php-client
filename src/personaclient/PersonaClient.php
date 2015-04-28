@@ -720,7 +720,8 @@ class PersonaClient {
 
     protected function login()
     {
-        $loginState = uniqid($_SESSION[self::LOGIN_PREFIX.':loginAppId']."::", true);
+        // Create a uniq ID for state - prefixed with md5 hash of app ID
+        $loginState = uniqid(md5($_SESSION[self::LOGIN_PREFIX.':loginAppId'])."::", true);
         // Save login state in session
         $_SESSION[self::LOGIN_PREFIX.':loginState'] = $loginState;
 
