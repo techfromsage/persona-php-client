@@ -9,6 +9,7 @@ class PersonaClient {
     const STATSD_CONN = 'STATSD_CONN';
     const STATSD_PREFIX = 'STATSD_PREFIX';
 
+    const LOGIN_PREFIX = 'PERSONA';
     /**
      * Cached connection to redis
      * @var \Predis\Client
@@ -336,19 +337,16 @@ class PersonaClient {
 
     /**
      * Require authentication on your route
-     * @param string $sso
      * @param string $provider
-     * @param string $statePrefix
      * @param string $appId
      * @access public
      * @return void
      */
-    public function requireAuth($sso, $provider, $statePrefix, $appId)
+    public function requireAuth($provider, $appId, $appSecret)
     {
-        $_SESSION['loginSSO'] = $sso;
-        $_SESSION['loginAppId'] = $appId;
-        $_SESSION['loginProvider'] = $provider;
-        $_SESSION['loginStatePrefix'] = $statePrefix;
+        $_SESSION[self::LOGIN_PREFIX.':loginAppId'] = $appId;
+        $_SESSION[self::LOGIN_PREFIX.':loginProvider'] = $provider;
+        $_SESSION[self::LOGIN_PREFIX.':loginAppSecret'] = $appSecret;
 
         // Already authenticated
         if($this->isLoggedIn())
@@ -371,30 +369,38 @@ class PersonaClient {
         {
             $payload = json_decode(base64_decode($_REQUEST['persona:payload']),true);
 
-            if(!isset($_SESSION['loginState']) || $payload['state'] !==  $_SESSION['loginState'])
+            if(!isset($_SESSION[self::LOGIN_PREFIX.':loginState']) || $payload['state'] !==  $_SESSION[self::LOGIN_PREFIX.':loginState'])
             {
                 // Error with state - not authenticated
-                unset($_SESSION['loginState']);
-            } else
+                unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+                return false;
+            }
+
+            // Verify signature matches
+            $payloadSignature = $payload['signature'];
+            unset($payload['signature']);
+
+            if($payloadSignature !== hash_hmac("sha256", json_encode($payload), $_SESSION[self::LOGIN_PREFIX.':loginAppSecret']))
             {
-                // Delete the login state ready for next login
-                unset($_SESSION['loginState']);
+                unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+                return false;
+            }
 
-                // Final step - validate the token
-                $_SESSION[$_SESSION['loginSSO']] = array(
-                    'token' => $payload['token'] ? $payload['token'] : false,
-                    'state' => $payload['state'] ? $payload['state'] : false,
-                    'guid' => $payload['guid'] ? $payload['guid'] : '',
-                    'gupid' => $payload['gupid'] ? $payload['gupid'] : array(),
-                    'profile' => $payload['profile'] ? $payload['profile'] : array(),
-                    'redirect' => $payload['redirect'] ? $payload['redirect'] : '',
-                    'statePrefix' => $_SESSION['loginStatePrefix'] ? $_SESSION['loginStatePreview'] : false
-                );
+            // Delete the login state ready for next login
+            unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
 
-                if($this->isLoggedIn())
-                {
-                    return true;
-                }
+            // Final step - validate the token
+            $_SESSION[self::LOGIN_PREFIX.':loginSSO'] = array(
+                'token' => $payload['token'] ? $payload['token'] : false,
+                'guid' => $payload['guid'] ? $payload['guid'] : '',
+                'gupid' => $payload['gupid'] ? $payload['gupid'] : array(),
+                'profile' => $payload['profile'] ? $payload['profile'] : array(),
+                'redirect' => $payload['redirect'] ? $payload['redirect'] : ''
+            );
+
+            if($this->isLoggedIn())
+            {
+                return true;
             }
         }
         return false;
@@ -407,15 +413,15 @@ class PersonaClient {
      */
     public function getPersistentId()
     {
-        if(isset($_SESSION[$_SESSION['loginSSO']]['gupid']) && !empty($_SESSION[$_SESSION['loginSSO']]['gupid']))
+        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid']) && !empty($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid']))
         {
             // Loop through all gupids and match against the login provider - it should be
             // the prefix of the persona profile
-            foreach($_SESSION[$_SESSION['loginSSO']]['gupid'] as $gupid)
+            foreach($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid'] as $gupid)
             {
-                if(strpos($gupid, $_SESSION['loginProvider']) === 0)
+                if(strpos($gupid, $_SESSION[self::LOGIN_PREFIX.':loginProvider']) === 0)
                 {
-                    return str_replace($_SESSION['loginProvider'].':', '', $gupid);
+                    return str_replace($_SESSION[self::LOGIN_PREFIX.':loginProvider'].':', '', $gupid);
                 }
             }
         }
@@ -423,19 +429,16 @@ class PersonaClient {
     }
 
     /**
-     * Get a payload value if its set - this allows us to request the values that came back from
-     * the POST back to the callback URL of an application
-     * @param string $value
+     * Get redirect URL value
      * @access public
      * @return mixed
      */
-    public function getPayloadValue($value)
+    public function getRedirectUrl()
     {
-        if(isset($_SESSION[$_SESSION['loginSSO']]) && isset($_SESSION[$_SESSION['loginSSO']][$value]))
+        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect']) && !empty($_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect']))
         {
-            return $_SESSION[$_SESSION['loginSSO']][$value];
+            return $_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect'];
         }
-        return false;
     }
 
     /* Protected functions */
@@ -698,10 +701,10 @@ class PersonaClient {
 
     protected function isLoggedIn()
     {
-        if(isset($_SESSION[$_SESSION['loginSSO']]))
+        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']))
         {
             // Validate the token
-            if($this->validateToken(array('access_token' => $_SESSION[$_SESSION['loginSSO']]['token']['access_token'])))
+            if($this->validateToken(array('access_token' => $_SESSION[self::LOGIN_PREFIX.':loginSSO']['token']['access_token'])))
             {
                 // Valid token - all is ok
                 return true;
@@ -717,14 +720,12 @@ class PersonaClient {
 
     protected function login()
     {
-        $loginState = uniqid($_SESSION['loginProvider']."::", true);
+        $loginState = uniqid($_SESSION[self::LOGIN_PREFIX.':loginAppId']."::", true);
         // Save login state in session
-        $_SESSION['loginState'] = $loginState;
+        $_SESSION[self::LOGIN_PREFIX.':loginState'] = $loginState;
 
-        // Add some params
-        $sso = $_SESSION['loginSSO'].'?redirectUri='.getenv('DRP_HOST').$_SERVER['REDIRECT_URL'].'&state='.$loginState.'&app='.$_SESSION['loginAppId'];
-
-        header("Location: ".$sso);
+        // Log user in
+        header("Location: ".$this->config['persona_host'].'/auth/providers/'.$_SESSION[self::LOGIN_PREFIX.':loginProvider'].'/login'.'?redirectUri='.getenv('DRP_HOST').$_SERVER['REDIRECT_URL'].'&state='.$loginState.'&app='.$_SESSION[self::LOGIN_PREFIX.':loginAppId']);
         exit;
     }
 }
