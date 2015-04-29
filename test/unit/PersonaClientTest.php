@@ -670,9 +670,9 @@ class PersonaClientTest extends TestBase {
             ->will($this->returnValue(null));
 
         $mockClient->requireAuth('trapdoor', 'appid', 'appsecret');
-        $this->assertEquals('appid', $_SESSION['PERSONA:loginAppId']);
-        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
-        $this->assertEquals('trapdoor', $_SESSION['PERSONA:loginProvider']);
+        $this->assertEquals('appid', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppId']);
+        $this->assertEquals('appsecret', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret']);
+        $this->assertEquals('trapdoor', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginProvider']);
     }
     function testRequireAuthInvalidRedirectUri()
     {
@@ -702,9 +702,9 @@ class PersonaClientTest extends TestBase {
 
         $mockClient->requireAuth('trapdoor', 'appid', 'appsecret', 'redirecturi');
 
-        $this->assertEquals('appid', $_SESSION['PERSONA:loginAppId']);
-        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
-        $this->assertEquals('trapdoor', $_SESSION['PERSONA:loginProvider']);
+        $this->assertEquals('appid', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppId']);
+        $this->assertEquals('appsecret', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret']);
+        $this->assertEquals('trapdoor', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginProvider']);
     }
     function testRequireAuthAlreadyLoggedIn()
     {
@@ -742,9 +742,9 @@ class PersonaClientTest extends TestBase {
 
         $mockClient->requireAuth('trapdoor', 'appid', 'appsecret', 'redirect');
 
-        $this->assertEquals('appid', $_SESSION['PERSONA:loginAppId']);
-        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
-        $this->assertEquals('trapdoor', $_SESSION['PERSONA:loginProvider']);
+        $this->assertEquals('appid', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppId']);
+        $this->assertEquals('appsecret', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret']);
+        $this->assertEquals('trapdoor', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginProvider']);
     }
 
     // authenticate tests
@@ -769,7 +769,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_POST['persona:payload'] = 'YouShallNotPass';
+        $_POST[\personaclient\PersonaClient::LOGIN_PREFIX.':payload'] = 'YouShallNotPass';
         $this->assertFalse($personaClient->authenticate());
     }
     function testAuthenticatePayloadDoesNotContainState()
@@ -781,8 +781,8 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginState'] = 'Tennessee';
-        $_POST['persona:payload'] = base64_encode(json_encode(array('test' => 'YouShallNotPass')));
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_POST[\personaclient\PersonaClient::LOGIN_PREFIX.':payload'] = base64_encode(json_encode(array('test' => 'YouShallNotPass')));
         $this->assertFalse($personaClient->authenticate());
     }
     function testAuthenticatePayloadDoesNotContainSignature()
@@ -794,8 +794,8 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginState'] = 'Tennessee';
-        $_POST['persona:payload'] = base64_encode(json_encode(array('state' => 'Tennessee')));
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_POST[\personaclient\PersonaClient::LOGIN_PREFIX.':payload'] = base64_encode(json_encode(array('state' => 'Tennessee')));
         $this->assertFalse($personaClient->authenticate());
     }
     function testAuthenticatePayloadMismatchingSignature()
@@ -807,15 +807,15 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginState'] = 'Tennessee';
-        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
         $payload = array(
             'state' => 'Tennessee'
         );
         $signature = hash_hmac("sha256", json_encode($payload), 'notmyappsecret');
         $payload['signature'] = $signature;
 
-        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $_POST[\personaclient\PersonaClient::LOGIN_PREFIX.':payload'] = base64_encode(json_encode($payload));
         $this->assertFalse($personaClient->authenticate());
     }
 
@@ -828,8 +828,8 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginState'] = 'Tennessee';
-        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
         $payload = array(
             'state' => 'Tennessee'
         );
@@ -839,13 +839,13 @@ class PersonaClientTest extends TestBase {
         $_POST['persona:payload'] = base64_encode(json_encode($payload));
         $this->assertTrue($personaClient->authenticate());
 
-        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
-        $this->assertArrayHasKey('PERSONA:loginSSO', $_SESSION);
-        $this->assertArrayHasKey('token', $_SESSION['PERSONA:loginSSO']);
-        $this->assertArrayHasKey('guid', $_SESSION['PERSONA:loginSSO']);
-        $this->assertArrayHasKey('gupid', $_SESSION['PERSONA:loginSSO']);
-        $this->assertArrayHasKey('profile', $_SESSION['PERSONA:loginSSO']);
-        $this->assertArrayHasKey('redirect', $_SESSION['PERSONA:loginSSO']);
+        $this->assertEquals('appsecret', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret']);
+        $this->assertArrayHasKey(\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO', $_SESSION);
+        $this->assertArrayHasKey('token', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']);
+        $this->assertArrayHasKey('guid', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']);
+        $this->assertArrayHasKey('gupid', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']);
+        $this->assertArrayHasKey('profile', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']);
+        $this->assertArrayHasKey('redirect', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']);
     }
 
     function testAuthenticatePayloadContainsStateAndSignatureFullPayload()
@@ -857,8 +857,8 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginState'] = 'Tennessee';
-        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
         $payload = array(
             'token' => array(
                 'access_token' => '987',
@@ -883,19 +883,19 @@ class PersonaClientTest extends TestBase {
         $_POST['persona:payload'] = base64_encode(json_encode($payload));
         $this->assertTrue($personaClient->authenticate());
 
-        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
-        $this->assertArrayHasKey('PERSONA:loginSSO', $_SESSION);
-        $this->assertArrayHasKey('token', $_SESSION['PERSONA:loginSSO']);
-        $this->assertEquals('987', $_SESSION['PERSONA:loginSSO']['token']['access_token']);
-        $this->assertEquals(1800, $_SESSION['PERSONA:loginSSO']['token']['expires_in']);
-        $this->assertEquals('bearer', $_SESSION['PERSONA:loginSSO']['token']['token_type']);
-        $this->assertEquals('919191', $_SESSION['PERSONA:loginSSO']['token']['scope'][0]);
-        $this->assertEquals('123', $_SESSION['PERSONA:loginSSO']['guid']);
-        $this->assertEquals('trapdoor:123', $_SESSION['PERSONA:loginSSO']['gupid'][0]);
-        $this->assertArrayHasKey('profile', $_SESSION['PERSONA:loginSSO']);
-        $this->assertEquals('Alex Murphy', $_SESSION['PERSONA:loginSSO']['profile']['name']);
-        $this->assertEquals('alexmurphy@detroit.pd', $_SESSION['PERSONA:loginSSO']['profile']['email']);
-        $this->assertEquals('http://example.com/wherever', $_SESSION['PERSONA:loginSSO']['redirect']);
+        $this->assertEquals('appsecret', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret']);
+        $this->assertArrayHasKey(\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO', $_SESSION);
+        $this->assertArrayHasKey('token', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']);
+        $this->assertEquals('987', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['token']['access_token']);
+        $this->assertEquals(1800, $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['token']['expires_in']);
+        $this->assertEquals('bearer', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['token']['token_type']);
+        $this->assertEquals('919191', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['token']['scope'][0]);
+        $this->assertEquals('123', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['guid']);
+        $this->assertEquals('trapdoor:123', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['gupid'][0]);
+        $this->assertArrayHasKey('profile', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']);
+        $this->assertEquals('Alex Murphy', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['profile']['name']);
+        $this->assertEquals('alexmurphy@detroit.pd', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['profile']['email']);
+        $this->assertEquals('http://example.com/wherever', $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO']['redirect']);
     }
     function testAuthenticatePayloadContainsStateAndSignatureFullPayloadCheckLoginIsCalled()
     {
@@ -910,8 +910,8 @@ class PersonaClientTest extends TestBase {
             ->method('isLoggedIn')
             ->will($this->returnValue(true));
 
-        $_SESSION['PERSONA:loginState'] = 'Tennessee';
-        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
         $payload = array(
             'token' => array(
                 'access_token' => '987',
@@ -959,7 +959,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array();
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->getPersistentId());
     }
     function testGetPersistentIdNoLoginProviderInSession()
@@ -971,7 +971,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array();
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->getPersistentId());
     }
     function testGetPersistentIdEmptyGupids()
@@ -983,8 +983,8 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginProvider'] = 'trapdoor';
-        $_SESSION['PERSONA:loginSSO'] = array('gupid' => array());
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('gupid' => array());
 
         $this->assertFalse($personaClient->getPersistentId());
     }
@@ -997,8 +997,8 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginProvider'] = 'trapdoor';
-        $_SESSION['PERSONA:loginSSO'] = array('gupid' => array(
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('gupid' => array(
             'google:123',
             'twitter:456'
         ));
@@ -1013,8 +1013,8 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginProvider'] = 'trapdoor';
-        $_SESSION['PERSONA:loginSSO'] = array('gupid' => array(
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('gupid' => array(
             'google:123',
             'trapdoor:456'
         ));
@@ -1042,7 +1042,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array();
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->getRedirectUrl());
     }
     function testGetRedirectUrlFoundRedirectInSession()
@@ -1054,7 +1054,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array('redirect' => 'http://example.com/path/to/redirect');
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('redirect' => 'http://example.com/path/to/redirect');
         $this->assertEquals('http://example.com/path/to/redirect', $personaClient->getRedirectUrl());
     }
 
@@ -1079,7 +1079,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array();
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->isSuperUser());
     }
     function testIsSuperUserNoEmailInProfile()
@@ -1091,7 +1091,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array('profile' => array());
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('profile' => array());
         $this->assertFalse($personaClient->isSuperUser());
     }
     function testIsSuperUserNotATalisUser()
@@ -1103,7 +1103,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'noone@example.com'));
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('profile' => array('email' => 'noone@example.com'));
         $this->assertFalse($personaClient->isSuperUser());
     }
     function testIsSuperUserTalisDotComBeforeAtSymbol()
@@ -1115,7 +1115,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'talis.com@example.com'));
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('profile' => array('email' => 'talis.com@example.com'));
         $this->assertFalse($personaClient->isSuperUser());
     }
     function testIsSuperUserTalisDotComAfterAtSymbolButWithExtra()
@@ -1127,7 +1127,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'test@br.talis.com'));
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('profile' => array('email' => 'test@br.talis.com'));
         $this->assertFalse($personaClient->isSuperUser());
     }
     function testIsSuperUserTalisDotComAfterAtSymbolButWithExtra2()
@@ -1139,7 +1139,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'test@talis.com.br'));
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('profile' => array('email' => 'test@talis.com.br'));
         $this->assertFalse($personaClient->isSuperUser());
     }
     function testIsSuperUserTalisDotCom()
@@ -1151,7 +1151,7 @@ class PersonaClientTest extends TestBase {
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
-        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'test@talis.com'));
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginSSO'] = array('profile' => array('email' => 'test@talis.com'));
         $this->assertTrue($personaClient->isSuperUser());
     }
 }
