@@ -339,39 +339,71 @@ class PersonaClient {
      * Require authentication on your route
      * @param string $provider
      * @param string $appId
+     * @param string $appSecret
+     * @param string $redirectUri Origin of the request - used to send a user back to where they originated from
      * @access public
-     * @return void
+     * @return mixed
+     * @throws \InvalidArgumentException
      */
-    public function requireAuth($provider, $appId, $appSecret)
+    public function requireAuth($provider, $appId, $appSecret, $redirectUri = '')
     {
-        $_SESSION[self::LOGIN_PREFIX.':loginAppId'] = $appId;
-        $_SESSION[self::LOGIN_PREFIX.':loginProvider'] = $provider;
-        $_SESSION[self::LOGIN_PREFIX.':loginAppSecret'] = $appSecret;
-
         // Already authenticated
         if($this->isLoggedIn())
         {
             return;
         }
 
+        if(!is_string($provider))
+        {
+            throw new \InvalidArgumentException("Invalid provider");
+        }
+        if(!is_string($appId))
+        {
+            throw new \InvalidArgumentException("Invalid appId");
+        }
+        if(!is_string($appSecret))
+        {
+            throw new \InvalidArgumentException("Invalid appSecret");
+        }
+        if($redirectUri !== '' && !is_string($redirectUri))
+        {
+            throw new \InvalidArgumentException("Invalid redirectUri");
+        }
+
+        $_SESSION[self::LOGIN_PREFIX.':loginAppId'] = $appId;
+        $_SESSION[self::LOGIN_PREFIX.':loginProvider'] = $provider;
+        $_SESSION[self::LOGIN_PREFIX.':loginAppSecret'] = $appSecret;
+
         // Login
-        $this->login();
+        $this->login($redirectUri);
     }
 
     /**
-     * Authenticate a route
+     * Authenticate a callback route
      * @access public
      * @return bool
      */
     public function authenticate()
     {
-        if(isset($_REQUEST['persona:payload']))
+        if(isset($_POST['persona:payload']))
         {
-            $payload = json_decode(base64_decode($_REQUEST['persona:payload']),true);
+            $payload = json_decode(base64_decode($_POST['persona:payload']),true);
 
-            if(!isset($_SESSION[self::LOGIN_PREFIX.':loginState']) || $payload['state'] !==  $_SESSION[self::LOGIN_PREFIX.':loginState'])
+            // Check for invalid payload strings
+            if(!$payload || !is_array($payload))
+            {
+                return false;
+            }
+
+            if(!isset($_SESSION[self::LOGIN_PREFIX.':loginState']) || !isset($payload['state']) || $payload['state'] !==  $_SESSION[self::LOGIN_PREFIX.':loginState'])
             {
                 // Error with state - not authenticated
+                unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+                return false;
+            }
+
+            if(!isset($payload['signature']))
+            {
                 unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
                 return false;
             }
@@ -391,11 +423,11 @@ class PersonaClient {
 
             // Final step - validate the token
             $_SESSION[self::LOGIN_PREFIX.':loginSSO'] = array(
-                'token' => $payload['token'] ? $payload['token'] : false,
-                'guid' => $payload['guid'] ? $payload['guid'] : '',
-                'gupid' => $payload['gupid'] ? $payload['gupid'] : array(),
-                'profile' => $payload['profile'] ? $payload['profile'] : array(),
-                'redirect' => $payload['redirect'] ? $payload['redirect'] : ''
+                'token' => isset($payload['token']) ? $payload['token'] : false,
+                'guid' => isset($payload['guid']) ? $payload['guid'] : '',
+                'gupid' => isset($payload['gupid']) ? $payload['gupid'] : array(),
+                'profile' => isset($payload['profile']) ? $payload['profile'] : array(),
+                'redirect' => isset($payload['redirect']) ? $payload['redirect'] : ''
             );
 
             if($this->isLoggedIn())
@@ -407,7 +439,7 @@ class PersonaClient {
     }
 
     /**
-     * Get persistent ID
+     * Get users persistent ID - it finds a persistent ID that matches the login provider
      * @access public
      * @return mixed
      */
@@ -439,6 +471,21 @@ class PersonaClient {
         {
             return $_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect'];
         }
+    }
+
+    /**
+     * Checks if a user is a superuser based on whether they have a talis.com email address. This could and should be
+     * extended to check for the right scope/attributes returned
+     * @return bool
+     */
+    public function isSuperUser()
+    {
+        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']) && isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['profile']) &&
+            preg_match('/(.*)@talis.com$/', $_SESSION[self::LOGIN_PREFIX.':loginSSO']['profile']['email']))
+        {
+            return true;
+        }
+        return false;
     }
 
     /* Protected functions */
@@ -699,34 +746,48 @@ class PersonaClient {
         }
     }
 
+    /**
+     * Check if a user is logged in based on whether session variables exist
+     * @access protected
+     * @return bool
+     */
     protected function isLoggedIn()
     {
         if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']))
         {
-            // Validate the token
-            if($this->validateToken(array('access_token' => $_SESSION[self::LOGIN_PREFIX.':loginSSO']['token']['access_token'])))
-            {
-                // Valid token - all is ok
-                return true;
-            } else
-            {
-                // @todo Revalidate a token
-            }
+            return true;
         }
 
         // Not logged in
         return false;
     }
 
-    protected function login()
+    /**
+     * Perform a Persona login to the login provider of choice
+     * @param string $redirectUri
+     * @access protected
+     */
+    protected function login($redirectUri = '')
     {
         // Create a uniq ID for state - prefixed with md5 hash of app ID
         $loginState = uniqid(md5($_SESSION[self::LOGIN_PREFIX.':loginAppId'])."::", true);
+
         // Save login state in session
         $_SESSION[self::LOGIN_PREFIX.':loginState'] = $loginState;
 
         // Log user in
-        header("Location: ".$this->config['persona_host'].'/auth/providers/'.$_SESSION[self::LOGIN_PREFIX.':loginProvider'].'/login'.'?redirectUri='.getenv('DRP_HOST').$_SERVER['REDIRECT_URL'].'&state='.$loginState.'&app='.$_SESSION[self::LOGIN_PREFIX.':loginAppId']);
+        $redirect = $this->config['persona_host'].'/auth/providers/'.$_SESSION[self::LOGIN_PREFIX.':loginProvider'].'/login';
+        $query = array();
+        if($redirectUri !== '')
+        {
+            $query['redirectUri'] = $redirectUri;
+        }
+        $query['state'] = $loginState;
+        $query['app'] = $_SESSION[self::LOGIN_PREFIX.':loginAppId'];
+
+        $redirect .= '?'.http_build_query($query);
+
+        header("Location: ".$redirect);
         exit;
     }
 }

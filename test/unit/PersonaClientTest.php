@@ -540,4 +540,370 @@ class PersonaClientTest extends TestBase {
         $this->assertEquals('max@payne.com', $users[0]['profile']['email']);
         $this->assertEquals('Max Payne', $users[0]['profile']['name']);
     }
+
+    // requireAuth tests
+    function testRequireAuthNoProvider()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Missing argument 1 for personaclient\PersonaClient::requireAuth()');
+
+        set_error_handler(function ($errno, $errstr, $errfile, $errline)
+        {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    '%s %s %s',
+                    $errstr,
+                    $errfile,
+                    $errline
+                )
+            );
+        });
+
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->requireAuth();
+    }
+    function testRequireAuthInvalidProvider()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid provider');
+
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->requireAuth(array('test'), 'appid', 'appsecret');
+    }
+    function testRequireAuthNoAppId()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Missing argument 2 for personaclient\PersonaClient::requireAuth()');
+
+        set_error_handler(function ($errno, $errstr, $errfile, $errline)
+        {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    '%s %s %s',
+                    $errstr,
+                    $errfile,
+                    $errline
+                )
+            );
+        });
+
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->requireAuth('trapdoor');
+    }
+    function testRequireAuthInvalidAppId()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid appId');
+
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->requireAuth('trapdoor', array('appid'), 'appsecret');
+    }
+    function testRequireAuthNoAppSecret()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Missing argument 3 for personaclient\PersonaClient::requireAuth()');
+
+        set_error_handler(function ($errno, $errstr, $errfile, $errline)
+        {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    '%s %s %s',
+                    $errstr,
+                    $errfile,
+                    $errline
+                )
+            );
+        });
+
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->requireAuth('trapdoor', 'appId');
+    }
+    function testRequireAuthInvalidAppSecret()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid appSecret');
+
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->requireAuth('trapdoor', 'appid', array('appsecret'));
+    }
+    function testRequireAuthNoRedirectUri()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('login'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('login')
+            ->will($this->returnValue(null));
+
+        $mockClient->requireAuth('trapdoor', 'appid', 'appsecret');
+        $this->assertEquals('appid', $_SESSION['PERSONA:loginAppId']);
+        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
+        $this->assertEquals('trapdoor', $_SESSION['PERSONA:loginProvider']);
+    }
+    function testRequireAuthInvalidRedirectUri()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid redirectUri');
+
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->requireAuth('trapdoor', 'appid', 'appsecret', array('redirectUri'));
+    }
+    function testRequireAuthWithRedirectUri()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('login'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('login')
+            ->will($this->returnValue(null));
+
+        $mockClient->requireAuth('trapdoor', 'appid', 'appsecret', 'redirecturi');
+
+        $this->assertEquals('appid', $_SESSION['PERSONA:loginAppId']);
+        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
+        $this->assertEquals('trapdoor', $_SESSION['PERSONA:loginProvider']);
+    }
+    function testRequireAuthAlreadyLoggedIn()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('isLoggedIn', 'login'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('isLoggedIn')
+            ->will($this->returnValue(true));
+        $mockClient->expects($this->never())
+            ->method('login');
+
+        $mockClient->requireAuth('trapdoor', 'appid', 'appsecret');
+        $this->assertFalse(isset($_SESSION));
+    }
+    function testRequireAuthNotAlreadyLoggedIn()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('isLoggedIn', 'login'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('isLoggedIn')
+            ->will($this->returnValue(false));
+        $mockClient->expects($this->once())
+            ->method('login')
+            ->will($this->returnValue(true));
+
+        $mockClient->requireAuth('trapdoor', 'appid', 'appsecret', 'redirect');
+
+        $this->assertEquals('appid', $_SESSION['PERSONA:loginAppId']);
+        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
+        $this->assertEquals('trapdoor', $_SESSION['PERSONA:loginProvider']);
+    }
+
+    // authenticate tests
+    function testAuthenticateNoPayload()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $this->assertFalse($personaClient->authenticate());
+    }
+
+    function testAuthenticatePayloadIsAString()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_POST['persona:payload'] = 'YouShallNotPass';
+        $this->assertFalse($personaClient->authenticate());
+    }
+    function testAuthenticatePayloadDoesNotContainState()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginState'] = 'Tennessee';
+        $_POST['persona:payload'] = base64_encode(json_encode(array('test' => 'YouShallNotPass')));
+        $this->assertFalse($personaClient->authenticate());
+    }
+    function testAuthenticatePayloadDoesNotContainSignature()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginState'] = 'Tennessee';
+        $_POST['persona:payload'] = base64_encode(json_encode(array('state' => 'Tennessee')));
+        $this->assertFalse($personaClient->authenticate());
+    }
+    function testAuthenticatePayloadMismatchingSignature()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginState'] = 'Tennessee';
+        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $payload = array(
+            'state' => 'Tennessee'
+        );
+        $signature = hash_hmac("sha256", json_encode($payload), 'notmyappsecret');
+        $payload['signature'] = $signature;
+
+        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $this->assertFalse($personaClient->authenticate());
+    }
+
+    function testAuthenticatePayloadContainsStateAndSignatureNoOtherPayload()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginState'] = 'Tennessee';
+        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $payload = array(
+            'state' => 'Tennessee'
+        );
+        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
+        $payload['signature'] = $signature;
+
+        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $this->assertTrue($personaClient->authenticate());
+
+        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
+        $this->assertArrayHasKey('PERSONA:loginSSO', $_SESSION);
+        $this->assertArrayHasKey('token', $_SESSION['PERSONA:loginSSO']);
+        $this->assertArrayHasKey('guid', $_SESSION['PERSONA:loginSSO']);
+        $this->assertArrayHasKey('gupid', $_SESSION['PERSONA:loginSSO']);
+        $this->assertArrayHasKey('profile', $_SESSION['PERSONA:loginSSO']);
+        $this->assertArrayHasKey('redirect', $_SESSION['PERSONA:loginSSO']);
+    }
+
+    function testAuthenticatePayloadContainsStateAndSignatureFullPayload()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginState'] = 'Tennessee';
+        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $payload = array(
+            'token' => array(
+                'access_token' => '987',
+                'expires_in' => 1800,
+                'token_type' => 'bearer',
+                'scope' => array(
+                    '919191'
+                )
+            ),
+            'guid' => '123',
+            'gupid' => array('trapdoor:123'),
+            'profile' => array(
+                'name' => 'Alex Murphy',
+                'email' => 'alexmurphy@detroit.pd'
+            ),
+            'redirect' => 'http://example.com/wherever',
+            'state' => 'Tennessee'
+        );
+        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
+        $payload['signature'] = $signature;
+
+        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $this->assertTrue($personaClient->authenticate());
+
+        $this->assertEquals('appsecret', $_SESSION['PERSONA:loginAppSecret']);
+        $this->assertArrayHasKey('PERSONA:loginSSO', $_SESSION);
+        $this->assertArrayHasKey('token', $_SESSION['PERSONA:loginSSO']);
+        $this->assertEquals('987', $_SESSION['PERSONA:loginSSO']['token']['access_token']);
+        $this->assertEquals(1800, $_SESSION['PERSONA:loginSSO']['token']['expires_in']);
+        $this->assertEquals('bearer', $_SESSION['PERSONA:loginSSO']['token']['token_type']);
+        $this->assertEquals('919191', $_SESSION['PERSONA:loginSSO']['token']['scope'][0]);
+        $this->assertEquals('123', $_SESSION['PERSONA:loginSSO']['guid']);
+        $this->assertEquals('trapdoor:123', $_SESSION['PERSONA:loginSSO']['gupid'][0]);
+        $this->assertArrayHasKey('profile', $_SESSION['PERSONA:loginSSO']);
+        $this->assertEquals('Alex Murphy', $_SESSION['PERSONA:loginSSO']['profile']['name']);
+        $this->assertEquals('alexmurphy@detroit.pd', $_SESSION['PERSONA:loginSSO']['profile']['email']);
+        $this->assertEquals('http://example.com/wherever', $_SESSION['PERSONA:loginSSO']['redirect']);
+    }
+
+    // test getPersistentId
+
+    // test getRedirectUrl
+
+    // test isSuperUser
+
+
+
 }
