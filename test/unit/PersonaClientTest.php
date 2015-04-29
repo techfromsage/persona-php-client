@@ -897,13 +897,261 @@ class PersonaClientTest extends TestBase {
         $this->assertEquals('alexmurphy@detroit.pd', $_SESSION['PERSONA:loginSSO']['profile']['email']);
         $this->assertEquals('http://example.com/wherever', $_SESSION['PERSONA:loginSSO']['redirect']);
     }
+    function testAuthenticatePayloadContainsStateAndSignatureFullPayloadCheckLoginIsCalled()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('isLoggedIn'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('isLoggedIn')
+            ->will($this->returnValue(true));
 
-    // test getPersistentId
+        $_SESSION['PERSONA:loginState'] = 'Tennessee';
+        $_SESSION['PERSONA:loginAppSecret'] = 'appsecret';
+        $payload = array(
+            'token' => array(
+                'access_token' => '987',
+                'expires_in' => 1800,
+                'token_type' => 'bearer',
+                'scope' => array(
+                    '919191'
+                )
+            ),
+            'guid' => '123',
+            'gupid' => array('trapdoor:123'),
+            'profile' => array(
+                'name' => 'Alex Murphy',
+                'email' => 'alexmurphy@detroit.pd'
+            ),
+            'redirect' => 'http://example.com/wherever',
+            'state' => 'Tennessee'
+        );
+        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
+        $payload['signature'] = $signature;
 
-    // test getRedirectUrl
+        $_POST['persona:payload'] = base64_encode(json_encode($payload));
 
-    // test isSuperUser
+        $mockClient->authenticate();
+    }
 
+    // getPersistentId tests
+    function testGetPersistentIdNoSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $this->assertFalse($personaClient->getPersistentId());
+    }
+    function testGetPersistentIdNoGupidInSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array();
+        $this->assertFalse($personaClient->getPersistentId());
+    }
+    function testGetPersistentIdNoLoginProviderInSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array();
+        $this->assertFalse($personaClient->getPersistentId());
+    }
+    function testGetPersistentIdEmptyGupids()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginProvider'] = 'trapdoor';
+        $_SESSION['PERSONA:loginSSO'] = array('gupid' => array());
 
+        $this->assertFalse($personaClient->getPersistentId());
+    }
+    function testGetPersistentIdNoMatchingGupid()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginProvider'] = 'trapdoor';
+        $_SESSION['PERSONA:loginSSO'] = array('gupid' => array(
+            'google:123',
+            'twitter:456'
+        ));
+        $this->assertFalse($personaClient->getPersistentId());
+    }
+    function testGetPersistentIdFoundMatchingGupid()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginProvider'] = 'trapdoor';
+        $_SESSION['PERSONA:loginSSO'] = array('gupid' => array(
+            'google:123',
+            'trapdoor:456'
+        ));
+        $this->assertEquals('456', $personaClient->getPersistentId());
+    }
 
+    // getRedirectUrl tests
+    function testGetRedirectUrlNoSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $this->assertFalse($personaClient->getRedirectUrl());
+    }
+    function testGetRedirectUrlNoRedirectInSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array();
+        $this->assertFalse($personaClient->getRedirectUrl());
+    }
+    function testGetRedirectUrlFoundRedirectInSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array('redirect' => 'http://example.com/path/to/redirect');
+        $this->assertEquals('http://example.com/path/to/redirect', $personaClient->getRedirectUrl());
+    }
+
+    // isSuperUser tests
+    function testIsSuperUserNoSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $this->assertFalse($personaClient->isSuperUser());
+    }
+    function testIsSuperUserNoProfileInSession()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array();
+        $this->assertFalse($personaClient->isSuperUser());
+    }
+    function testIsSuperUserNoEmailInProfile()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array('profile' => array());
+        $this->assertFalse($personaClient->isSuperUser());
+    }
+    function testIsSuperUserNotATalisUser()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'noone@example.com'));
+        $this->assertFalse($personaClient->isSuperUser());
+    }
+    function testIsSuperUserTalisDotComBeforeAtSymbol()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'talis.com@example.com'));
+        $this->assertFalse($personaClient->isSuperUser());
+    }
+    function testIsSuperUserTalisDotComAfterAtSymbolButWithExtra()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'test@br.talis.com'));
+        $this->assertFalse($personaClient->isSuperUser());
+    }
+    function testIsSuperUserTalisDotComAfterAtSymbolButWithExtra2()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'test@talis.com.br'));
+        $this->assertFalse($personaClient->isSuperUser());
+    }
+    function testIsSuperUserTalisDotCom()
+    {
+        $personaClient = new \personaclient\PersonaClient(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $_SESSION['PERSONA:loginSSO'] = array('profile' => array('email' => 'test@talis.com'));
+        $this->assertTrue($personaClient->isSuperUser());
+    }
 }

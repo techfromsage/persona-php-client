@@ -445,6 +445,10 @@ class PersonaClient {
      */
     public function getPersistentId()
     {
+        if(!isset($_SESSION[self::LOGIN_PREFIX.':loginProvider']))
+        {
+            return false;
+        }
         if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid']) && !empty($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid']))
         {
             // Loop through all gupids and match against the login provider - it should be
@@ -471,6 +475,7 @@ class PersonaClient {
         {
             return $_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect'];
         }
+        return false;
     }
 
     /**
@@ -481,6 +486,7 @@ class PersonaClient {
     public function isSuperUser()
     {
         if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']) && isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['profile']) &&
+            isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['profile']['email']) &&
             preg_match('/(.*)@talis.com$/', $_SESSION[self::LOGIN_PREFIX.':loginSSO']['profile']['email']))
         {
             return true;
