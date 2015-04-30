@@ -938,6 +938,58 @@ class PersonaClientTest extends TestBase {
         $mockClient->authenticate();
     }
 
+    function testAuthenticateAfterRequireAuth()
+    {
+        $mockClient = $this->getMock('\personaclient\PersonaClient',array('isLoggedIn', 'login'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->exactly(2))
+            ->method('isLoggedIn')
+            ->will($this->onConsecutiveCalls(false, true));
+
+        $mockClient->expects($this->once())
+            ->method('login')
+            ->will($this->returnValue(array('guid' => '123')));
+
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_SESSION[\personaclient\PersonaClient::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
+
+        $mockClient->requireAuth('trapdoor', 'appid', 'appsecret');
+
+        $payload = array(
+            'token' => array(
+                'access_token' => '987',
+                'expires_in' => 1800,
+                'token_type' => 'bearer',
+                'scope' => array(
+                    '919191'
+                )
+            ),
+            'guid' => '123',
+            'gupid' => array('trapdoor:123'),
+            'profile' => array(
+                'name' => 'Alex Murphy',
+                'email' => 'alexmurphy@detroit.pd'
+            ),
+            'redirect' => 'http://example.com/wherever',
+            'state' => 'Tennessee'
+        );
+        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
+        $payload['signature'] = $signature;
+
+        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+
+        $this->assertTrue($mockClient->authenticate());
+
+        $this->assertEquals('123', $mockClient->getPersistentId());
+        $this->assertFalse($mockClient->isSuperUser());
+        $this->assertEquals('http://example.com/wherever', $mockClient->getRedirectUrl());
+    }
+
     // getPersistentId tests
     function testGetPersistentIdNoSession()
     {
