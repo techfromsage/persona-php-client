@@ -56,18 +56,14 @@ class Login extends PersonaClient{
      */
     public function validateAuth()
     {
-        if(isset($_POST['persona:payload']))
+        if(isset($_POST[self::LOGIN_PREFIX.':payload']))
         {
-            $payload = json_decode(base64_decode($_POST['persona:payload']),true);
+            $payload = json_decode(base64_decode($_POST[self::LOGIN_PREFIX.':payload']),true);
 
             // Check for invalid payload strings
-            if(!$payload)
+            if(!$payload || !is_array($payload))
             {
-                throw new \Exception('Payload is not set');
-            }
-            if(!is_array($payload))
-            {
-                throw new \Exception('Payload is not an array');
+                throw new \Exception('Payload not set');
             }
 
             if(!isset($_SESSION[self::LOGIN_PREFIX.':loginState']) || !isset($payload['state']) || $payload['state'] !==  $_SESSION[self::LOGIN_PREFIX.':loginState'])
@@ -109,6 +105,8 @@ class Login extends PersonaClient{
             {
                 return true;
             }
+        } else{
+            throw new \Exception('Payload not set');
         }
     }
 
