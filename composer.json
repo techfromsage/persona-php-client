@@ -1,29 +1,27 @@
 {
-	"name": "talis/persona-php-client",
-	"description": "This is a php client library for Persona supporting generation, validation and caching of Oauth Tokens",
-	"keywords": ["persona", "php", "client library"],
-	"homepage": "https://github.com/talis/persona-php-client",
-	"type": "library",
-	"license": "MIT",
-	"authors":[
-		{
-			"name":"Nadeem Shabir",
-			"email": "ns@talis.com",
-			"homepage":"http://engineering.talis.com"
-		}
-	],
-	"require":{
-		"php": ">=5.3.0",
-		"monolog/monolog": "~1.5",
-        	"predis/predis"  : "v0.8.5",
-        	"domnikl/statsd": "~1.0.2"
-	},
-	"require-dev":{
-		"phpunit/phpunit": "4.2.0"
-	},
-	"autoload":{
-		"psr-0": {
-            		"personaclient": "src"
-	        }
-	}
+  "name": "talis/persona-php-client",
+  "description": "This is a php client library for Persona supporting generation, validation and caching of Oauth Tokens",
+  "keywords": ["persona", "php", "client library"],
+  "homepage": "https://github.com/talis/persona-php-client",
+  "type": "library",
+  "license": "MIT",
+  "authors":[
+    {
+      "name":"Nadeem Shabir",
+      "email": "ns@talis.com",
+      "homepage":"http://engineering.talis.com"
+    }
+  ],
+  "require":{
+    "php": ">=5.3.0",
+    "monolog/monolog": "~1.5",
+    "predis/predis"  : "v0.8.5",
+    "domnikl/statsd": "~1.0.2"
+  },
+  "require-dev":{
+    "phpunit/phpunit": "4.2.0"
+  },
+  "autoload":{
+    "psr-0": {"Talis": "src/"}
+  }
 }
