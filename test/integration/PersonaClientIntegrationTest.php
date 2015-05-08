@@ -19,7 +19,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
     function setUp(){
         parent::setUp();
-        $this->personaClient = new personaclient\PersonaClient(array(
+        $this->personaClient = new personaclient\Tokens(array(
             'persona_host' => 'http://persona',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -102,9 +102,9 @@ class PersonaClientIntegrationTest extends TestBase {
         $token = $tokenDetails['access_token'];
 
         // first validation call is validated by persona
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken(array("access_token"=>$token)));
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_PERSONA, $this->personaClient->validateToken(array("access_token"=>$token)));
         // second validation call should be validated by the cache
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken(array("access_token"=>$token)));
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_CACHE, $this->personaClient->validateToken(array("access_token"=>$token)));
     }
 
     function testValidateTokenInGET(){
@@ -116,9 +116,9 @@ class PersonaClientIntegrationTest extends TestBase {
         $_GET = array('access_token' => $token);
 
         // first validation call is validated by persona
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
         // second validation call should be validated by the cache
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
     }
 
     function testValidateTokenInPOST(){
@@ -129,9 +129,9 @@ class PersonaClientIntegrationTest extends TestBase {
 
         $_POST = array('access_token' => $token);
         // first validation call is validated by persona
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
         // second validation call should be validated by the cache
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
     }
 
 
@@ -144,9 +144,9 @@ class PersonaClientIntegrationTest extends TestBase {
         $_SERVER = array("HTTP_BEARER" => "Bearer " . $token);
 
         // first validation call is validated by persona
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
         // second validation call should be validated by the cache
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_CACHE, $this->personaClient->validateToken());
     }
 
     function testValidateTokenInSERVERThrowsMalformedException(){
@@ -159,7 +159,7 @@ class PersonaClientIntegrationTest extends TestBase {
 
         $this->setExpectedException('Exception', 'Malformed auth header');
         // first validation call is validated by persona
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_PERSONA, $this->personaClient->validateToken());
     }
 
     function testValidateScopedToken(){
@@ -169,9 +169,9 @@ class PersonaClientIntegrationTest extends TestBase {
         $token = $tokenDetails['access_token'];
 
         // first validation call is validated by persona
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_PERSONA, $this->personaClient->validateToken(array("access_token"=>$token, "scope"=>"primate")));
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_PERSONA, $this->personaClient->validateToken(array("access_token"=>$token, "scope"=>"primate")));
         // second validation call should be validated by the cache
-        $this->assertEquals(personaClient\PersonaClient::VERIFIED_BY_CACHE, $this->personaClient->validateToken(array("access_token"=>$token, "scope"=>"primate")));
+        $this->assertEquals(personaClient\Tokens::VERIFIED_BY_CACHE, $this->personaClient->validateToken(array("access_token"=>$token, "scope"=>"primate")));
 
     }
 }

@@ -26,15 +26,20 @@ then update composer:
 $ php composer.phar update
 ```
 
-To use the module in your code do the following
+To use the module in your code, instantiate one of the following:
+```new \personaclient\Tokens``` - for token based Persona calls
+```new \personaclient\Login``` - for login workflow calls
+
+### Token based calls
+
 ```php
 // create an instance of the client
-$personaClient = new \personaclient\PersonaClient(array(
+$personaClient = new \personaclient\Tokens(array(
     'persona_host' => 'http://persona',
     'persona_oauth_route' => '/oauth/tokens',
     'tokencache_redis_host' => 'localhost',
     'tokencache_redis_port' => 6379,
-    'tokencache_redis_db' => 2,
+    'tokencache_redis_db' => 2
 ));
 
 // you can use it to obtain a new token
@@ -55,6 +60,36 @@ $tokenDetails = $personaClient->obtainNewToken(
   "your client secret", 
   array('useCookies'=>false)
 );
+```
+
+### Login based calls
+
+```
+// create an instance of the client
+$personaClient = new \personaclient\Login(array(
+    'persona_host' => 'http://persona',
+    'persona_oauth_route' => '/oauth/tokens',
+    'tokencache_redis_host' => 'localhost',
+    'tokencache_redis_port' => 6379,
+    'tokencache_redis_db' => 2
+));
+
+// you can use it to login
+// Create a persona application first (see persona server API docs http://docs.talispersona.apiary.io/#applications).
+// Pass through the login provider, app ID, the app secret (returned when you create an application) and the URL
+// that you want the end user to be redirected back after a successful login.
+$personaClient->requireAuth('google', 'app_id', 'app_secret', 'http://example.com/account');
+
+// When you create a persona application, you also specify the callback URL for the app - when this URL is called back from Persona, you
+// can validate the callback.
+if($personaClient->validateAuth())
+{
+    // Get user persistent ID
+    $persistentId = $personaClient->getPersistentId());
+
+    // Get URL to redirect a user back to once authentication passes
+    $redirectUri = $personaClient->getRedirectUrl();
+}
 ```
 
 If you would like to report stats, set the following environment variables:
