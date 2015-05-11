@@ -1,5 +1,7 @@
 <?php
 
+use Talis\Persona\Client\Tokens;
+
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT'))
 {
@@ -8,27 +10,27 @@ if (!defined('APPROOT'))
 
 require_once $appRoot . '/test/unit/TestBase.php';
 
-class PersonaClientTest extends TestBase {
+class TokenTest extends TestBase {
 
     function testEmptyConfigThrowsException(){
         $this->setExpectedException('InvalidArgumentException',
             'No config provided to Persona Client'
         );
-        $personaClient = new personaclient\PersonaClient(array());
+        $personaClient = new Tokens(array());
     }
 
     function testNullConfigThrowsException(){
         $this->setExpectedException('InvalidArgumentException',
             'No config provided to Persona Client'
         );
-        $personaClient = new personaclient\PersonaClient(null);
+        $personaClient = new Tokens(null);
     }
 
     function testMissingRequiredConfigParamsThrowsException(){
         $this->setExpectedException('InvalidArgumentException',
             'Config provided does not contain values for: persona_host,persona_oauth_route,tokencache_redis_host,tokencache_redis_port,tokencache_redis_db'
         );
-        $personaClient = new personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => null,
             'persona_oauth_route' => null,
             'tokencache_redis_host' => null,
@@ -38,7 +40,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testValidConfigDoesNotThrowException(){
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -51,7 +53,7 @@ class PersonaClientTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException',
             'No url provided to sign'
         );
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -68,7 +70,7 @@ class PersonaClientTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException',
             'No secret provided to sign with'
         );
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -82,7 +84,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlNoExpiry() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -96,7 +98,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlNoExpiryAnchor() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -115,7 +117,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlNoExpiryExistingQueryString() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -130,7 +132,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlNoExpiryAnchorExistingQueryString() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -149,7 +151,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlWithExpiry() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -162,7 +164,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlWithExpiryAnchor() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -175,7 +177,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlWithExpiryExistingQuerystring() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -188,7 +190,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testPresignUrlWithExpiryAnchorExistingQuerystring() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -201,7 +203,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testIsPresignedUrlValidTimeInFuture() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -215,7 +217,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testIsPresignedUrlValidTimeInFutureExistingParams() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -229,7 +231,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testIsPresignedUrlValidTimeInFutureExistingParamsAnchor() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -243,7 +245,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testIsPresignedUrlValidTimeInPastExistingParamsAnchor() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -257,7 +259,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testIsPresignedUrlValidRemoveExpires() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -273,7 +275,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testIsPresignedUrlValidRemoveSig() {
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -289,7 +291,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testUseCacheFalseOnObtainToken() {
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -304,7 +306,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testUseCacheTrueOnObtainToken() {
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -323,7 +325,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testUseCacheDefaultTrueOnObtainToken() {
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -342,7 +344,7 @@ class PersonaClientTest extends TestBase {
     }
 
     function testUseCacheNotInCacheObtainToken() {
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('getCacheClient','personaObtainNewToken','cacheToken'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken','cacheToken'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -366,7 +368,7 @@ class PersonaClientTest extends TestBase {
 
     function testGetUserByGupidEmptyGupidThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -377,7 +379,7 @@ class PersonaClientTest extends TestBase {
     }
     function testGetUserByGupidEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -388,7 +390,7 @@ class PersonaClientTest extends TestBase {
     }
     function testGetUserByGupidInvalidTokenThrowsException(){
         $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -400,7 +402,7 @@ class PersonaClientTest extends TestBase {
     function testGetUserByGupidThrowsExceptionWhenGupidNotFound()
     {
         $this->setExpectedException('Exception', 'User profile not found');
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -415,7 +417,7 @@ class PersonaClientTest extends TestBase {
     }
     function testGetUserByGupidReturnsUserWhenGupidFound()
     {
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -454,7 +456,7 @@ class PersonaClientTest extends TestBase {
 
     function testGetUserByGuidsInvalidGuidsThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid guids');
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -465,7 +467,7 @@ class PersonaClientTest extends TestBase {
     }
     function testGetUserByGuidsEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -476,7 +478,7 @@ class PersonaClientTest extends TestBase {
     }
     function testGetUserByGuidsInvalidTokenThrowsException(){
         $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
-        $personaClient = new \personaclient\PersonaClient(array(
+        $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -488,7 +490,7 @@ class PersonaClientTest extends TestBase {
     function testGetUserByGuidsThrowsExceptionWhenGuidsNotFound()
     {
         $this->setExpectedException('Exception', 'User profiles not found');
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -503,7 +505,7 @@ class PersonaClientTest extends TestBase {
     }
     function testGetUserByGuidsReturnsUserWhenGuidsFound()
     {
-        $mockClient = $this->getMock('\personaclient\PersonaClient',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
