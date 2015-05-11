@@ -16,7 +16,7 @@ Install the module via composer, by adding the following to your projects ``comp
         },
     ],
     "require" :{
-        "talis/persona-php-client": "0.2.6"
+        "talis/persona-php-client": "0.3.0"
     }
 }
 ```
@@ -27,14 +27,14 @@ $ php composer.phar update
 ```
 
 To use the module in your code, instantiate one of the following:
-```new \personaclient\Tokens``` - for token based Persona calls
-```new \personaclient\Login``` - for login workflow calls
+```new Talis\Persona\Client\Tokens``` - for token based Persona calls
+```new Talis\Persona\Client\Login``` - for login workflow calls
 
 ### Token based calls
 
 ```php
 // create an instance of the client
-$personaClient = new \personaclient\Tokens(array(
+$personaClient = new Talis\Persona\Client\Tokens(array(
     'persona_host' => 'http://persona',
     'persona_oauth_route' => '/oauth/tokens',
     'tokencache_redis_host' => 'localhost',
@@ -66,7 +66,7 @@ $tokenDetails = $personaClient->obtainNewToken(
 
 ```
 // create an instance of the client
-$personaClient = new \personaclient\Login(array(
+$personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'http://persona',
     'persona_oauth_route' => '/oauth/tokens',
     'tokencache_redis_host' => 'localhost',
@@ -81,11 +81,14 @@ $personaClient = new \personaclient\Login(array(
 $personaClient->requireAuth('google', 'app_id', 'app_secret', 'http://example.com/account');
 
 // When you create a persona application, you also specify the callback URL for the app - when this URL is called back from Persona, you
-// can validate the callback.
+// can validate it
 if($personaClient->validateAuth())
 {
     // Get user persistent ID
     $persistentId = $personaClient->getPersistentId());
+
+    // Get array of scopes the user has
+    $scopes = $personaClient->getScope();
 
     // Get URL to redirect a user back to once authentication passes
     $redirectUri = $personaClient->getRedirectUrl();
