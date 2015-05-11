@@ -1116,7 +1116,7 @@ class PersonaClientTest extends TestBase {
         $this->assertEquals('http://example.com/path/to/redirect', $personaClient->getRedirectUrl());
     }
 
-    // isSuperUser tests
+    // getScope tests
     function testGetScopeUserNoSession()
     {
         $personaClient = new Login(array(
