@@ -1,8 +1,8 @@
 <?php
 namespace Talis\Persona\Client;
 
-class PersonaClient {
-
+abstract class Base
+{
     const STATSD_CONN = 'STATSD_CONN';
     const STATSD_PREFIX = 'STATSD_PREFIX';
 

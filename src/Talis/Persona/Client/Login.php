@@ -1,7 +1,8 @@
 <?php
 namespace Talis\Persona\Client;
 
-class Login extends PersonaClient{
+class Login extends Base
+{
 
     const LOGIN_PREFIX = 'PERSONA';
 
@@ -155,7 +156,7 @@ class Login extends PersonaClient{
      * @access public
      * @return array|bool
      */
-    public function getScope()
+    public function getScopes()
     {
         if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']) && isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['token']) &&
             isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['token']['scope']))

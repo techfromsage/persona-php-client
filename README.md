@@ -88,7 +88,7 @@ if($personaClient->validateAuth())
     $persistentId = $personaClient->getPersistentId());
 
     // Get array of scopes the user has
-    $scopes = $personaClient->getScope();
+    $scopes = $personaClient->getScopes();
 
     // Get URL to redirect a user back to once authentication passes
     $redirectUri = $personaClient->getRedirectUrl();

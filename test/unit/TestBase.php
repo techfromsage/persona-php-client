@@ -4,7 +4,7 @@ if (!defined('APPROOT'))
     define('APPROOT', dirname(dirname(__DIR__)));
 }
 
-class TestBase extends PHPUnit_Framework_TestCase
+abstract class TestBase extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {

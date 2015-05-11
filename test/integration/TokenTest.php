@@ -12,7 +12,7 @@ if (!defined('APPROOT'))
 
 require_once $appRoot . '/test/unit/TestBase.php';
 
-class PersonaClientIntegrationTest extends TestBase {
+class TokenTest extends TestBase {
 
     /**
      * @var Talis\Persona\Client\Tokens

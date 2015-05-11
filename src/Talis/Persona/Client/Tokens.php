@@ -1,7 +1,7 @@
 <?php
 namespace Talis\Persona\Client;
 
-class Tokens extends PersonaClient
+class Tokens extends Base
 {
     const VERIFIED_BY_PERSONA   =  'verified_by_persona';
     const VERIFIED_BY_CACHE     =  'verified_by_cache';
