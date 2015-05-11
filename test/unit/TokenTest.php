@@ -1,7 +1,6 @@
 <?php
 
 use Talis\Persona\Client\Tokens;
-use Talis\Persona\Client\Login;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT'))
