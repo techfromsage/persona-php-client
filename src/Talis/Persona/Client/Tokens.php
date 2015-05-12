@@ -242,14 +242,7 @@ class Tokens extends Base
         try
         {
             $user = $this->personaGetUser($url, $token);
-            if(isset($user) && !empty($user))
-            {
-                return $user;
-            } else
-            {
-                throw new \Exception('User profile not found');
-            }
-
+            return $user;
         } catch(\Exception $e)
         {
             throw new \Exception('User profile not found');
@@ -279,13 +272,7 @@ class Tokens extends Base
         try
         {
             $users = $this->personaGetUser($url, $token);
-            if(isset($users) && !empty($users))
-            {
-                return $users;
-            } else
-            {
-                throw new \Exception('User profiles not found');
-            }
+            return $users;
         } catch(\Exception $e)
         {
             throw new \Exception('User profiles not found');
@@ -693,7 +680,7 @@ class Tokens extends Base
             return $responseDecoded;
         } else
         {
-            throw new \Exception($responseDecoded['error_description']);
+            throw new \Exception((isset($responseDecoded['error_description']) ? $responseDecoded['error_description'] : 'Could not retrieve OAuth response code'));
         }
     }
 }

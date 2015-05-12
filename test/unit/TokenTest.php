@@ -411,7 +411,7 @@ class TokenTest extends TestBase {
         )));
         $mockClient->expects($this->once())
             ->method('personaGetUser')
-            ->will($this->returnValue(false));
+            ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
 
         $mockClient->getUserByGupid('123', '456');
     }
@@ -499,7 +499,7 @@ class TokenTest extends TestBase {
         )));
         $mockClient->expects($this->once())
             ->method('personaGetUser')
-            ->will($this->returnValue(false));
+            ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
 
         $mockClient->getUserByGuids(array('HK-47'), '456');
     }
