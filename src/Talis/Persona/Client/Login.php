@@ -4,7 +4,7 @@ namespace Talis\Persona\Client;
 class Login extends Base
 {
 
-    const LOGIN_PREFIX = 'persona';
+    const LOGIN_PREFIX = 'PERSONA';
 
     /**
      * Require authentication on your route
@@ -57,9 +57,9 @@ class Login extends Base
      */
     public function validateAuth()
     {
-        if(isset($_POST[self::LOGIN_PREFIX.':payload']))
+        if(isset($_POST['persona:payload']))
         {
-            $payload = json_decode(base64_decode($_POST[self::LOGIN_PREFIX.':payload']),true);
+            $payload = json_decode(base64_decode($_POST['persona:payload']),true);
 
             // Check for invalid payload strings
             if(!$payload || !is_array($payload))
