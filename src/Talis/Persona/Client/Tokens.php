@@ -229,16 +229,20 @@ class Tokens extends Base
      * @throws \Exception
      */
     public function getUserByGupid($gupid, $token){
-        if(trim($gupid) === '')
+        if(!is_string($gupid) || trim($gupid) === '')
         {
             throw new \InvalidArgumentException("Invalid gupid");
         }
-        if(trim($token) === '')
+        if(!is_string($token) || trim($token) === '')
         {
             throw new \InvalidArgumentException("Invalid token");
         }
         $url = $this->config['persona_host'].'/users/?gupid='.$gupid;
-        $user = $this->personaGetUser($url, $token);
+
+        try
+        {
+            $user = $this->personaGetUser($url, $token);
+        } catch(\Exception $e){}
 
         if(isset($user) && !empty($user))
         {
@@ -264,12 +268,15 @@ class Tokens extends Base
         {
             throw new \InvalidArgumentException("Invalid guids");
         }
-        if(trim($token) === '')
+        if(!is_string($token) || trim($token) === '')
         {
             throw new \InvalidArgumentException("Invalid token");
         }
         $url = $this->config['persona_host'].'/users/?guids='.implode(',', $guids);
-        $users = $this->personaGetUser($url, $token);
+        try
+        {
+            $users = $this->personaGetUser($url, $token);
+        } catch(\Exception $e){}
 
         if(isset($users) && !empty($users))
         {
@@ -280,7 +287,88 @@ class Tokens extends Base
         }
     }
 
+    /**
+     * Create a user in Persona
+     * @param string $gupid
+     * @param array $profile
+     * @param string $token
+     * @return array
+     * @throws \Exception
+     */
+    public function createUser($gupid, $profile, $token)
+    {
+        if(!is_string($gupid) || trim($gupid) === '')
+        {
+            throw new \InvalidArgumentException('Invalid gupid');
+        }
+        if(!is_array($profile) || empty($profile))
+        {
+            throw new \InvalidArgumentException('Invalid profile');
+        }
+        if(!is_string($token) || trim($token) === '')
+        {
+            throw new \InvalidArgumentException('Invalid token');
+        }
 
+        $url = $this->config['persona_host'].'/users';
+        $query = array(
+            'gupid' => $gupid,
+            'profile' => $profile
+        );
+        try
+        {
+            $user = $this->personaPostUser($url, $query, $token);
+        } catch(\Exception $e){}
+
+        if(isset($user) && !empty($user))
+        {
+            return $user;
+        } else
+        {
+            throw new \Exception('User not created');
+        }
+    }
+
+    /**
+     * Update an existing user in Persona
+     * @param string $guid
+     * @param array $profile
+     * @param string $token
+     * @return mixed
+     * @throws \Exception
+     */
+    public function updateUser($guid, $profile, $token)
+    {
+        if(!is_string($guid) || trim($guid) === '')
+        {
+            throw new \InvalidArgumentException('Invalid guid');
+        }
+        if(!is_array($profile) || empty($profile))
+        {
+            throw new \InvalidArgumentException('Invalid profile');
+        }
+        if(!is_string($token) || trim($token) === '')
+        {
+            throw new \InvalidArgumentException('Invalid token');
+        }
+
+        $url = $this->config['persona_host'].'/users/'.$guid.'/profile';
+
+        try
+        {
+            $user = $this->personaPatchUser($url, $profile, $token);
+        } catch(\Exception $e)
+        {
+        }
+
+        if(isset($user) && !empty($user))
+        {
+            return $user;
+        } else
+        {
+            throw new \Exception('User not updated');
+        }
+    }
 
     /* Protected functions */
 
@@ -537,6 +625,80 @@ class Tokens extends Base
         } else
         {
             throw new \Exception("Could not retrieve OAuth response code");
+        }
+    }
+
+    /**
+     * Create a new user in Persona
+     * @param string $url
+     * @param array $query
+     * @param string $token
+     * @throws \Exception
+     * @return array
+     */
+    protected function personaPostUser($url, $query, $token)
+    {
+        $curlOptions = array(
+            CURLOPT_POST            => true,
+            CURLOPT_URL             => $url,
+            CURLOPT_FOLLOWLOCATION  => true,
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_TIMEOUT         => 30,
+            CURLOPT_POSTFIELDS      => json_encode($query),
+            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
+        );
+
+        $curl = curl_init();
+        curl_setopt_array($curl, $curlOptions);
+
+        $response = curl_exec($curl);
+        $headers = curl_getinfo($curl);
+        curl_close($curl);
+
+        if (isset($headers['http_code']) && $headers['http_code'] === 200)
+        {
+            return json_decode($response,true);
+        } else
+        {
+            throw new \Exception("Could not retrieve OAuth response code");
+        }
+    }
+
+    /**
+     * Patch a Persona user
+     * @param string $url
+     * @param array $query
+     * @param string $token
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function personaPatchUser($url, $query, $token)
+    {
+        $curlOptions = array(
+            CURLOPT_CUSTOMREQUEST   => 'PUT',
+            CURLOPT_URL             => $url,
+            CURLOPT_FOLLOWLOCATION  => true,
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_TIMEOUT         => 30,
+            CURLOPT_POSTFIELDS      => json_encode($query),
+            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
+        );
+
+        $curl = curl_init();
+        curl_setopt_array($curl, $curlOptions);
+
+        $response = curl_exec($curl);
+        $headers = curl_getinfo($curl);
+        curl_close($curl);
+
+        $responseDecoded = json_decode($response,true);
+
+        if (isset($headers['http_code']) && $headers['http_code'] === 200)
+        {
+            return $responseDecoded;
+        } else
+        {
+            throw new \Exception($responseDecoded['error_description']);
         }
     }
 }

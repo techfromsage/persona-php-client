@@ -389,7 +389,7 @@ class TokenTest extends TestBase {
         $personaClient->getUserByGupid('123', '');
     }
     function testGetUserByGupidInvalidTokenThrowsException(){
-        $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
+        $this->setExpectedException('Exception', 'User profile not found');
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -477,7 +477,7 @@ class TokenTest extends TestBase {
         $personaClient->getUserByGuids(array('123'), '');
     }
     function testGetUserByGuidsInvalidTokenThrowsException(){
-        $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
+        $this->setExpectedException('Exception', 'User profiles not found');
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -541,5 +541,288 @@ class TokenTest extends TestBase {
         $this->assertCount(2, $users[0]['profile']);
         $this->assertEquals('max@payne.com', $users[0]['profile']['email']);
         $this->assertEquals('Max Payne', $users[0]['profile']['name']);
+    }
+
+    // createUser tests
+    function testCreateUserNoGupid()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 1');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser();
+    }
+    function testCreateUserNoProfile()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 2');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser('gupid');
+    }
+    function testCreateUserNoToken()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 3');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser('gupid', 'profile');
+    }
+
+    function testCreateUserEmptyGupid()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser('', 'profile', 'token');
+    }
+    function testCreateUserInvalidGupid()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser(array('gupid'), 'profile', 'token');
+    }
+
+    function testCreateUserEmptyProfile()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid profile');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser('gupid', array(), 'token');
+    }
+    function testCreateUserInvalidProfile()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid profile');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser('gupid', 'profile', 'token');
+    }
+
+    function testCreateUserEmptyToken()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid token');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser('gupid', array('email' => ''), '');
+    }
+    function testCreateUserInvalidToken()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Invalid token');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->createUser('gupid', array('email' => ''), array(''));
+    }
+    function testCreateUserPostFails()
+    {
+        $this->setExpectedException('Exception', 'User not created');
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaPostUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('personaPostUser')
+            ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
+        $mockClient->createUser('gupid', array('email' => ''), '123');
+    }
+    function testCreateUserPostSucceeds()
+    {
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaPostUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $expectedResponse = array('gupid' => '123', 'profile' => array());
+        $mockClient->expects($this->once())
+            ->method('personaPostUser')
+            ->will($this->returnValue($expectedResponse));
+        $this->assertEquals($expectedResponse, $mockClient->createUser('123', array('email' => ''), '123'));
+    }
+
+    // update user tests
+    function testUpdateUserNoGupid()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 1');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser();
+    }
+    function testUpdateUserNoProfile()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 2');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser('123');
+    }
+    function testUpdateUserNoToken()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 3');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser('123', array());
+    }
+    function testUpdateUserEmptyGuid()
+    {
+        $this->setExpectedException('Exception', 'Invalid guid');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser('', array(), '987');
+    }
+    function testUpdateUserInvalidGuid()
+    {
+        $this->setExpectedException('Exception', 'Invalid guid');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser(array(), array(), '987');
+    }
+    function testUpdateUserEmptyProfile()
+    {
+        $this->setExpectedException('Exception', 'Invalid profile');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser('123', array(), '987');
+    }
+    function testUpdateUserInvalidProfile()
+    {
+        $this->setExpectedException('Exception', 'Invalid profile');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser('123', 'PROFILE', '987');
+    }
+    function testUpdateUserEmptyToken()
+    {
+        $this->setExpectedException('Exception', 'Invalid token');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser('123', array('email' => 'PROFILE'), '');
+    }
+    function testUpdateUserInvalidToken()
+    {
+        $this->setExpectedException('Exception', 'Invalid token');
+        $personaClient = new Tokens(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->updateUser('123', array('email' => 'PROFILE'), array(''));
+    }
+    function testUpdateUserPutFails()
+    {
+        $this->setExpectedException('Exception', 'User not updated');
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaPatchUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $mockClient->expects($this->once())
+            ->method('personaPatchUser')
+            ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
+        $mockClient->updateUser('guid', array('email' => ''), '123');
+    }
+    function testUpdateUserPutSucceeds()
+    {
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaPatchUser'),array(array(
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        )));
+        $expectedResponse = array('gupid' => '123', 'profile' => array());
+        $mockClient->expects($this->once())
+            ->method('personaPatchUser')
+            ->will($this->returnValue($expectedResponse));
+        $this->assertEquals($expectedResponse, $mockClient->updateUser('123', array('email' => ''), '123'));
     }
 }
