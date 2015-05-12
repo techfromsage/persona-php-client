@@ -4,7 +4,7 @@ namespace Talis\Persona\Client;
 class Login extends Base
 {
 
-    const LOGIN_PREFIX = 'PERSONA';
+    const LOGIN_PREFIX = 'persona';
 
     /**
      * Require authentication on your route
