@@ -242,12 +242,15 @@ class Tokens extends Base
         try
         {
             $user = $this->personaGetUser($url, $token);
-        } catch(\Exception $e){}
+            if(isset($user) && !empty($user))
+            {
+                return $user;
+            } else
+            {
+                throw new \Exception('User profile not found');
+            }
 
-        if(isset($user) && !empty($user))
-        {
-            return $user;
-        } else
+        } catch(\Exception $e)
         {
             throw new \Exception('User profile not found');
         }
@@ -276,12 +279,14 @@ class Tokens extends Base
         try
         {
             $users = $this->personaGetUser($url, $token);
-        } catch(\Exception $e){}
-
-        if(isset($users) && !empty($users))
-        {
-            return $users;
-        } else
+            if(isset($users) && !empty($users))
+            {
+                return $users;
+            } else
+            {
+                throw new \Exception('User profiles not found');
+            }
+        } catch(\Exception $e)
         {
             throw new \Exception('User profiles not found');
         }
@@ -318,12 +323,8 @@ class Tokens extends Base
         try
         {
             $user = $this->personaPostUser($url, $query, $token);
-        } catch(\Exception $e){}
-
-        if(isset($user) && !empty($user))
-        {
             return $user;
-        } else
+        } catch(\Exception $e)
         {
             throw new \Exception('User not created');
         }
@@ -357,14 +358,8 @@ class Tokens extends Base
         try
         {
             $user = $this->personaPatchUser($url, $profile, $token);
-        } catch(\Exception $e)
-        {
-        }
-
-        if(isset($user) && !empty($user))
-        {
             return $user;
-        } else
+        } catch(\Exception $e)
         {
             throw new \Exception('User not updated');
         }
