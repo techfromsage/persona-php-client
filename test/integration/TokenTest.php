@@ -176,4 +176,63 @@ class TokenTest extends TestBase {
         $this->assertEquals(Tokens::VERIFIED_BY_CACHE, $this->personaClient->validateToken(array("access_token"=>$token, "scope"=>"primate")));
 
     }
+
+    function testCreateUserThenGetUserByGupid()
+    {
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $gupid = uniqid('trapdoor:');
+        $email = uniqid().'@example.com';
+        $userCreate = $this->personaClient->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
+        $user = $this->personaClient->getUserByGupid($userCreate['gupids'][0], $token);
+
+        $this->assertEquals($userCreate['guid'], $user['guid']);
+        $this->assertCount(1, $user['gupids']);
+        $this->assertEquals($gupid, $user['gupids'][0]);
+        $this->assertEquals('Sarah Connor', $user['profile']['name']);
+        $this->assertEquals($email, $user['profile']['email']);
+    }
+
+    function testCreateUserThenGetUserByGuids()
+    {
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $gupid = uniqid('trapdoor:');
+        $email = uniqid().'@example.com';
+        $userCreate = $this->personaClient->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
+        $users = $this->personaClient->getUserByGuids(array($userCreate['guid']), $token);
+
+        $this->assertCount(1, $users);
+        $this->assertEquals($userCreate['guid'], $users[0]['guid']);
+        $this->assertCount(1, $users[0]['gupids']);
+        $this->assertEquals($gupid, $users[0]['gupids'][0]);
+        $this->assertEquals('Sarah Connor', $users[0]['profile']['name']);
+        $this->assertEquals($email, $users[0]['profile']['email']);
+    }
+    function testCreateUserThenPatchUser()
+    {
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $gupid = uniqid('trapdoor:');
+        $email = uniqid().'@example.com';
+        $userCreate = $this->personaClient->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
+
+        $email = uniqid().'@example.com';
+        // Update user
+        $this->personaClient->updateUser($userCreate['guid'], array('name' => 'John Connor', 'email' => $email), $token);
+
+        $user = $this->personaClient->getUserByGupid($userCreate['gupids'][0], $token);
+
+        $this->assertEquals($userCreate['guid'], $user['guid']);
+        $this->assertCount(1, $user['gupids']);
+        $this->assertEquals($gupid, $user['gupids'][0]);
+        $this->assertEquals('John Connor', $user['profile']['name']);
+        $this->assertEquals($email, $user['profile']['email']);
+    }
 }

@@ -1,10 +1,13 @@
 language: php
 php:
-  - 5.5
-  - 5.4
-  - 5.3
-
+- 5.6
+- 5.5
+- 5.4
+- 5.3
 install:
-  - composer install
-  
+- composer install
 script: ant unittest
+notifications:
+  hipchat:
+    rooms:
+      secure: T9m/BNA0FjX1D6ZS5QbBKHEurkbNrqZz4I2zmLi1n7+uaTh6/FiFbD+1jtXCK3F94qaAGyUEwzHidwT4a01WrKV5mMvy+4cOkMQ047T7TuQ0k9V3geLqNu773Q/yzY082w6v4dJZKyMZAUQ7XAt9fTZrvVEHd4aIg1irQyDn9uc=
