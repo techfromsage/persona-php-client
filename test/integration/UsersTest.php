@@ -1,6 +1,6 @@
 <?php
 
-use Talis\Persona\Client\User;
+use Talis\Persona\Client\Users;
 use Talis\Persona\Client\Tokens;
 
 $appRoot = dirname(dirname(__DIR__));
@@ -11,7 +11,7 @@ if (!defined('APPROOT'))
 
 require_once $appRoot . '/test/unit/TestBase.php';
 
-class UserTest extends TestBase {
+class UsersTest extends TestBase {
 
     /**
      * @var Talis\Persona\Client\Tokens
@@ -23,7 +23,7 @@ class UserTest extends TestBase {
 
     function setUp(){
         parent::setUp();
-        $this->personaClientUser = new User(array(
+        $this->personaClientUser = new Users(array(
             'persona_host' => 'http://persona',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',

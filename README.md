@@ -63,7 +63,7 @@ $tokenDetails = $personaClient->obtainNewToken(
 
 ```
 // create an instance of the client
-$personaClient = new Talis\Persona\Client\User(array(
+$personaClient = new Talis\Persona\Client\Users(array(
     'persona_host' => 'http://persona',
     'persona_oauth_route' => '/oauth/tokens',
     'tokencache_redis_host' => 'localhost',

@@ -10,7 +10,7 @@ if (!defined('APPROOT'))
 
 require_once $appRoot . '/test/unit/TestBase.php';
 
-class TokenTest extends TestBase {
+class TokensTest extends TestBase {
 
     function testEmptyConfigThrowsException(){
         $this->setExpectedException('InvalidArgumentException',

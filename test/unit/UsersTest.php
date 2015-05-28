@@ -1,6 +1,6 @@
 <?php
 
-use Talis\Persona\Client\User;
+use Talis\Persona\Client\Users;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT'))
@@ -10,10 +10,10 @@ if (!defined('APPROOT'))
 
 require_once $appRoot . '/test/unit/TestBase.php';
 
-class UserTest extends TestBase {
+class UsersTest extends TestBase {
     function testGetUserByGupidEmptyGupidThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -24,7 +24,7 @@ class UserTest extends TestBase {
     }
     function testGetUserByGupidEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -35,7 +35,7 @@ class UserTest extends TestBase {
     }
     function testGetUserByGupidInvalidTokenThrowsException(){
         $this->setExpectedException('Exception', 'User profile not found');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -47,7 +47,7 @@ class UserTest extends TestBase {
     function testGetUserByGupidThrowsExceptionWhenGupidNotFound()
     {
         $this->setExpectedException('Exception', 'User profile not found');
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -62,7 +62,7 @@ class UserTest extends TestBase {
     }
     function testGetUserByGupidReturnsUserWhenGupidFound()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -101,7 +101,7 @@ class UserTest extends TestBase {
 
     function testGetUserByGuidsInvalidGuidsThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid guids');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -112,7 +112,7 @@ class UserTest extends TestBase {
     }
     function testGetUserByGuidsEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -123,7 +123,7 @@ class UserTest extends TestBase {
     }
     function testGetUserByGuidsInvalidTokenThrowsException(){
         $this->setExpectedException('Exception', 'User profiles not found');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -135,7 +135,7 @@ class UserTest extends TestBase {
     function testGetUserByGuidsThrowsExceptionWhenGuidsNotFound()
     {
         $this->setExpectedException('Exception', 'User profiles not found');
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -150,7 +150,7 @@ class UserTest extends TestBase {
     }
     function testGetUserByGuidsReturnsUserWhenGuidsFound()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaGetUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -192,7 +192,7 @@ class UserTest extends TestBase {
     function testCreateUserNoGupid()
     {
         $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -204,7 +204,7 @@ class UserTest extends TestBase {
     function testCreateUserNoProfile()
     {
         $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -216,7 +216,7 @@ class UserTest extends TestBase {
     function testCreateUserNoToken()
     {
         $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -229,7 +229,7 @@ class UserTest extends TestBase {
     function testCreateUserEmptyGupid()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -241,7 +241,7 @@ class UserTest extends TestBase {
     function testCreateUserInvalidGupid()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -254,7 +254,7 @@ class UserTest extends TestBase {
     function testCreateUserEmptyProfile()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid profile');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -266,7 +266,7 @@ class UserTest extends TestBase {
     function testCreateUserInvalidProfile()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid profile');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -279,7 +279,7 @@ class UserTest extends TestBase {
     function testCreateUserEmptyToken()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -291,7 +291,7 @@ class UserTest extends TestBase {
     function testCreateUserInvalidToken()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -303,7 +303,7 @@ class UserTest extends TestBase {
     function testCreateUserPostFails()
     {
         $this->setExpectedException('Exception', 'User not created');
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaPostUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -317,7 +317,7 @@ class UserTest extends TestBase {
     }
     function testCreateUserPostSucceeds()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaPostUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -335,7 +335,7 @@ class UserTest extends TestBase {
     function testUpdateUserNoGupid()
     {
         $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -347,7 +347,7 @@ class UserTest extends TestBase {
     function testUpdateUserNoProfile()
     {
         $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -359,7 +359,7 @@ class UserTest extends TestBase {
     function testUpdateUserNoToken()
     {
         $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -371,7 +371,7 @@ class UserTest extends TestBase {
     function testUpdateUserEmptyGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -383,7 +383,7 @@ class UserTest extends TestBase {
     function testUpdateUserInvalidGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -395,7 +395,7 @@ class UserTest extends TestBase {
     function testUpdateUserEmptyProfile()
     {
         $this->setExpectedException('Exception', 'Invalid profile');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -407,7 +407,7 @@ class UserTest extends TestBase {
     function testUpdateUserInvalidProfile()
     {
         $this->setExpectedException('Exception', 'Invalid profile');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -419,7 +419,7 @@ class UserTest extends TestBase {
     function testUpdateUserEmptyToken()
     {
         $this->setExpectedException('Exception', 'Invalid token');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -431,7 +431,7 @@ class UserTest extends TestBase {
     function testUpdateUserInvalidToken()
     {
         $this->setExpectedException('Exception', 'Invalid token');
-        $personaClient = new User(array(
+        $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -443,7 +443,7 @@ class UserTest extends TestBase {
     function testUpdateUserPutFails()
     {
         $this->setExpectedException('Exception', 'User not updated');
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaPatchUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
@@ -457,7 +457,7 @@ class UserTest extends TestBase {
     }
     function testUpdateUserPutSucceeds()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\User',array('personaPatchUser'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',

@@ -1,7 +1,7 @@
 <?php
 namespace Talis\Persona\Client;
 
-class User extends Base
+class Users extends Base
 {
     /**
      * Get a user profile based off a gupid passed in
