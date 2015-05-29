@@ -35,7 +35,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => null,
             'tokencache_redis_host' => null,
             'tokencache_redis_port' => null,
-            'tokencache_redis_db' => null,
+            'tokencache_redis_db' => null
         ));
     }
 
@@ -45,7 +45,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
     }
 
@@ -58,7 +58,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         date_default_timezone_set('UTC');
@@ -75,7 +75,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         date_default_timezone_set('UTC');
@@ -89,7 +89,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         date_default_timezone_set('UTC');
@@ -103,7 +103,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         date_default_timezone_set('UTC');
@@ -122,7 +122,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         date_default_timezone_set('UTC');
@@ -137,7 +137,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         date_default_timezone_set('UTC');
@@ -156,7 +156,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute','mysecretkey',1234567890);
@@ -169,7 +169,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute#myAnchor','mysecretkey',1234567890);
@@ -182,7 +182,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo','mysecretkey',1234567890);
@@ -195,7 +195,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',1234567890);
@@ -208,7 +208,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute','mysecretkey',"+5 minutes");
@@ -222,7 +222,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo','mysecretkey',"+5 minutes");
@@ -236,7 +236,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
@@ -250,7 +250,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"-5 minutes");
@@ -264,7 +264,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
@@ -280,7 +280,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
@@ -296,7 +296,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         )));
 
         $mockClient->expects($this->once())->method("personaObtainNewToken")->will($this->returnValue(array("access_token"=>"foo","expires"=>"100","scopes"=>"su")));
@@ -311,7 +311,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         )));
 
         $mockCache = $this->getMock('\Predis\Client',array("get"),array());
@@ -330,7 +330,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         )));
 
         $mockCache = $this->getMock('\Predis\Client',array("get"),array());
@@ -349,7 +349,7 @@ class TokensTest extends TestBase {
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
+            'tokencache_redis_db' => 2
         )));
 
         $mockCache = $this->getMock('\Predis\Client',array("get"),array());
