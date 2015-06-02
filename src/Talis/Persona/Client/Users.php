@@ -199,14 +199,12 @@ class Users extends Base
         $headers = curl_getinfo($curl);
         curl_close($curl);
 
-        $responseDecoded = json_decode($response,true);
-
         if (isset($headers['http_code']) && $headers['http_code'] === 200)
         {
-            return $responseDecoded;
+            return json_decode($response,true);
         } else
         {
-            throw new \Exception((isset($responseDecoded['error_description']) ? $responseDecoded['error_description'] : 'Could not retrieve OAuth response code'));
+            throw new \Exception("Could not retrieve OAuth response code");
         }
     }
 
@@ -237,14 +235,12 @@ class Users extends Base
         $headers = curl_getinfo($curl);
         curl_close($curl);
 
-        $responseDecoded = json_decode($response,true);
-
         if (isset($headers['http_code']) && $headers['http_code'] === 200)
         {
-            return $responseDecoded;
+            return json_decode($response,true);
         } else
         {
-            throw new \Exception((isset($responseDecoded['error_description']) ? $responseDecoded['error_description'] : 'Could not retrieve OAuth response code'));
+            throw new \Exception("Could not retrieve OAuth response code");
         }
     }
 }
