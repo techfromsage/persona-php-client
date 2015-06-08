@@ -38,7 +38,7 @@ class OAuthClients extends Base
      * @param string $clientId
      * @param array $properties
      * @param string $token
-     * @return mixed
+     * @return boolean
      * @access public
      * @throws \InvalidArgumentException
      * @throws \Exception
@@ -123,7 +123,7 @@ class OAuthClients extends Base
      * Get an OAuth Client
      * @param string $url
      * @param string $token
-     * @return array
+     * @return boolean
      * @throws \Exception
      */
     protected function personaGetOAuthClient($url, $token)
@@ -145,7 +145,7 @@ class OAuthClients extends Base
 
         if (isset($headers['http_code']) && $headers['http_code'] === 200)
         {
-            return json_decode($response,true);
+            return true;
         } else
         {
             throw new \Exception("Could not retrieve OAuth response code");
