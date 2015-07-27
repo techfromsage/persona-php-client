@@ -1,7 +1,8 @@
 <?php
 
-use Talis\Persona\Client\Users;
+use Talis\Persona\Client\OAuthClients;
 use Talis\Persona\Client\Tokens;
+use Talis\Persona\Client\Users;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT'))
@@ -11,13 +12,17 @@ if (!defined('APPROOT'))
 
 require_once $appRoot . '/test/unit/TestBase.php';
 
-class UsersTest extends TestBase {
+class OAuthClientsTest extends TestBase {
+
+    /**
+     * @var Talis\Persona\Client\OAuthClients
+     */
+    private $personaClientOAuthClient;
 
     /**
      * @var Talis\Persona\Client\Users
      */
     private $personaClientUser;
-
     /**
      * @var Talis\Persona\Client\Tokens
      */
@@ -27,6 +32,13 @@ class UsersTest extends TestBase {
 
     function setUp(){
         parent::setUp();
+        $this->personaClientOAuthClient = new OAuthClients(array(
+            'persona_host' => 'http://persona',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
         $this->personaClientUser = new Users(array(
             'persona_host' => 'http://persona',
             'persona_oauth_route' => '/oauth/tokens',
@@ -43,7 +55,7 @@ class UsersTest extends TestBase {
         ));
     }
 
-    function testCreateUserThenGetUserByGupid()
+    function testCreateUserThenPatchOAuthClientAddScope()
     {
         $tokenDetails = $this->personaClientTokens->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
@@ -53,15 +65,18 @@ class UsersTest extends TestBase {
         $email = uniqid().'@example.com';
         $userCreate = $this->personaClientUser->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
         $user = $this->personaClientUser->getUserByGupid($userCreate['gupids'][0], $token);
+        $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
+        $this->assertNotContains('additional-scope', $client['scope']);
 
-        $this->assertEquals($userCreate['guid'], $user['guid']);
-        $this->assertCount(1, $user['gupids']);
-        $this->assertEquals($gupid, $user['gupids'][0]);
-        $this->assertEquals('Sarah Connor', $user['profile']['name']);
-        $this->assertEquals($email, $user['profile']['email']);
+        // Update the client
+        $this->personaClientOAuthClient->updateOAuthClient($user['guid'], array('scope' => array('$add' => 'additional-scope')), $token);
+
+        // Get the oauth client again to see if scope has been updated
+        $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
+        $this->assertContains('additional-scope', $client['scope']);
     }
 
-    function testCreateUserThenGetUserByGuids()
+    function testCreateUserThenPatchOAuthClientRemoveScope()
     {
         $tokenDetails = $this->personaClientTokens->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
         $this->assertArrayHasKey('access_token', $tokenDetails);
@@ -70,35 +85,20 @@ class UsersTest extends TestBase {
         $gupid = uniqid('trapdoor:');
         $email = uniqid().'@example.com';
         $userCreate = $this->personaClientUser->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
-        $users = $this->personaClientUser->getUserByGuids(array($userCreate['guid']), $token);
-
-        $this->assertCount(1, $users);
-        $this->assertEquals($userCreate['guid'], $users[0]['guid']);
-        $this->assertCount(1, $users[0]['gupids']);
-        $this->assertEquals($gupid, $users[0]['gupids'][0]);
-        $this->assertEquals('Sarah Connor', $users[0]['profile']['name']);
-        $this->assertEquals($email, $users[0]['profile']['email']);
-    }
-    function testCreateUserThenPatchUser()
-    {
-        $tokenDetails = $this->personaClientTokens->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
-        $this->assertArrayHasKey('access_token', $tokenDetails);
-        $token = $tokenDetails['access_token'];
-
-        $gupid = uniqid('trapdoor:');
-        $email = uniqid().'@example.com';
-        $userCreate = $this->personaClientUser->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
-
-        $email = uniqid().'@example.com';
-        // Update user
-        $this->personaClientUser->updateUser($userCreate['guid'], array('name' => 'John Connor', 'email' => $email), $token);
-
         $user = $this->personaClientUser->getUserByGupid($userCreate['gupids'][0], $token);
+        $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
+        $this->assertNotContains('additional-scope', $client['scope']);
 
-        $this->assertEquals($userCreate['guid'], $user['guid']);
-        $this->assertCount(1, $user['gupids']);
-        $this->assertEquals($gupid, $user['gupids'][0]);
-        $this->assertEquals('John Connor', $user['profile']['name']);
-        $this->assertEquals($email, $user['profile']['email']);
+        // Add the scope to the client
+        $this->personaClientOAuthClient->updateOAuthClient($user['guid'], array('scope' => array('$add' => 'additional-scope')), $token);
+
+        // Get the oauth client again to see if scope has been updated
+        $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
+        $this->assertContains('additional-scope', $client['scope']);
+
+        // Remove the scope from the client
+        $this->personaClientOAuthClient->updateOAuthClient($user['guid'], array('scope' => array('$remove' => 'additional-scope')), $token);
+        $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
+        $this->assertNotContains('additional-scope', $client['scope']);
     }
 }
