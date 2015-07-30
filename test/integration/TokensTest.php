@@ -60,7 +60,7 @@ class TokensTest extends TestBase {
     }
 
     function testObtainNewTokenThrowsExceptionIfInvalidScope(){
-        $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
+        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"wibble","useCache"=>false));
     }
 

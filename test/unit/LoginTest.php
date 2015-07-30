@@ -231,7 +231,7 @@ class LoginTest extends TestBase {
 
     function testValidateAuthPayloadIsAString()
     {
-        $this->setExpectedException('Exception', 'Payload not set');
+        $this->setExpectedException('Exception', 'Payload not json');
         $personaClient = new Login(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',

@@ -36,7 +36,7 @@ class OAuthClientsTest extends TestBase
         $personaClient->getOAuthClient('123', '');
     }
     function testGetOAuthClientInvalidTokenThrowsException(){
-        $this->setExpectedException('Exception', 'OAuth client not found');
+        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -48,7 +48,7 @@ class OAuthClientsTest extends TestBase
     }
     function testGetOAuthClientThrowsExceptionWhenClientNotFound()
     {
-        $this->setExpectedException('Exception', 'OAuth client not found');
+        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaGetOAuthClient'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -58,7 +58,7 @@ class OAuthClientsTest extends TestBase
         )));
         $mockClient->expects($this->once())
             ->method('personaGetOAuthClient')
-            ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
+            ->will($this->throwException(new Exception('Did not retrieve successful response code')));
 
         $mockClient->getOAuthClient('123', '456');
     }
@@ -263,7 +263,7 @@ class OAuthClientsTest extends TestBase
     }
     function testUpdateOAuthClientPutFails()
     {
-        $this->setExpectedException('Exception', 'OAuth client not updated');
+        $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
         $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaPatchOAuthClient'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',

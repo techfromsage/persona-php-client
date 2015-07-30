@@ -49,6 +49,7 @@ class Tokens extends Base
         }
         $this->getStatsD()->endTiming("validateToken.cache.get");
         if($reply == 'OK'){
+            $this->getLogger()->debug("Token validated via cache");
             $this->getStatsD()->increment("validateToken.cache.valid");
             // verified by cache
             return self::VERIFIED_BY_CACHE;
@@ -268,6 +269,7 @@ class Tokens extends Base
         if (isset($_GET['access_token'])) return $_GET['access_token'];
         if (isset($_POST['access_token'])) return $_POST['access_token'];
 
+        $this->getLogger()->error("No OAuth token supplied in headers, GET or POST");
         throw new \Exception("No OAuth token supplied");
     }
 
@@ -302,6 +304,7 @@ class Tokens extends Base
         if(empty($missingProperties)){
             return true;
         } else {
+            $this->getLogger()->error("Config provided does not contain values",$missingProperties);
             throw new \InvalidArgumentException("Config provided does not contain values for: " . implode(",", $missingProperties));
         }
     }
@@ -368,8 +371,10 @@ class Tokens extends Base
         $meta = curl_getinfo($request);
         curl_close($request);
         if (isset($meta) && $meta['http_code']==204) {
+            $this->getLogger()->debug("Token valid at server");
             return true;
         } else {
+            $this->getLogger()->debug("Token invalid at server");
             return false;
         }
     }
@@ -384,30 +389,13 @@ class Tokens extends Base
      * @throws \Exception if persona was unable to generate a token
      */
     protected function personaObtainNewToken($url, $query){
-        $curlOptions = array(
+        return $this->performJSONRequest(array(
             CURLOPT_POST            => true,
             CURLOPT_URL             => $url,
             CURLOPT_RETURNTRANSFER  => true,
             CURLOPT_TIMEOUT         => 30,
             CURLOPT_POSTFIELDS      => http_build_query($query)
-        );
-
-        $curl = curl_init();
-        curl_setopt_array($curl, $curlOptions);
-
-        $response = curl_exec($curl);
-        $headers = curl_getinfo($curl);
-        curl_close($curl);
-
-        if (isset($headers['http_code']) && $headers['http_code']==200)
-        {
-            $data = json_decode($response,true);
-            return $data;
-        }
-        else
-        {
-            throw new \Exception("Could not retrieve OAuth response code");
-        }
+        ));
     }
 
     /**
