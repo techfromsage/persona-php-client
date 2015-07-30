@@ -26,22 +26,22 @@ class Login extends Base
 
         if(!is_string($provider))
         {
-            $this->getLogger()->error("Invalid provider $provider");
+            $this->getLogger()->error("Invalid provider");
             throw new \InvalidArgumentException("Invalid provider");
         }
         if(!is_string($appId))
         {
-            $this->getLogger()->error("Invalid appId $appId");
+            $this->getLogger()->error("Invalid appId");
             throw new \InvalidArgumentException("Invalid appId");
         }
         if(!is_string($appSecret))
         {
-            $this->getLogger()->error("Invalid appSecret $appSecret");
+            $this->getLogger()->error("Invalid appSecret");
             throw new \InvalidArgumentException("Invalid appSecret");
         }
         if($redirectUri !== '' && !is_string($redirectUri))
         {
-            $this->getLogger()->error("Invalid redirectUri $redirectUri");
+            $this->getLogger()->error("Invalid redirectUri");
             throw new \InvalidArgumentException("Invalid redirectUri");
         }
 
