@@ -389,7 +389,7 @@ class Tokens extends Base
      * @throws \Exception if persona was unable to generate a token
      */
     protected function personaObtainNewToken($url, $query){
-        return $this->performJSONRequest(array(
+        return $this->performRequest(array(
             CURLOPT_POST            => true,
             CURLOPT_URL             => $url,
             CURLOPT_RETURNTRANSFER  => true,

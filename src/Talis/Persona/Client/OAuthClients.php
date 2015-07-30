@@ -81,7 +81,7 @@ class OAuthClients extends Base
      */
     protected function personaPatchOAuthClient($url, $properties, $token)
     {
-        $this->performJSONRequest(array(
+        $this->performRequest(array(
             CURLOPT_CUSTOMREQUEST   => 'PATCH',
             CURLOPT_URL             => $url,
             CURLOPT_FOLLOWLOCATION  => true,
@@ -89,7 +89,7 @@ class OAuthClients extends Base
             CURLOPT_TIMEOUT         => 30,
             CURLOPT_POSTFIELDS      => json_encode($properties),
             CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        ),204);
+        ),false);
     }
 
     /**
@@ -101,7 +101,7 @@ class OAuthClients extends Base
      */
     protected function personaGetOAuthClient($url, $token)
     {
-        return $this->performJSONRequest(array(
+        return $this->performRequest(array(
             CURLOPT_URL             => $url,
             CURLOPT_RETURNTRANSFER  => true,
             CURLOPT_FOLLOWLOCATION  => true,

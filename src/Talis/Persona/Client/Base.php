@@ -118,11 +118,11 @@ abstract class Base
     /**
      * Perform the request according to the $curlOptions
      * @param $curlOptions
-     * @param $expectedResponseCode
+     * @param $expectResponse set true if you expect a JSON response with a 200, otherwise expect a 204 no content
      * @return array
      * @throws \Exception if response not 200 and valid JSON
      */
-    protected function performJSONRequest($curlOptions,$expectedResponseCode=200)
+    protected function performRequest($curlOptions,$expectResponse=true)
     {
         $curl = curl_init();
         curl_setopt_array($curl, $curlOptions);
@@ -131,9 +131,10 @@ abstract class Base
         $headers = curl_getinfo($curl);
         curl_close($curl);
 
+        $expectedResponseCode = ($expectResponse) ? 200 : 204;
         if (isset($headers['http_code']) && $headers['http_code'] === $expectedResponseCode)
         {
-            if ($expectedResponseCode!=204) // 204 == no content
+            if ($expectResponse) // expect JSON!
             {
                 $json = json_decode($response,true);
                 if (empty($json))

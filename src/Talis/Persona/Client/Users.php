@@ -143,7 +143,7 @@ class Users extends Base
      */
     protected function personaGetUser($url, $token)
     {
-        return $this->performJSONRequest(array(
+        return $this->performRequest(array(
             CURLOPT_URL             => $url,
             CURLOPT_RETURNTRANSFER  => true,
             CURLOPT_FOLLOWLOCATION  => true,
@@ -162,7 +162,7 @@ class Users extends Base
      */
     protected function personaPostUser($url, $query, $token)
     {
-        return $this->performJSONRequest(array(
+        return $this->performRequest(array(
             CURLOPT_POST            => true,
             CURLOPT_URL             => $url,
             CURLOPT_FOLLOWLOCATION  => true,
@@ -183,7 +183,7 @@ class Users extends Base
      */
     protected function personaPatchUser($url, $query, $token)
     {
-        return $this->performJSONRequest(array(
+        return $this->performRequest(array(
             CURLOPT_CUSTOMREQUEST   => 'PUT',
             CURLOPT_URL             => $url,
             CURLOPT_FOLLOWLOCATION  => true,
