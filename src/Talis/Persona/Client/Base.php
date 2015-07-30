@@ -34,8 +34,8 @@ abstract class Base
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
      *      tokencache_redis_host: (string) the host address of redis token cache
      *      tokencache_redis_port: (integer) the port number the redis host ist listening
-     *      tokencache_redis_db: (integer) the database to connnect to
-     * @param logger the logger to use, otherwise a default will be assigned and used</pre>
+     *      tokencache_redis_db: (integer) the database to connnect to</pre>
+     * @param logger the logger to use, otherwise a default will be assigned and used
      * @throws \InvalidArgumentException if any of the required config parameters are missing
      */
     public function __construct($config,\Psr\Log\LoggerInterface $logger=null) {
