@@ -1,10 +1,13 @@
 <?php
 namespace Talis\Persona\Client;
 
+use Monolog\Logger;
+
 abstract class Base
 {
     const STATSD_CONN = 'STATSD_CONN';
     const STATSD_PREFIX = 'STATSD_PREFIX';
+    const LOGGER_NAME = "PERSONA";
 
     /**
      * Configuration object
@@ -19,6 +22,11 @@ abstract class Base
     private $statsD;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+
+    /**
      * Constructor
      *
      * @param array $config An array of options with the following keys: <pre>
@@ -26,13 +34,15 @@ abstract class Base
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
      *      tokencache_redis_host: (string) the host address of redis token cache
      *      tokencache_redis_port: (integer) the port number the redis host ist listening
-     *      tokencache_redis_db: (integer) the database to connnect to</pre>
+     *      tokencache_redis_db: (integer) the database to connnect to
+     * @param logger the logger to use, otherwise a default will be assigned and used</pre>
      * @throws \InvalidArgumentException if any of the required config parameters are missing
      */
-    public function __construct($config) {
+    public function __construct($config,\Psr\Log\LoggerInterface $logger=null) {
         if($this->checkConfig($config)){
             $this->config = $config;
         };
+        $this->logger = $logger;
     }
 
     /**
@@ -92,4 +102,54 @@ abstract class Base
             throw new \InvalidArgumentException("Config provided does not contain values for: " . implode(",", $missingProperties));
         }
     }
+
+    /**
+     * @return Logger|\Psr\Log\LoggerInterface
+     */
+    protected function getLogger()
+    {
+        if ($this->logger==null)
+        {
+            $this->logger = new Logger(self::LOGGER_NAME);
+        }
+        return $this->logger;
+    }
+
+    /**
+     * Perform the request according to the $curlOptions
+     * @param $curlOptions
+     * @param $expectResponse set true if you expect a JSON response with a 200, otherwise expect a 204 no content
+     * @return array
+     * @throws \Exception if response not 200 and valid JSON
+     */
+    protected function performRequest($curlOptions,$expectResponse=true)
+    {
+        $curl = curl_init();
+        curl_setopt_array($curl, $curlOptions);
+
+        $response = curl_exec($curl);
+        $headers = curl_getinfo($curl);
+        curl_close($curl);
+
+        $expectedResponseCode = ($expectResponse) ? 200 : 204;
+        if (isset($headers['http_code']) && $headers['http_code'] === $expectedResponseCode)
+        {
+            if ($expectResponse) // expect JSON!
+            {
+                $json = json_decode($response,true);
+                if (empty($json))
+                {
+                    $this->getLogger()->error("Could not parse response {$response} as JSON");
+                    throw new \Exception("Could not parse response as JSON");
+                }
+                return $json;
+            }
+        }
+        else
+        {
+            $this->getLogger()->error("Did not retrieve successful response code: {$headers['http_code']}");
+            throw new \Exception("Did not retrieve successful response code");
+        }
+    }
+
 }
