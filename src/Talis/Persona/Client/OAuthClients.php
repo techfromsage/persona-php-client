@@ -75,7 +75,6 @@ class OAuthClients extends Base
      * @param string $url
      * @param array $properties
      * @param string $token
-     * @return mixed
      * @access protected
      * @throws \Exception
      */
@@ -96,7 +95,7 @@ class OAuthClients extends Base
      * Get an OAuth Client
      * @param string $url
      * @param string $token
-     * @return boolean
+     * @return array
      * @throws \Exception
      */
     protected function personaGetOAuthClient($url, $token)

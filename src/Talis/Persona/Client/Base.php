@@ -117,12 +117,12 @@ abstract class Base
 
     /**
      * Perform the request according to the $curlOptions
-     * @param $curlOptions
+     * @param $curlOptions array options to execute cURL with
      * @param $expectResponse set true if you expect a JSON response with a 200, otherwise expect a 204 no content
-     * @return array
+     * @return array|null
      * @throws \Exception if response not 200 and valid JSON
      */
-    protected function performRequest($curlOptions,$expectResponse=true)
+    protected function performRequest(array $curlOptions,$expectResponse=true)
     {
         $curl = curl_init();
         curl_setopt_array($curl, $curlOptions);
@@ -144,10 +144,14 @@ abstract class Base
                 }
                 return $json;
             }
+            else
+            {
+                return null;
+            }
         }
         else
         {
-            $this->getLogger()->error("Did not retrieve successful response code: {$headers['http_code']}");
+            $this->getLogger()->error("Did not retrieve successful response code", array("headers"=>$headers,"response"=>$response));
             throw new \Exception("Did not retrieve successful response code");
         }
     }
