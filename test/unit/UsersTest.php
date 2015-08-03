@@ -34,7 +34,7 @@ class UsersTest extends TestBase {
         $personaClient->getUserByGupid('123', '');
     }
     function testGetUserByGupidInvalidTokenThrowsException(){
-        $this->setExpectedException('Exception', 'User profile not found');
+        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -46,7 +46,7 @@ class UsersTest extends TestBase {
     }
     function testGetUserByGupidThrowsExceptionWhenGupidNotFound()
     {
-        $this->setExpectedException('Exception', 'User profile not found');
+        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
@@ -56,7 +56,7 @@ class UsersTest extends TestBase {
         )));
         $mockClient->expects($this->once())
             ->method('personaGetUser')
-            ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
+            ->will($this->throwException(new Exception('Did not retrieve successful response code')));
 
         $mockClient->getUserByGupid('123', '456');
     }

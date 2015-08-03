@@ -14,23 +14,18 @@ class OAuthClients extends Base
     {
         if(!is_string($clientId) || trim($clientId) === '')
         {
+            $this->getLogger()->error("Invalid clientId $clientId");
             throw new \InvalidArgumentException("Invalid clientId");
         }
         if(!is_string($token) || trim($token) === '')
         {
+            $this->getLogger()->error("Invalid token $token");
             throw new \InvalidArgumentException("Invalid token");
         }
 
         $url = $this->config['persona_host'].'/clients/'.$clientId;
 
-        try
-        {
-            $client = $this->personaGetOAuthClient($url, $token);
-            return $client;
-        } catch(\Exception $e)
-        {
-            throw new \Exception('OAuth client not found');
-        }
+        return $this->personaGetOAuthClient($url, $token);
     }
 
     /**
@@ -72,14 +67,7 @@ class OAuthClients extends Base
 
         $url = $this->config['persona_host'].'/clients/'.$clientId;
 
-        try
-        {
-            $client = $this->personaPatchOAuthClient($url, $properties, $token);
-            return $client;
-        } catch(\Exception $e)
-        {
-            throw new \Exception('OAuth client not updated');
-        }
+        return $this->personaPatchOAuthClient($url, $properties, $token);
     }
 
     /**
@@ -87,13 +75,12 @@ class OAuthClients extends Base
      * @param string $url
      * @param array $properties
      * @param string $token
-     * @return mixed
      * @access protected
      * @throws \Exception
      */
     protected function personaPatchOAuthClient($url, $properties, $token)
     {
-        $curlOptions = array(
+        $this->performRequest(array(
             CURLOPT_CUSTOMREQUEST   => 'PATCH',
             CURLOPT_URL             => $url,
             CURLOPT_FOLLOWLOCATION  => true,
@@ -101,54 +88,25 @@ class OAuthClients extends Base
             CURLOPT_TIMEOUT         => 30,
             CURLOPT_POSTFIELDS      => json_encode($properties),
             CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        );
-
-        $curl = curl_init();
-        curl_setopt_array($curl, $curlOptions);
-
-        $response = curl_exec($curl);
-        $headers = curl_getinfo($curl);
-        curl_close($curl);
-
-        if (isset($headers['http_code']) && $headers['http_code'] === 204)
-        {
-            return json_decode($response,true);
-        } else
-        {
-            throw new \Exception("Could not retrieve OAuth response code");
-        }
+        ),false);
     }
 
     /**
      * Get an OAuth Client
      * @param string $url
      * @param string $token
-     * @return boolean
+     * @return array
      * @throws \Exception
      */
     protected function personaGetOAuthClient($url, $token)
     {
-        $curlOptions = array(
+        return $this->performRequest(array(
             CURLOPT_URL             => $url,
             CURLOPT_RETURNTRANSFER  => true,
             CURLOPT_FOLLOWLOCATION  => true,
             CURLOPT_TIMEOUT         => 30,
             CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        );
-
-        $curl = curl_init();
-        curl_setopt_array($curl, $curlOptions);
-
-        $response = curl_exec($curl);
-        $headers = curl_getinfo($curl);
-        curl_close($curl);
-
-        if (isset($headers['http_code']) && $headers['http_code'] === 200)
-        {
-            return true;
-        } else
-        {
-            throw new \Exception("Could not retrieve OAuth response code");
-        }
+        ));
     }
+
 }

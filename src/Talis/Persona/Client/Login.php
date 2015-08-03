@@ -26,18 +26,22 @@ class Login extends Base
 
         if(!is_string($provider))
         {
+            $this->getLogger()->error("Invalid provider");
             throw new \InvalidArgumentException("Invalid provider");
         }
         if(!is_string($appId))
         {
+            $this->getLogger()->error("Invalid appId");
             throw new \InvalidArgumentException("Invalid appId");
         }
         if(!is_string($appSecret))
         {
+            $this->getLogger()->error("Invalid appSecret");
             throw new \InvalidArgumentException("Invalid appSecret");
         }
         if($redirectUri !== '' && !is_string($redirectUri))
         {
+            $this->getLogger()->error("Invalid redirectUri");
             throw new \InvalidArgumentException("Invalid redirectUri");
         }
 
@@ -64,12 +68,14 @@ class Login extends Base
             // Check for invalid payload strings
             if(!$payload || !is_array($payload))
             {
-                throw new \Exception('Payload not set');
+                $this->getLogger()->error("Payload not json: {$_POST['persona:payload']}");
+                throw new \Exception('Payload not json');
             }
 
             if(!isset($_SESSION[self::LOGIN_PREFIX.':loginState']) || !isset($payload['state']) || $payload['state'] !==  $_SESSION[self::LOGIN_PREFIX.':loginState'])
             {
                 // Error with state - not authenticated
+                $this->getLogger()->error("Login state does not match");
                 unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
                 throw new \Exception('Login state does not match');
             }
@@ -77,6 +83,7 @@ class Login extends Base
             if(!isset($payload['signature']))
             {
                 unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+                $this->getLogger()->error("Signature not set");
                 throw new \Exception('Signature not set');
             }
 
@@ -87,6 +94,7 @@ class Login extends Base
             if($payloadSignature !== hash_hmac("sha256", json_encode($payload), $_SESSION[self::LOGIN_PREFIX.':loginAppSecret']))
             {
                 unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+                $this->getLogger()->error("Signature does not match");
                 throw new \Exception('Signature does not match');
             }
 
@@ -104,9 +112,11 @@ class Login extends Base
 
             if($this->isLoggedIn())
             {
+                $this->getLogger()->debug("Auth successful");
                 return true;
             }
         } else{
+            $this->getLogger()->error("Payload not set");
             throw new \Exception('Payload not set');
         }
     }

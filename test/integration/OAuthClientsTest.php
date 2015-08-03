@@ -101,4 +101,19 @@ class OAuthClientsTest extends TestBase {
         $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
         $this->assertNotContains('additional-scope', $client['scope']);
     }
+
+    function testCreateUserThenGetClient()
+    {
+        $tokenDetails = $this->personaClientTokens->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $gupid = uniqid('trapdoor:');
+        $email = uniqid().'@example.com';
+        $userCreate = $this->personaClientUser->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
+        $user = $this->personaClientUser->getUserByGupid($userCreate['gupids'][0], $token);
+        $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
+        $this->assertContains('guid', $client);
+        $this->assertContains('scope', $client);
+    }
 }
