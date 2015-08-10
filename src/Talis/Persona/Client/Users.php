@@ -23,7 +23,7 @@ class Users extends Base
             $this->getLogger()->error("Invalid token $token");
             throw new \InvalidArgumentException("Invalid token");
         }
-        $url = $this->config['persona_host'].'/users/?gupid='.$gupid;
+        $url = $this->config['persona_host'].'/users/?gupid='.urlencode($gupid);
 
         return $this->personaGetUser($url, $token);
     }
@@ -47,7 +47,7 @@ class Users extends Base
         {
             throw new \InvalidArgumentException("Invalid token");
         }
-        $url = $this->config['persona_host'].'/users/?guids='.implode(',', $guids);
+        $url = $this->config['persona_host'].'/users/?guids='.urlencode(implode(',', $guids));
         try
         {
             $users = $this->personaGetUser($url, $token);
