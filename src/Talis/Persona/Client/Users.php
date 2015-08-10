@@ -72,7 +72,7 @@ class Users extends Base
         {
             throw new \InvalidArgumentException('Invalid gupid');
         }
-        if(!is_array($profile) || empty($profile))
+        if(!is_array($profile) && !empty($profile))
         {
             throw new \InvalidArgumentException('Invalid profile');
         }
@@ -83,9 +83,12 @@ class Users extends Base
 
         $url = $this->config['persona_host'].'/users';
         $query = array(
-            'gupid' => $gupid,
-            'profile' => $profile
+            'gupid' => $gupid
         );
+        if (!empty($profile))
+        {
+            $query['profile'] = $profile;
+        }
         try
         {
             $user = $this->personaPostUser($url, $query, $token);

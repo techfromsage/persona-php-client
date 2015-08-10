@@ -253,15 +253,18 @@ class UsersTest extends TestBase {
 
     function testCreateUserEmptyProfile()
     {
-        $this->setExpectedException('InvalidArgumentException', 'Invalid profile');
-        $personaClient = new Users(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
-        ));
-        $personaClient->createUser('gupid', array(), 'token');
+        )));
+        $expectedResponse = array('gupid' => '123');
+        $mockClient->expects($this->once())
+            ->method('personaPostUser')
+            ->will($this->returnValue($expectedResponse));
+        $mockClient->createUser('gupid', array(), 'token');
     }
     function testCreateUserInvalidProfile()
     {
