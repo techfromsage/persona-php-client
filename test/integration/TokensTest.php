@@ -37,7 +37,7 @@ class TokensTest extends TestBase {
         $this->assertArrayHasKey('expires_in', $tokenDetails, "should contain expires_in");
         $this->assertArrayHasKey('token_type', $tokenDetails, "should contain token type");
         $this->assertArrayHasKey('scope', $tokenDetails, "should contain scope");
-        $this->assertEquals(1800, $tokenDetails['expires_in']);
+        $this->assertEquals(200, $tokenDetails['expires_in']);
         $this->assertEquals("Bearer", $tokenDetails['token_type']);
         $this->assertEquals("su primate", $tokenDetails['scope']);
     }
@@ -49,7 +49,7 @@ class TokensTest extends TestBase {
         $this->assertArrayHasKey('expires_in', $tokenDetails, "should contain expires_in");
         $this->assertArrayHasKey('token_type', $tokenDetails, "should contain token type");
         $this->assertArrayHasKey('scope', $tokenDetails, "should contain scope");
-        $this->assertEquals(1800, $tokenDetails['expires_in']);
+        $this->assertEquals(200, $tokenDetails['expires_in']);
         $this->assertEquals("Bearer", $tokenDetails['token_type']);
         $this->assertEquals("primate", $tokenDetails['scope']);
     }
