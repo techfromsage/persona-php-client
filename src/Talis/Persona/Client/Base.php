@@ -2,6 +2,7 @@
 namespace Talis\Persona\Client;
 
 use Monolog\Logger;
+use Talis\Persona\Exception\NotFound;
 
 abstract class Base
 {
@@ -140,7 +141,7 @@ abstract class Base
                 if (empty($json))
                 {
                     $this->getLogger()->error("Could not parse response {$response} as JSON");
-                    throw new \Exception("Could not parse response as JSON");
+                    throw new \Exception("Could not parse response from persona as JSON");
                 }
                 return $json;
             }
@@ -152,7 +153,13 @@ abstract class Base
         else
         {
             $this->getLogger()->error("Did not retrieve successful response code", array("headers"=>$headers,"response"=>$response));
-            throw new \Exception("Did not retrieve successful response code");
+            switch ($headers['http_code'])
+            {
+                case 404:
+                    throw new NotFound("Received 404 response from persona",$headers['http_code']);
+                default:
+                    throw new \Exception("Did not retrieve successful response code from persona",$headers['http_code']);
+            }
         }
     }
 
