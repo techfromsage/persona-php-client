@@ -2,7 +2,6 @@
 namespace Talis\Persona\Client;
 
 use Monolog\Logger;
-use Talis\Persona\Exception\NotFound;
 
 abstract class Base
 {
@@ -156,7 +155,7 @@ abstract class Base
             switch ($headers['http_code'])
             {
                 case 404:
-                    throw new NotFound("Received 404 response from persona",$headers['http_code']);
+                    throw new NotFoundException("Received 404 response from persona",$headers['http_code']);
                 default:
                     throw new \Exception("Did not retrieve successful response code from persona",$headers['http_code']);
             }
