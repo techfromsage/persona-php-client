@@ -80,6 +80,7 @@ class OAuthClients extends Base
      */
     protected function personaPatchOAuthClient($url, $properties, $token)
     {
+        // TODO: maybe
         $this->performRequest(array(
             CURLOPT_CUSTOMREQUEST   => 'PATCH',
             CURLOPT_URL             => $url,
@@ -100,6 +101,7 @@ class OAuthClients extends Base
      */
     protected function personaGetOAuthClient($url, $token)
     {
+        // TODO: maybe
         return $this->performRequest(array(
             CURLOPT_URL             => $url,
             CURLOPT_RETURNTRANSFER  => true,

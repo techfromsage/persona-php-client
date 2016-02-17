@@ -27,6 +27,7 @@ class Tokens extends Base
      * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      */
     public function validateToken($params = array()){
+        // TODO: here
         $token = null;
 
         if(isset($params['access_token']) || !empty($params['access_token'])){
@@ -48,6 +49,7 @@ class Tokens extends Base
             $reply = $cacheClient->get("access_token:".$cacheKey);
         }
         $this->getStatsD()->endTiming("validateToken.cache.get");
+        // TODO: remove this
         if($reply == 'OK'){
             $this->getLogger()->debug("Token validated via cache");
             $this->getStatsD()->increment("validateToken.cache.valid");
@@ -63,6 +65,7 @@ class Tokens extends Base
             }
 
             $this->getStatsD()->startTiming("validateToken.rest.get");
+            // TODO: what is this? Looks like the call to verify a token via persona
             if($this->personaCheckTokenIsValid($url)){
                 $this->getStatsD()->endTiming("validateToken.rest.get");
                 $this->getStatsD()->increment("validateToken.rest.valid");
@@ -111,6 +114,7 @@ class Tokens extends Base
                 throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
             }
 
+            // TODO: use of a local cache to store the tokens? Needed?
             if ($useCache) {
                 // check cache, if exists then use that instead and return
                 $this->getStatsD()->startTiming("obtainNewToken.cache.get");
@@ -363,6 +367,7 @@ class Tokens extends Base
      * @return bool true if persona responds that the token was valid
      */
     protected function personaCheckTokenIsValid($url){
+        // TODO: here
         $request = curl_init($url);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($request, CURLOPT_TIMEOUT, 30);
