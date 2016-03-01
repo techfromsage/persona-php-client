@@ -33,17 +33,6 @@ class UsersTest extends TestBase {
         ));
         $personaClient->getUserByGupid('123', '');
     }
-    function testGetUserByGupidInvalidTokenThrowsException(){
-        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
-        ));
-        $personaClient->getUserByGupid('123', '456');
-    }
     function testGetUserByGupidThrowsExceptionWhenGupidNotFound()
     {
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');

@@ -22,20 +22,24 @@ class UsersTest extends TestBase {
      * @var Talis\Persona\Client\Tokens
      */
     private $personaClientTokens;
-    private $clientId = "primate";
-    private $clientSecret = "bananas";
+    private $clientId;
+    private $clientSecret;
 
     function setUp(){
         parent::setUp();
+        $personaConf = $this->getPersonaConfig();
+        $this->clientId = $personaConf['oauthClient'];
+        $this->clientSecret = $personaConf['oauthSecret'];
+
         $this->personaClientUser = new Users(array(
-            'persona_host' => 'http://persona',
+            'persona_host' => $personaConf['host'],
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
             'tokencache_redis_db' => 2,
         ));
         $this->personaClientTokens = new Tokens(array(
-            'persona_host' => 'http://persona',
+            'persona_host' => $personaConf['host'],
             'persona_oauth_route' => '/oauth/tokens',
             'tokencache_redis_host' => 'localhost',
             'tokencache_redis_port' => 6379,
@@ -100,5 +104,16 @@ class UsersTest extends TestBase {
         $this->assertEquals($gupid, $user['gupids'][0]);
         $this->assertEquals('John Connor', $user['profile']['name']);
         $this->assertEquals($email, $user['profile']['email']);
+    }
+    function testGetUserByGupidInvalidTokenThrowsException(){
+        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
+        $personaClient = new Users(array(
+            'persona_host' => 'persona',
+            'persona_oauth_route' => '/oauth/tokens',
+            'tokencache_redis_host' => 'localhost',
+            'tokencache_redis_port' => 6379,
+            'tokencache_redis_db' => 2,
+        ));
+        $personaClient->getUserByGupid('123', '456');
     }
 }

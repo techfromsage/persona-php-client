@@ -146,13 +146,9 @@ class Users extends Base
      */
     protected function personaGetUser($url, $token)
     {
-        return $this->performRequest(array(
-            CURLOPT_URL             => $url,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_FOLLOWLOCATION  => true,
-            CURLOPT_TIMEOUT         => 30,
-            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        ));
+        return $this->performRequest(
+            $url, array('bearerToken' => $token)
+        );
     }
 
     /**
@@ -165,15 +161,14 @@ class Users extends Base
      */
     protected function personaPostUser($url, $query, $token)
     {
-        return $this->performRequest(array(
-            CURLOPT_POST            => true,
-            CURLOPT_URL             => $url,
-            CURLOPT_FOLLOWLOCATION  => true,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_TIMEOUT         => 30,
-            CURLOPT_POSTFIELDS      => json_encode($query),
-            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        ));
+        return $this->performRequest(
+            $url,
+            array(
+                'method' => 'POST',
+                'body' => json_encode($query),
+                'bearerToken' => $token,
+            )
+        );
     }
 
     /**
@@ -186,14 +181,13 @@ class Users extends Base
      */
     protected function personaPatchUser($url, $query, $token)
     {
-        return $this->performRequest(array(
-            CURLOPT_CUSTOMREQUEST   => 'PUT',
-            CURLOPT_URL             => $url,
-            CURLOPT_FOLLOWLOCATION  => true,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_TIMEOUT         => 30,
-            CURLOPT_POSTFIELDS      => json_encode($query),
-            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        ));
+        return $this->performRequest(
+            $url,
+            array(
+                'method' => 'PUT',
+                'body' => json_encode($query),
+                'bearerToken' => $token,
+            )
+        );
     }
 }

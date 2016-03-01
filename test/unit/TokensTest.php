@@ -1,5 +1,6 @@
 <?php
 
+use \Firebase\JWT\JWT;
 use Talis\Persona\Client\Tokens;
 
 $appRoot = dirname(dirname(__DIR__));
@@ -11,6 +12,14 @@ if (!defined('APPROOT'))
 require_once $appRoot . '/test/unit/TestBase.php';
 
 class TokensTest extends TestBase {
+    private $_privateKey;
+    private $_publicKey;
+
+    public function setUp()
+    {
+        $this->_privateKey = file_get_contents('../keys/private_key.pem');
+        $this->_publicKey = file_get_contents('../keys/public_key.pem');
+    }
 
     function testEmptyConfigThrowsException(){
         $this->setExpectedException('InvalidArgumentException',
@@ -364,5 +373,285 @@ class TokensTest extends TestBase {
 
         $token = $mockClient->obtainNewToken('client_id','client_secret');
         $this->assertEquals($token['access_token'],"foo");
+    }
+
+    /**
+     * If the JWT doesn't include the user's scopes, retrieve
+     * them from Persona
+     */
+    public function testPersonaFallbackOnJWTEmptyScopes()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            array(
+                'getCacheClient',
+                'personaObtainNewToken',
+                'cacheToken',
+                'retrieveJWTCertificate',
+                'performRequest',
+            ),
+            array(array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'tokencache_redis_host' => 'localhost',
+                'tokencache_redis_port' => 6379,
+                'tokencache_redis_db' => 2
+            ))
+        );
+
+        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
+
+        $jwt = JWT::encode(
+            array(
+                'jwtid' => time(),
+                'exp' => time() + 60 * 60,
+                'nbf' => time() -1,
+                'audience' => 'standard_user',
+                'scopeCount' => 30,
+            ),
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
+        $mockClient->expects($this->once())->method('retrieveJWTCertificate')->will($this->returnValue($this->_publicKey));
+        $mockCache->expects($this->once())->method('get')->will($this->returnValue(''));
+        $mockClient->expects($this->once())->method('performRequest')->will($this->returnValue(true));
+
+        $result = $mockClient->validateToken(
+            array(
+                'access_token' => $jwt,
+                'scope' => 'su',
+            )
+        );
+
+        $this->assertEquals(Talis\Persona\Client\Tokens::VERIFIED_BY_PERSONA, $result);
+    }
+
+    /**
+     * Use the cached Persona public key
+     */
+    public function testJWTUseCachePublicKey()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            array('getCacheClient'),
+            array(array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'tokencache_redis_host' => 'localhost',
+                'tokencache_redis_port' => 6379,
+                'tokencache_redis_db' => 2
+            ))
+        );
+
+        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
+
+        $jwt = JWT::encode(
+            array(
+                'jwtid' => time(),
+                'exp' => time() + 60 * 60,
+                'nbf' => time() -1,
+                'audience' => 'standard_user',
+                'scopes' => array('su'),
+            ),
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
+        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode($this->_publicKey)));
+
+        $result = $mockClient->validateToken(
+            array(
+                'access_token' => $jwt,
+                'scope' => 'su',
+            )
+        );
+
+        $this->assertEquals(Talis\Persona\Client\Tokens::VERIFIED_BY_JWT, $result);
+    }
+
+    /**
+     * If Persona's public key hasn't been cached,
+     * retrieve and cache
+     */
+    public function testJWTUseRemotePublicKey()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            array('getCacheClient', 'performRequest', 'cacheToken'),
+            array(array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'tokencache_redis_host' => 'localhost',
+                'tokencache_redis_port' => 6379,
+                'tokencache_redis_db' => 2
+            ))
+        );
+
+        $mockCache = $this->getMock('\Predis\Client', array('get'), array());
+
+        $jwt = JWT::encode(
+            array(
+                'jwtid' => time(),
+                'exp' => time() + 60 * 60,
+                'nbf' => time() -1,
+                'audience' => 'standard_user',
+                'scopes' => array('su'),
+            ),
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
+        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(''));
+        $mockClient->expects($this->once())->method('performRequest')->will($this->returnValue($this->_publicKey));
+        $mockClient->expects($this->once())->method('cacheToken')->with('public_key', $this->_publicKey, 600);
+
+        $result = $mockClient->validateToken(
+            array(
+                'access_token' => $jwt,
+                'scope' => 'su',
+            )
+        );
+
+        $this->assertEquals(Talis\Persona\Client\Tokens::VERIFIED_BY_JWT, $result);
+    }
+
+    /**
+     * A expired token should fail
+     */
+    public function testJWTExpiredToken()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            array('getCacheClient'),
+            array(array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'tokencache_redis_host' => 'localhost',
+                'tokencache_redis_port' => 6379,
+                'tokencache_redis_db' => 2
+            ))
+        );
+
+        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
+
+        $jwt = JWT::encode(
+            array(
+                'jwtid' => time(),
+                'exp' => time() - 50 ,
+                'nbf' => time() - 100,
+                'audience' => 'standard_user',
+                'scopes' => array('su'),
+            ),
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
+        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode($this->_publicKey)));
+
+        $result = $mockClient->validateToken(
+            array(
+                'access_token' => $jwt,
+                'scope' => 'su',
+            )
+        );
+
+        $this->assertEquals(false, $result);
+    }
+
+    /**
+     * Test that if the token uses a not before assertion
+     * that we cannot use the token before a given time
+     */
+    public function testJWTNotBeforeToken()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            array('getCacheClient'),
+            array(array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'tokencache_redis_host' => 'localhost',
+                'tokencache_redis_port' => 6379,
+                'tokencache_redis_db' => 2
+            ))
+        );
+
+        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
+
+        $jwt = JWT::encode(
+            array(
+                'jwtid' => time(),
+                'exp' => time() + 101,
+                'nbf' => time() + 100,
+                'audience' => 'standard_user',
+                'scopes' => array('su'),
+            ),
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
+        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode($this->_publicKey)));
+
+        $result = $mockClient->validateToken(
+            array(
+                'access_token' => $jwt,
+                'scope' => 'su',
+            )
+        );
+
+        $this->assertEquals(false, $result);
+    }
+
+    /**
+     * Using the wrong certificate should fail the tokens
+     */
+    public function testJWTInvalidPublicCert()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            array('getCacheClient'),
+            array(array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'tokencache_redis_host' => 'localhost',
+                'tokencache_redis_port' => 6379,
+                'tokencache_redis_db' => 2
+            ))
+        );
+
+        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
+
+        $jwt = JWT::encode(
+            array(
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                'scopes' => array('su'),
+            ),
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
+        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode("invalid cert")));
+
+        try {
+            $mockClient->validateToken(
+                array(
+                    'access_token' => $jwt,
+                    'scope' => 'su',
+                )
+            );
+
+            $this->fail("Exception not thrown");
+        } catch (InvalidArgumentException $e) {
+        }
     }
 }
