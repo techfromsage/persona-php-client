@@ -1,6 +1,8 @@
 persona-php-client
 ==================
 
+[![Build Status](https://travis-ci.org/talis/persona-php-client.svg?branch=master)](https://travis-ci.org/talis/persona-node-client)
+
 This is a php client library for Talis Persona supporting generation, validation and caching of oauth tokens
 
 ## Getting Started
