@@ -1,3 +1,6 @@
+services:
+- redis-server
+sudo: false
 language: php
 php:
 - 5.6
@@ -6,8 +9,13 @@ php:
 - 5.3
 install:
 - composer install
-script: ant unittest
+script: ant test
 notifications:
   hipchat:
     rooms:
-      secure: T9m/BNA0FjX1D6ZS5QbBKHEurkbNrqZz4I2zmLi1n7+uaTh6/FiFbD+1jtXCK3F94qaAGyUEwzHidwT4a01WrKV5mMvy+4cOkMQ047T7TuQ0k9V3geLqNu773Q/yzY082w6v4dJZKyMZAUQ7XAt9fTZrvVEHd4aIg1irQyDn9uc=
+      secure: XVGvIN4wW6po+uYi7G3jip5e7Jo5um/eEz7GDNxkNGfKuMhaq1NF/U14ngOK38zM20MLXDForSb6HDJhdDScLdVV42EWZmb0bYp58uy1+dvQTzDzmnKzugw4UKpPhr6932msiB+T5/Ss5iEd/A4RaRsHBC8jgRVNKLnZ5rcb3ao=
+env:
+  global:
+  - PERSONA_TEST_HOST: https://staging-users.talis.com
+  - secure: Ceu4ndZvgr8fM5mcQAkJ7pISyxqr+YhG3q8YILWZvGHpeiIrbquZEnUJOu9Mkd7ymhfSKuGza71ZBs7g3FcAoa4EF1z6ZIJm7a16RcRf2HpSIXdhwQDqjrY7zq/dKyjJ53WEx8PU1POQexT9RMXHUBcy7vttIvgwOHiTefevj30=
+  - secure: ZZgocbemCRtvkFp/KpSSAbmgmfrTihX3CQLuq8morMOzK2PVTWIYBU6UfYoHpJt3y6Ue/svP9LDlSZ7Fucyy4T9XrzOi8p6cfLHr8jYQGja11saZgw5GNbjC3rsdOQlj+666x3nNZF2jgudXevQykpbRwx3wAApp5Fuy2pcvSFM=

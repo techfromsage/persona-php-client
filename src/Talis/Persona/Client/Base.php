@@ -2,6 +2,8 @@
 namespace Talis\Persona\Client;
 
 use Monolog\Logger;
+use Guzzle\Http\Client;
+use Guzzle\Http\Exception\RequestException;
 
 abstract class Base
 {
@@ -25,6 +27,11 @@ abstract class Base
      * @var \Psr\Log\LoggerInterface
      */
     private $logger;
+
+    /**
+     * @var \GuzzleHttp\Client
+     */
+    private $httpClient;
 
     /**
      * Constructor
@@ -116,50 +123,113 @@ abstract class Base
     }
 
     /**
+     * @return \GuzzleHttp\Client
+     */
+    protected function getHTTPClient()
+    {
+        if ($this->httpClient === null) {
+            $this->httpClient = new Client(
+                $this->config['persona_host']
+            );
+        }
+
+        return $this->httpClient;
+    }
+
+    /**
      * Perform the request according to the $curlOptions
      * @param $curlOptions array options to execute cURL with
      * @param $expectResponse set true if you expect a JSON response with a 200, otherwise expect a 204 no content
      * @return array|null
+     * @throws NotFoundException if the http status was a 404
      * @throws \Exception if response not 200 and valid JSON
      */
-    protected function performRequest(array $curlOptions,$expectResponse=true)
+    protected function performRequest($url, array $opts, $expectResponse=true, $addContentType=true, $parseJson=true)
     {
-        $curl = curl_init();
-        curl_setopt_array($curl, $curlOptions);
-
-        $response = curl_exec($curl);
-        $headers = curl_getinfo($curl);
-        curl_close($curl);
-
         $expectedResponseCode = ($expectResponse) ? 200 : 204;
-        if (isset($headers['http_code']) && $headers['http_code'] === $expectedResponseCode)
-        {
-            if ($expectResponse) // expect JSON!
-            {
-                $json = json_decode($response,true);
-                if (empty($json))
-                {
-                    $this->getLogger()->error("Could not parse response {$response} as JSON");
-                    throw new \Exception("Could not parse response from persona as JSON");
-                }
-                return $json;
-            }
-            else
-            {
-                return null;
-            }
+        $body = isset($opts['body']) ? $opts['body'] : null;
+        $config = array_merge(
+            array(
+                'method' => 'GET',
+                'timeout' => 30,
+                'headers' => array(),
+            ),
+            $opts
+        );
+        if (isset($config['bearerToken'])) {
+            $config['headers']['Authorization'] = 'Bearer ' . $config['bearerToken'];
         }
-        else
-        {
-            $this->getLogger()->error("Did not retrieve successful response code", array("headers"=>$headers,"response"=>$response));
-            switch ($headers['http_code'])
-            {
-                case 404:
-                    throw new NotFoundException("Received 404 response from persona",$headers['http_code']);
-                default:
-                    throw new \Exception("Did not retrieve successful response code from persona",$headers['http_code']);
-            }
-        }
-    }
 
+        if ($body != null && $addContentType) {
+            $config['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
+        }
+
+        $client = $this->getHTTPClient();
+        $request = $client->createRequest(
+            $config['method'],
+            $url,
+            $config['headers'],
+            $body,
+            $config
+        );
+
+        try {
+            $response = $request->send();
+        } catch(RequestException $exception) {
+            if (isset($exception->hasResponse) && $exception->hasResponse) {
+                $status = $exception->getResponse()->getStatusCode();
+            } else {
+                $status = -1;
+            }
+
+            throw new \Exception(
+                "Did not retrieve successful response code from persona: " . $status,
+                $status
+            );
+        }
+
+        // Unexpected result
+        if ($response->getStatusCode() != $expectedResponseCode) {
+            $this->getLogger()->error(
+                "Did not retrieve successful response code",
+                array("opts" => $opts, "url" => $url, "response" => $response)
+            );
+
+            switch ($headers['http_code']) {
+            case 404:
+                throw new NotFoundException(
+                    "Received 404 response from persona",
+                    $headers['http_code']
+                );
+            default:
+                throw new \Exception(
+                    "Did not retrieve successful response code from persona",
+                    $headers['http_code']
+                );
+            }
+        }
+
+        // Not expecting a body to be returned
+        if ($expectResponse === false) {
+            return null;
+        }
+
+        if ($parseJson === false) {
+            return $response->getBody();
+        }
+
+        $json = json_decode($response->getBody(), true);
+
+        if (empty($json)) {
+            $this->getLogger()->error(
+                "Could not parse response {$response} as JSON"
+            );
+
+            throw new \Exception(
+                "Could not parse response from persona as JSON"
+            );
+        }
+
+        return $json;
+    }
 }

@@ -1,8 +1,14 @@
 <?php
 namespace Talis\Persona\Client;
+use \Firebase\JWT\JWT;
+use \Firebase\JWT\ExpiredException;
+
+class ScopesNotDefinedException extends \Exception {
+}
 
 class Tokens extends Base
 {
+    const VERIFIED_BY_JWT       =  'verified_by_jwt';
     const VERIFIED_BY_PERSONA   =  'verified_by_persona';
     const VERIFIED_BY_CACHE     =  'verified_by_cache';
 
@@ -13,73 +19,156 @@ class Tokens extends Base
     protected $tokenCacheClient = null;
 
     /**
-     * Validates the specified token/scope if you supply as a parameters.
-     * Otherwise calls the internal method getTokenFromRequest() in order to
-     * extract the token from $_SERVER, $_GET or $_POST
+     * Validates the supplied token using JWT or a remote Persona server.
+     * An optional scope can be supplied to validate against. If a token
+     * is not provided within the parameter one will be extracted from
+     * either $_SERVER, $_GET or $_POST.
      *
-     * It will first attempt to validate the token against the tokencache if it is configured, if not the token i
-     * is validated using persona
+     * The order of validation is as follows: JWT, local Redis cache, then remote Persona.
      *
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scope: (string) specify this if you wish to validate a scoped token
-     * @return bool|string will return FALSE if could not validate the token. If it did validate the token it will return VERIFIED_BY_CACHE | VERIFIED_BY_PERSONA
-     * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
+     * @return bool|string will return false if could not validate the token. If it did validate the token it will return VERIFIED_BY_CACHE | VERIFIED_BY_PERSONA | VERIFIED_BY_JWT
+     * @throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
+     * @throws DomainException invalid public key
+     * @throw InvalidArgumentException Invalid public key format
      */
-    public function validateToken($params = array()){
-        $token = null;
-
-        if(isset($params['access_token']) || !empty($params['access_token'])){
+    public function validateToken($params = array())
+    {
+        if (isset($params['access_token']) && !empty($params['access_token'])) {
             $token = $params['access_token'];
         } else {
             $token = $this->getTokenFromRequest();
         }
 
+        $scope = null;
+        if (isset($params['scope'])) {
+            $scope = $params['scope'];
+        }
+
+        try {
+            return $this->validateTokenUsingJWT($token, $scope);
+        } catch(ScopesNotDefinedException $exception) {
+            return $this->validateTokenUsingPersona($token, $scope);
+        }
+    }
+
+    /**
+     * Validate the given token by using JWT
+     * @param array $params a set of optional parameters you can pass to this method <pre>
+     *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
+     *      scope: (string) specify this if you wish to validate a scoped token
+     * @return bool|string will return false if could not validate the token. If it did validate the token it will return VERIFIED_BY_JWT
+     * @throws ScopesNotDefinedException if the JWT token doesn't include the user's scopes
+     * @throws Exception if not able to communicate with Persona to retrieve the public certificate
+     * @throws DomainException invalid public key
+     * @throw InvalidArgumentException invalid public key format
+     */
+    protected function validateTokenUsingJWT($token, $scope)
+    {
+        $cert = $this->retrieveJWTCertificate();
+
+        try {
+            $decoded = (array) JWT::decode($token, $cert, array('RS256'));
+        } catch (\UnexpectedValueException $exception) {
+            // Expired, before valid, invalid json, etc
+            $this->getLogger()->debug('Invalid token', array($exception));
+            return false;
+        }
+
+        if ($scope === null) {
+            return self::VERIFIED_BY_JWT;
+        } else if (isset($decoded['scopeCount'])) {
+            // user scopes not included within
+            // the JWT as there are too many
+            throw new ScopesNotDefinedException();
+        }
+
+        $isSu = in_array('su', $decoded['scopes'], true);
+        $hasScope = in_array($scope, $decoded['scopes'], true);
+        return $isSu || $hasScope ? self::VERIFIED_BY_JWT : false;
+    }
+
+    /**
+     * Retrieve Persona's public certificate for verifying
+     * the integrity & authentication of a given JWT
+     * @return string certificate
+     * @throws Exception cannot comminucate with Persona or Redis
+     */
+    public function retrieveJWTCertificate()
+    {
+        $cacheClient = $this->getCacheClient();
+        if ($cacheClient) {
+            $cert = json_decode($cacheClient->get('public_key'), true);
+
+            if (empty($cert) === false) {
+                return $cert;
+            }
+        }
+
+        // retrieve certifcate from Persona & cache
+        $cert = $this->performRequest('/oauth/keys', array(), true, true, false);
+        $this->cacheToken('public_key', $cert, 60 * 10);
+        return $cert;
+    }
+
+    /**
+     * Validate the given token by using Persona
+     * @param array $params a set of optional parameters you can pass to this method <pre>
+     *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
+     *      scope: (string) specify this if you wish to validate a scoped token
+     * @return bool|string will return false if could not validate the token. If it did validate the token it will return VERIFIED_BY_CACHE | VERIFIED_BY_PERSONA
+     * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
+     */
+    protected function validateTokenUsingPersona($token, $scope)
+    {
         $cacheKey = $token;
-        if(isset($params['scope']) && !empty($params['scope'])){
+        if (isset($params['scope']) && !empty($params['scope'])) {
             $cacheKey .= '@' . $params['scope'];
         }
 
-        $this->getStatsD()->startTiming("validateToken.cache.get");
+        $this->getStatsD()->startTiming('validateToken.cache.get');
         $cacheClient = $this->getCacheClient();
+
         $reply = null;
-        if($cacheClient)
-        {
-            $reply = $cacheClient->get("access_token:".$cacheKey);
+        if ($cacheClient) {
+            $reply = $cacheClient->get('access_token:' . $cacheKey);
         }
-        $this->getStatsD()->endTiming("validateToken.cache.get");
-        if($reply == 'OK'){
-            $this->getLogger()->debug("Token validated via cache");
-            $this->getStatsD()->increment("validateToken.cache.valid");
+
+        $this->getStatsD()->endTiming('validateToken.cache.get');
+        if ($reply === 'OK') {
+            $this->getLogger()->debug('Token validated via cache');
+            $this->getStatsD()->increment('validateToken.cache.valid');
             // verified by cache
             return self::VERIFIED_BY_CACHE;
-        } else {
-            $this->getStatsD()->increment("validateToken.cache.miss");
-            // verify against persona
-            $url = $this->config['persona_host'].$this->config['persona_oauth_route'].'/'.$token;
-
-            if(isset($params['scope']) && !empty($params['scope'])){
-                $url .= '?scope=' . $params['scope'];
-            }
-
-            $this->getStatsD()->startTiming("validateToken.rest.get");
-            if($this->personaCheckTokenIsValid($url)){
-                $this->getStatsD()->endTiming("validateToken.rest.get");
-                $this->getStatsD()->increment("validateToken.rest.valid");
-                // verified by persona, now cache the token
-                if($cacheClient)
-                {
-                    $cacheClient->set("access_token:".$cacheKey, 'OK');
-                    $cacheClient->expire("access_token:".$cacheKey, 60);
-                }
-
-                return self::VERIFIED_BY_PERSONA;
-            } else {
-                $this->getStatsD()->endTiming("validateToken.rest.get");
-                $this->getStatsD()->increment("validateToken.rest.invalid");
-                return FALSE;
-            }
         }
+
+        // verify against persona
+        $this->getStatsD()->increment('validateToken.cache.miss');
+        $url = $this->config['persona_host'] . $this->config['persona_oauth_route'] . '/' . $token;
+
+        if (empty($scope) === false) {
+            $url .= '?scope=' . $scope;
+        }
+
+        $this->getStatsD()->startTiming('validateToken.rest.get');
+        if ($this->personaCheckTokenIsValid($url)) {
+            $this->getStatsD()->endTiming('validateToken.rest.get');
+            $this->getStatsD()->increment('validateToken.rest.valid');
+
+            // verified by persona, now cache the token
+            if ($cacheClient) {
+                $cacheClient->set('access_token:'.$cacheKey, 'OK');
+                $cacheClient->expire('access_token:'.$cacheKey, 60);
+            }
+
+            return self::VERIFIED_BY_PERSONA;
+        }
+
+        $this->getStatsD()->endTiming('validateToken.rest.get');
+        $this->getStatsD()->increment('validateToken.rest.invalid');
+        return false;
     }
 
     /**
@@ -363,20 +452,23 @@ class Tokens extends Base
      * @return bool true if persona responds that the token was valid
      */
     protected function personaCheckTokenIsValid($url){
-        $request = curl_init($url);
-        curl_setopt($request, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($request, CURLOPT_TIMEOUT, 30);
-        curl_setopt($request, CURLOPT_NOBODY, true);
-        curl_exec($request);
-        $meta = curl_getinfo($request);
-        curl_close($request);
-        if (isset($meta) && $meta['http_code']==204) {
-            $this->getLogger()->debug("Token valid at server");
-            return true;
-        } else {
+        try {
+            $body = $this->performRequest($url, array());
+        } catch (\Exception $exception) {
             $this->getLogger()->debug("Token invalid at server");
             return false;
         }
+
+        if ($body === null) {
+            $this->getLogger()->debug(
+                "Token invalid at server, empty body"
+            );
+
+            return false;
+        }
+
+        $this->getLogger()->debug("Token valid at server");
+        return true;
     }
 
     /**
@@ -388,14 +480,15 @@ class Tokens extends Base
      * @return array json decoded array containing the response body from persona
      * @throws \Exception if persona was unable to generate a token
      */
-    protected function personaObtainNewToken($url, $query){
-        return $this->performRequest(array(
-            CURLOPT_POST            => true,
-            CURLOPT_URL             => $url,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_TIMEOUT         => 30,
-            CURLOPT_POSTFIELDS      => http_build_query($query)
-        ));
+    protected function personaObtainNewToken($url, $query)
+    {
+        return $this->performRequest(
+            $url,
+            array(
+                'method' => 'POST',
+                'body' => http_build_query($query),
+            )
+        );
     }
 
     /**

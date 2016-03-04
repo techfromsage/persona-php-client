@@ -52,7 +52,7 @@ class OAuthClients extends Base
         // Check valid keys.
         // "scope" only supports 2 keys, "$add" and "$remove". These 2 checks
         // ensure that at least 1 of these must be present, and that there are no others passed through.
-        if(!isset($properties['scope']) || count($properties['scope']) == 0)
+        if(!isset($properties['scope']) || count($properties['scope']) === 0)
         {
             throw new \InvalidArgumentException('Invalid properties');
         } else if(count(array_intersect(array('$add', '$remove'), array_keys($properties['scope']))) !== count($properties['scope']))
@@ -80,15 +80,15 @@ class OAuthClients extends Base
      */
     protected function personaPatchOAuthClient($url, $properties, $token)
     {
-        $this->performRequest(array(
-            CURLOPT_CUSTOMREQUEST   => 'PATCH',
-            CURLOPT_URL             => $url,
-            CURLOPT_FOLLOWLOCATION  => true,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_TIMEOUT         => 30,
-            CURLOPT_POSTFIELDS      => json_encode($properties),
-            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        ),false);
+        $this->performRequest(
+            $url,
+            array(
+                'method' => 'PATCH',
+                'body' => json_encode($properties),
+                'bearerToken' => $token,
+            ),
+            false
+        );
     }
 
     /**
@@ -100,13 +100,9 @@ class OAuthClients extends Base
      */
     protected function personaGetOAuthClient($url, $token)
     {
-        return $this->performRequest(array(
-            CURLOPT_URL             => $url,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_FOLLOWLOCATION  => true,
-            CURLOPT_TIMEOUT         => 30,
-            CURLOPT_HTTPHEADER      => array('Authorization: Bearer ' . $token)
-        ));
+        return $this->performRequest(
+            $url, array('bearerToken' => $token)
+        );
     }
 
 }

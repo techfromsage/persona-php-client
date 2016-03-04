@@ -20,6 +20,9 @@
         <delete dir="${build.dir}"/>
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${coverage.dir}"/>
+        <exec executable="redis-cli" failonerror="true">
+            <arg line="-n 2 flushdb" />
+        </exec>
     </target>
 
     <target name="init" depends="install-composer" description="Set up the local environment, download required libs through Composer etc">
