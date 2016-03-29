@@ -3,15 +3,12 @@ namespace Talis\Persona\Client;
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\ExpiredException;
 
-class ScopesNotDefinedException extends \Exception {
+class ScopesNotDefinedException extends \Exception
+{
 }
 
 class Tokens extends Base
 {
-    const VERIFIED_BY_JWT       =  'verified_by_jwt';
-    const VERIFIED_BY_PERSONA   =  'verified_by_persona';
-    const VERIFIED_BY_CACHE     =  'verified_by_cache';
-
     /**
      * Cached connection to redis
      * @var \Predis\Client
@@ -29,7 +26,7 @@ class Tokens extends Base
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scope: (string) specify this if you wish to validate a scoped token
-     * @return bool|string will return false if could not validate the token. If it did validate the token it will return VERIFIED_BY_CACHE | VERIFIED_BY_PERSONA | VERIFIED_BY_JWT
+     * @return bool|string will return false if could not validate the token, else true
      * @throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      * @throws DomainException invalid public key
      * @throw InvalidArgumentException Invalid public key format
@@ -56,18 +53,19 @@ class Tokens extends Base
 
     /**
      * Validate the given token by using JWT
-     * @param array $params a set of optional parameters you can pass to this method <pre>
-     *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
-     *      scope: (string) specify this if you wish to validate a scoped token
-     * @return bool|string will return false if could not validate the token. If it did validate the token it will return VERIFIED_BY_JWT
+     * @param string $token a token to validate explicitly, if you do not 
+     *      specify one the method tries to find one
+     * @param string $scope specify this if you wish to validate a scoped token
+     * @param int $cacheTTL time to live value in seconds for the certificate to stay within cache
+     * @return bool|string will return false if could not validate the token, else true
      * @throws ScopesNotDefinedException if the JWT token doesn't include the user's scopes
      * @throws Exception if not able to communicate with Persona to retrieve the public certificate
      * @throws DomainException invalid public key
      * @throw InvalidArgumentException invalid public key format
      */
-    protected function validateTokenUsingJWT($token, $scope)
+    protected function validateTokenUsingJWT($token, $scope, $cacheTTL = 300)
     {
-        $cert = $this->retrieveJWTCertificate();
+        $cert = $this->retrieveJWTCertificate($cacheTTL);
 
         try {
             $decoded = (array) JWT::decode($token, $cert, array('RS256'));
@@ -78,7 +76,7 @@ class Tokens extends Base
         }
 
         if ($scope === null) {
-            return self::VERIFIED_BY_JWT;
+            return true;
         } else if (isset($decoded['scopeCount'])) {
             // user scopes not included within
             // the JWT as there are too many
@@ -87,30 +85,27 @@ class Tokens extends Base
 
         $isSu = in_array('su', $decoded['scopes'], true);
         $hasScope = in_array($scope, $decoded['scopes'], true);
-        return $isSu || $hasScope ? self::VERIFIED_BY_JWT : false;
+        return $isSu || $hasScope ? true : false;
     }
 
     /**
      * Retrieve Persona's public certificate for verifying
      * the integrity & authentication of a given JWT
+     * @param int $cacheTTL time to live in seconds for cached responses
      * @return string certificate
      * @throws Exception cannot comminucate with Persona or Redis
      */
-    public function retrieveJWTCertificate()
+    public function retrieveJWTCertificate($cacheTTL = 300)
     {
-        $cacheClient = $this->getCacheClient();
-        if ($cacheClient) {
-            $cert = json_decode($cacheClient->get('public_key'), true);
-
-            if (empty($cert) === false) {
-                return $cert;
-            }
-        }
-
-        // retrieve certifcate from Persona & cache
-        $cert = $this->performRequest('/oauth/keys', array(), true, true, false);
-        $this->cacheToken('public_key', $cert, 60 * 10);
-        return $cert;
+        return $this->performRequest(
+            '/oauth/keys',
+            array(
+                'expectResponse' => true,
+                'addContentType' => true,
+                'parseJson' => false,
+                'cacheTTL' => $cacheTTL,
+            )
+        );
     }
 
     /**
@@ -118,32 +113,11 @@ class Tokens extends Base
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scope: (string) specify this if you wish to validate a scoped token
-     * @return bool|string will return false if could not validate the token. If it did validate the token it will return VERIFIED_BY_CACHE | VERIFIED_BY_PERSONA
+     * @return bool|string will return false if could not validate the token, else true
      * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      */
     protected function validateTokenUsingPersona($token, $scope)
     {
-        $cacheKey = $token;
-        if (isset($params['scope']) && !empty($params['scope'])) {
-            $cacheKey .= '@' . $params['scope'];
-        }
-
-        $this->getStatsD()->startTiming('validateToken.cache.get');
-        $cacheClient = $this->getCacheClient();
-
-        $reply = null;
-        if ($cacheClient) {
-            $reply = $cacheClient->get('access_token:' . $cacheKey);
-        }
-
-        $this->getStatsD()->endTiming('validateToken.cache.get');
-        if ($reply === 'OK') {
-            $this->getLogger()->debug('Token validated via cache');
-            $this->getStatsD()->increment('validateToken.cache.valid');
-            // verified by cache
-            return self::VERIFIED_BY_CACHE;
-        }
-
         // verify against persona
         $this->getStatsD()->increment('validateToken.cache.miss');
         $url = $this->config['persona_host'] . $this->config['persona_oauth_route'] . '/' . $token;
@@ -157,13 +131,7 @@ class Tokens extends Base
             $this->getStatsD()->endTiming('validateToken.rest.get');
             $this->getStatsD()->increment('validateToken.rest.valid');
 
-            // verified by persona, now cache the token
-            if ($cacheClient) {
-                $cacheClient->set('access_token:'.$cacheKey, 'OK');
-                $cacheClient->expire('access_token:'.$cacheKey, 60);
-            }
-
-            return self::VERIFIED_BY_PERSONA;
+            return true;
         }
 
         $this->getStatsD()->endTiming('validateToken.rest.get');
@@ -183,64 +151,56 @@ class Tokens extends Base
      * @param array $params a set of optional parameters you can pass into this method <pre>
      *          scope: (string) to obtain a new scoped token
      *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token (and setting a new cookie with the resultant token)
-     *          useCache: (boolean) default true, to enable checking the cache for recently created tokens, instead of querying persona direct each time </pre>
+     *          use_cache: (boolean) use cached called (defaults to true)</pre>
      * @return array containing the token details
      * @throws \Exception if we were unable to generate a new token or if credentials were missing
      */
     public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
         $this->getStatsD()->increment("obtainNewToken");
+        $useCookies = isset($params['useCookies']) ? $params['useCookies'] : true;
 
-        $useCookies = (!isset($params['useCookies'])) ? true : $params['useCookies']; // default to true
-        $useCache = (!isset($params['useCache'])) ? true : $params['useCache']; // default to true
-        $cacheKey = ($useCache) ? "obtain_token:".hash_hmac('sha256', $clientId, $clientSecret) : '';
+        if ($useCookies && isset($_COOKIE['access_token'])) {
+            return json_decode($_COOKIE['access_token'], true);
+        }
 
-        if(!$useCookies || ($useCookies && !isset($_COOKIE['access_token']))) {
+        if (empty($clientId) || empty($clientSecret)) {
+            throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
+        }
 
-            if( empty($clientId) || empty($clientSecret)){
-                throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
-            }
+        $token = false;
+        if (!isset($params['use_cache']) || $params['use_cache'] !== false) {
+            $cacheKey = 'accesstoken_' . md5($clientId);
+            $token = $this->getCacheBackend()->fetch($cacheKey);
+        }
 
-            if ($useCache) {
-                // check cache, if exists then use that instead and return
-                $this->getStatsD()->startTiming("obtainNewToken.cache.get");
-                $cacheClient = $this->getCacheClient();
-                if($cacheClient)
-                {
-                    $existingToken = json_decode($cacheClient->get($cacheKey),true);
-                } else{
-                    $existingToken = false;
-                }
-                $this->getStatsD()->endTiming("obtainNewToken.cache.get");
-                if (!empty($existingToken)) {
-                    if ($useCookies) $this->setTokenCookie($existingToken);
-                    return $existingToken;
-                }
-            }
-
+        if (empty($token)) {
             $query = array(
                 'grant_type'    => 'client_credentials',
                 'client_id'     => $clientId,
-                'client_secret' => $clientSecret
+                'client_secret' => $clientSecret,
             );
 
-            if(isset($params['scope']) && !empty($params['scope'])){
+            if (isset($params['scope']) && !empty($params['scope'])) {
                 $query['scope'] = $params['scope'];
             }
 
-            $url = $this->config['persona_host'].$this->config['persona_oauth_route'];
+            $url = $this->config['persona_host'] . $this->config['persona_oauth_route'];
             $this->getStatsD()->startTiming("obtainNewToken.rest.get");
             $token =  $this->personaObtainNewToken($url, $query);
             $this->getStatsD()->endTiming("obtainNewToken.rest.get");
 
-            if ($useCache) {
-                $this->cacheToken($cacheKey,$token,$token['expires_in']-60);
+            if ($token && isset($token['expires_in'])) {
+                $this->getCacheBackend()->save(
+                    $cacheKey, $token, intval($token['expires_in'], 10)
+                );
             }
-
-            if ($useCookies) $this->setTokenCookie($token);
-            return $token;
-        } else {
-            return json_decode($_COOKIE['access_token'],true);
         }
+
+        if ($useCookies) {
+            $this->setTokenCookie($token);
+        }
+
+        return $token;
     }
 
     /**
@@ -309,27 +269,6 @@ class Tokens extends Base
         return $valid;
     }
 
-    /* Protected functions */
-
-    /**
-     * To allow mocking of the redis transaction
-     * @param $cacheKey
-     * @param $token
-     * @param $expiryTime
-     */
-    protected function cacheToken($cacheKey,$token,$expiryTime) {
-        // cache this freshly obtained token so we don't have to round-trip to persona again
-        $cacheClient = $this->getCacheClient();
-        if($cacheClient)
-        {
-            $cacheClient->transaction(function($tx) use ($cacheKey, $token, $expiryTime) {
-                $tx->multi();
-                $tx->set($cacheKey,json_encode($token));
-                $tx->expire($cacheKey,$expiryTime); // cache for token expiry minus 60s
-            });
-        };
-    }
-
     /**
      * Attempts to find an access token based on the current request.
      * It first looks at $_SERVER headers for a Bearer, failing that
@@ -378,9 +317,6 @@ class Tokens extends Base
         $requiredProperties = array(
             'persona_host',
             'persona_oauth_route',
-            'tokencache_redis_host',
-            'tokencache_redis_port',
-            'tokencache_redis_db'
         );
 
         $missingProperties = array();
@@ -399,51 +335,6 @@ class Tokens extends Base
     }
 
     /**
-     * Lazy Loader, returns a predis client instance
-     *
-     * @return false|\Predis\Client a connected predis instance
-     * @throws \Predis\Connection\ConnectionException if it cannot connect to the server specified
-     */
-    protected function getCacheClient(){
-        if(!$this->tokenCacheClient){
-
-            // Validate token cache config
-            if($this->validateTokenCacheConfig())
-            {
-                $this->tokenCacheClient = new \Predis\Client(array(
-                    'scheme'   => 'tcp',
-                    'host'     => $this->config['tokencache_redis_host'],
-                    'port'     => $this->config['tokencache_redis_port'],
-                    'database' => $this->config['tokencache_redis_db']
-                ));
-            } else
-            {
-                return false;
-            }
-        }
-
-        return $this->tokenCacheClient;
-    }
-
-    /**
-     * Validates that all required properties for the tokencache config have been set
-     * and do not contain an empty or null value
-     *
-     * @return bool true if the token cache config is valid, false otherwise
-     */
-    protected function validateTokenCacheConfig()
-    {
-        // Check if config values are all set and not empty
-        if((isset($this->config['tokencache_redis_host']) && !empty($this->config['tokencache_redis_host'])) &&
-            (isset($this->config['tokencache_redis_port']) && !empty($this->config['tokencache_redis_port'])) &&
-            (isset($this->config['tokencache_redis_db']) && !empty($this->config['tokencache_redis_db'])))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * This method wraps the curl request that is made to persona and
      * returns true or false depending on whether or not persona was
      * able to validate the token.
@@ -453,7 +344,14 @@ class Tokens extends Base
      */
     protected function personaCheckTokenIsValid($url){
         try {
-            $body = $this->performRequest($url, array());
+            $body = $this->performRequest(
+                $url,
+                array(
+                    'headers' => array(
+                        'Cache-Control' => 'max-age=0, no-cache',
+                    )
+                )
+            );
         } catch (\Exception $exception) {
             $this->getLogger()->debug("Token invalid at server");
             return false;

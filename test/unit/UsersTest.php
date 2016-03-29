@@ -16,9 +16,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getUserByGupid('', '');
     }
@@ -27,9 +24,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getUserByGupid('123', '');
     }
@@ -39,9 +33,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $mockClient->expects($this->once())
             ->method('personaGetUser')
@@ -54,9 +45,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $expectedResponse = array(
             '_id' => '123',
@@ -93,9 +81,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getUserByGuids('', '');
     }
@@ -104,9 +89,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getUserByGuids(array('123'), '');
     }
@@ -115,9 +97,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getUserByGuids(array('123'), '456');
     }
@@ -127,9 +106,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $mockClient->expects($this->once())
             ->method('personaGetUser')
@@ -142,9 +118,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $expectedResponse = array(array(
             '_id' => '123',
@@ -184,9 +157,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser();
     }
@@ -196,9 +166,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser('gupid');
     }
@@ -208,9 +175,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser('gupid', 'profile');
     }
@@ -221,9 +185,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser('', 'profile', 'token');
     }
@@ -233,9 +194,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser(array('gupid'), 'profile', 'token');
     }
@@ -245,9 +203,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $expectedResponse = array('gupid' => '123');
         $mockClient->expects($this->once())
@@ -261,9 +216,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser('gupid', 'profile', 'token');
     }
@@ -274,9 +226,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser('gupid', array('email' => ''), '');
     }
@@ -286,9 +235,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->createUser('gupid', array('email' => ''), array(''));
     }
@@ -298,9 +244,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $mockClient->expects($this->once())
             ->method('personaPostUser')
@@ -312,9 +255,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $expectedResponse = array('gupid' => '123', 'profile' => array());
         $mockClient->expects($this->once())
@@ -330,9 +270,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser();
     }
@@ -342,9 +279,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser('123');
     }
@@ -354,9 +288,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser('123', array());
     }
@@ -366,9 +297,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser('', array(), '987');
     }
@@ -378,9 +306,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser(array(), array(), '987');
     }
@@ -390,9 +315,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser('123', array(), '987');
     }
@@ -402,9 +324,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser('123', 'PROFILE', '987');
     }
@@ -414,9 +333,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser('123', array('email' => 'PROFILE'), '');
     }
@@ -426,9 +342,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateUser('123', array('email' => 'PROFILE'), array(''));
     }
@@ -438,9 +351,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $mockClient->expects($this->once())
             ->method('personaPatchUser')
@@ -452,9 +362,6 @@ class UsersTest extends TestBase {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $expectedResponse = array('gupid' => '123', 'profile' => array());
         $mockClient->expects($this->once())

@@ -18,9 +18,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getOAuthClient('', '');
     }
@@ -29,9 +26,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getOAuthClient('123', '');
     }
@@ -41,9 +35,6 @@ class OAuthClientsTest extends TestBase
         $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaGetOAuthClient'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $mockClient->expects($this->once())
             ->method('personaGetOAuthClient')
@@ -56,9 +47,6 @@ class OAuthClientsTest extends TestBase
         $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaGetOAuthClient'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $expectedResponse = array(
             'rate_limit' => 1000,
@@ -88,9 +76,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient();
     }
@@ -100,9 +85,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123');
     }
@@ -112,9 +94,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array());
     }
@@ -124,9 +103,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('', array(), '987');
     }
@@ -136,9 +112,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient(array(), array(), '987');
     }
@@ -148,9 +121,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array(), '987');
     }
@@ -160,9 +130,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', 'PROPERTIES', '987');
     }
@@ -172,9 +139,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array('INVALID' => array()), '987');
     }
@@ -184,9 +148,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array('scope' => array()), '987');
     }
@@ -196,9 +157,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '')), '987');
     }
@@ -208,9 +166,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '', '$add' => 'test')), '987');
     }
@@ -220,9 +175,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '', '$remove' => 'remove-scope', '$add' => 'add-scope')), '987');
     }
@@ -232,9 +184,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123', array('scope' => array('$add' => 'additional-scope')), '');
     }
@@ -244,9 +193,6 @@ class OAuthClientsTest extends TestBase
         $personaClient = new OAuthClients(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->updateOAuthClient('123',  array('scope' => array('$add' => 'additional-scope')), array(''));
     }
@@ -256,9 +202,6 @@ class OAuthClientsTest extends TestBase
         $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaPatchOAuthClient'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
         $mockClient->expects($this->once())
             ->method('personaPatchOAuthClient')
@@ -271,9 +214,6 @@ class OAuthClientsTest extends TestBase
         $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaPatchOAuthClient'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         )));
 
         $expectedResponse = array(); // 204 has no content

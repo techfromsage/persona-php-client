@@ -1,6 +1,7 @@
 <?php
 
 use Talis\Persona\Client\Tokens;
+use Doctrine\Common\Cache\ArrayCache;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT'))
@@ -25,74 +26,100 @@ class TokensTest extends TestBase {
         $this->clientId = $personaConf['oauthClient'];
         $this->clientSecret = $personaConf['oauthSecret'];
 
-        $this->personaClient = new Tokens(array(
-            'persona_host' => $personaConf['host'],
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
-        ));
+        $this->personaCache = new ArrayCache();
+        $this->personaClient = new Tokens(
+            array(
+                'persona_host' => $personaConf['host'],
+                'persona_oauth_route' => '/oauth/tokens',
+            ),
+            null,
+            $this->personaCache
+        );
     }
 
     function testObtainNewToken(){
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array('useCache'=>false));
 
-        $this->assertArrayHasKey('access_token', $tokenDetails, "should contain access_token");
-        $this->assertArrayHasKey('expires_in', $tokenDetails, "should contain expires_in");
-        $this->assertArrayHasKey('token_type', $tokenDetails, "should contain token type");
-        $this->assertArrayHasKey('scope', $tokenDetails, "should contain scope");
+        $this->assertArrayHasKey('access_token', $tokenDetails, 'should contain access_token');
+        $this->assertArrayHasKey('expires_in', $tokenDetails, 'should contain expires_in');
+        $this->assertArrayHasKey('token_type', $tokenDetails, 'should contain token type');
+        $this->assertArrayHasKey('scope', $tokenDetails, 'should contain scope');
         $this->assertGreaterThan(0, $tokenDetails['expires_in']);
-        $this->assertEquals("bearer", strtolower($tokenDetails['token_type']));
+        $this->assertEquals('bearer', strtolower($tokenDetails['token_type']));
 
         $scopes = explode(' ', $tokenDetails['scope']);
-        $this->assertContains("su", $scopes);
+        $this->assertContains('su', $scopes);
         $this->assertContains($this->clientId, $scopes);
+    }
+
+    /**
+     * Retrieving a token with the same credentials should be cached
+     * @return null
+     */
+    public function testObtainCachedToken()
+    {
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+
+        $this->assertArrayHasKey('access_token', $tokenDetails, 'should contain access_token');
+        $this->assertArrayHasKey('expires_in', $tokenDetails, 'should contain expires_in');
+        $this->assertArrayHasKey('token_type', $tokenDetails, 'should contain token type');
+        $this->assertArrayHasKey('scope', $tokenDetails, 'should contain scope');
+        $this->assertGreaterThan(0, $tokenDetails['expires_in']);
+        $this->assertEquals('bearer', strtolower($tokenDetails['token_type']));
+
+        $scopes = explode(' ', $tokenDetails['scope']);
+        $this->assertContains('su', $scopes);
+        $this->assertContains($this->clientId, $scopes);
+
+
+        $cachedTokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
+        $this->assertEquals($cachedTokenDetails, $tokenDetails);
     }
 
     function testObtainNewTokenWithValidScope(){
         $tokenDetails = $this->personaClient->obtainNewToken(
             $this->clientId,
             $this->clientSecret,
-            array("scope" => $this->clientId,"useCache" => false)
+            array('scope' => $this->clientId,'useCache' => false)
         );
 
-        $this->assertArrayHasKey('access_token', $tokenDetails, "should contain access_token");
-        $this->assertArrayHasKey('expires_in', $tokenDetails, "should contain expires_in");
-        $this->assertArrayHasKey('token_type', $tokenDetails, "should contain token type");
-        $this->assertArrayHasKey('scope', $tokenDetails, "should contain scope");
+        $this->assertArrayHasKey('access_token', $tokenDetails, 'should contain access_token');
+        $this->assertArrayHasKey('expires_in', $tokenDetails, 'should contain expires_in');
+        $this->assertArrayHasKey('token_type', $tokenDetails, 'should contain token type');
+        $this->assertArrayHasKey('scope', $tokenDetails, 'should contain scope');
         $this->assertGreaterThan(0, $tokenDetails['expires_in']);
-        $this->assertEquals("bearer", strtolower($tokenDetails['token_type']));
+        $this->assertEquals('bearer', strtolower($tokenDetails['token_type']));
         $this->assertEquals($this->clientId, $tokenDetails['scope']);
     }
 
     function testObtainNewTokenThrowsExceptionIfNoCredentials(){
         $this->setExpectedException('Exception', 'You must specify clientId, and clientSecret to obtain a new token');
-        $tokenDetails = $this->personaClient->obtainNewToken(null, null, array("scope"=>"wibble","useCache"=>false));
+        $tokenDetails = $this->personaClient->obtainNewToken(null, null, array('scope'=>'wibble','useCache'=>false));
     }
 
     function testObtainNewTokenThrowsExceptionIfInvalidScope(){
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("scope"=>"wibble","useCache"=>false));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array('scope'=>'wibble','useCache'=>false));
     }
 
     function testObtainNewTokenReturnsAccessTokenIfSetOnCookie() {
-        $_COOKIE['access_token'] = json_encode( array("access_token"=> "my token", "expires_in"=>999, "token_type"=>"some token type", "scope"=>"example"));
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
+        $_COOKIE['access_token'] = json_encode( array('access_token'=> 'my token', 'expires_in'=>999, 'token_type'=>'some token type', 'scope'=>'example'));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array('useCache'=>false));
 
-        $this->assertEquals("my token", $tokenDetails['access_token']);
+        $this->assertEquals('my token', $tokenDetails['access_token']);
         $this->assertEquals(999, $tokenDetails['expires_in']);
-        $this->assertEquals("some token type", $tokenDetails['token_type']);
-        $this->assertEquals("example", $tokenDetails['scope']);
+        $this->assertEquals('some token type', $tokenDetails['token_type']);
+        $this->assertEquals('example', $tokenDetails['scope']);
     }
 
     function testObtainNewTokenReturnsNewAccessTokenIfSetOnCookieButUseCookieFalse(){
-        $_COOKIE['access_token'] = json_encode( array("access_token"=> "my token", "expires_in"=>999, "token_type"=>"some token type", "scope"=>"example"));
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret,array("useCookies"=>false,"useCache"=>false));
+        $_COOKIE['access_token'] = json_encode( array('access_token'=> 'my token', 'expires_in'=>999, 'token_type'=>'some token type', 'scope'=>'example'));
+        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret,array('useCookies'=>false,'useCache'=>false));
 
-        $this->assertNotEquals("my token", $tokenDetails['access_token']);
+        $this->assertNotEquals('my token', $tokenDetails['access_token']);
         $this->assertNotEquals(999, $tokenDetails['expires_in']);
-        $this->assertNotEquals("some token type", $tokenDetails['token_type']);
-        $this->assertNotEquals("example", $tokenDetails['scope']);
+        $this->assertNotEquals('some token type', $tokenDetails['token_type']);
+        $this->assertNotEquals('example', $tokenDetails['scope']);
     }
 
     function testValidateTokenThrowsExceptionNoTokenToValidate() {
@@ -104,7 +131,7 @@ class TokensTest extends TestBase {
 
     function testValidateTokenReturnsFalseIfTokenIsNotValid(){
         $this->assertFalse(
-            $this->personaClient->validateToken(array("access_token"=>"my token"))
+            $this->personaClient->validateToken(array('access_token'=>'my token'))
         );
     }
 
@@ -113,15 +140,15 @@ class TokensTest extends TestBase {
         $tokenDetails = $this->personaClient->obtainNewToken(
             $this->clientId,
             $this->clientSecret,
-            array("useCache"=>false)
+            array('useCache'=>false)
         );
 
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
         // first validation call is validated by persona
-        $this->assertEquals(Tokens::VERIFIED_BY_JWT, $this->personaClient->validateToken(
-            array("access_token"=>$token)
+        $this->assertEquals(true, $this->personaClient->validateToken(
+            array('access_token'=>$token)
         ));
     }
 
@@ -130,7 +157,7 @@ class TokensTest extends TestBase {
         $tokenDetails = $this->personaClient->obtainNewToken(
             $this->clientId,
             $this->clientSecret,
-            array("useCache"=>false)
+            array('useCache'=>false)
         );
 
         $this->assertArrayHasKey('access_token', $tokenDetails);
@@ -139,7 +166,7 @@ class TokensTest extends TestBase {
         $_GET = array('access_token' => $token);
 
         // first validation call is validated by persona
-        $this->assertEquals(Tokens::VERIFIED_BY_JWT, $this->personaClient->validateToken());
+        $this->assertEquals(true, $this->personaClient->validateToken());
     }
 
     function testValidateTokenInPOST(){
@@ -147,7 +174,7 @@ class TokensTest extends TestBase {
         $tokenDetails = $this->personaClient->obtainNewToken(
             $this->clientId,
             $this->clientSecret,
-            array("useCache"=>false)
+            array('useCache'=>false)
         );
 
         $this->assertArrayHasKey('access_token', $tokenDetails);
@@ -155,7 +182,7 @@ class TokensTest extends TestBase {
 
         $_POST = array('access_token' => $token);
         // first validation call is validated by persona
-        $this->assertEquals(Tokens::VERIFIED_BY_JWT, $this->personaClient->validateToken());
+        $this->assertEquals(true, $this->personaClient->validateToken());
     }
 
 
@@ -164,16 +191,16 @@ class TokensTest extends TestBase {
         $tokenDetails = $this->personaClient->obtainNewToken(
             $this->clientId,
             $this->clientSecret,
-            array("useCache"=>false)
+            array('useCache'=>false)
         );
 
         $this->assertArrayHasKey('access_token', $tokenDetails);
         $token = $tokenDetails['access_token'];
 
-        $_SERVER = array("HTTP_BEARER" => "Bearer " . $token);
+        $_SERVER = array('HTTP_BEARER' => 'Bearer ' . $token);
 
         // first validation call is validated by persona
-        $this->assertEquals(Tokens::VERIFIED_BY_JWT, $this->personaClient->validateToken());
+        $this->assertEquals(true, $this->personaClient->validateToken());
     }
 
     function testValidateScopedToken(){
@@ -182,8 +209,8 @@ class TokensTest extends TestBase {
             $this->clientId,
             $this->clientSecret,
             array(
-                "scope" => $this->clientId,
-                "useCache" => false,
+                'scope' => $this->clientId,
+                'useCache' => false,
             )
         );
 
@@ -192,11 +219,11 @@ class TokensTest extends TestBase {
 
         // first validation call is validated by persona
         $this->assertEquals(
-            Tokens::VERIFIED_BY_JWT,
+            true,
             $this->personaClient->validateToken(
                 array(
-                    "access_token" => $token,
-                    "scope" => $this->clientId,
+                    'access_token' => $token,
+                    'scope' => $this->clientId,
                 )
             )
         );
