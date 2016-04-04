@@ -3,7 +3,13 @@ namespace Talis\Persona\Client;
 
 use Monolog\Logger;
 use Guzzle\Http\Client;
+use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\CacheProvider;
+use Doctrine\Common\Cache\FilesystemCache;
 use Guzzle\Http\Exception\RequestException;
+use Guzzle\Cache\DoctrineCacheAdapter;
+use Guzzle\Plugin\Cache\CachePlugin;
+use Guzzle\Plugin\Cache\DefaultCacheStorage;
 
 abstract class Base
 {
@@ -34,22 +40,71 @@ abstract class Base
     private $httpClient;
 
     /**
+     * @var \Doctrine\Common\Cache\CacheProvider
+     */
+    private $cacheBackend;
+
+    /**
+     * @var string
+     */
+    private $keyPrefix;
+
+    /**
+     * @var int
+     */
+    private $defaultTtl;
+
+    /**
      * Constructor
      *
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
-     *      tokencache_redis_host: (string) the host address of redis token cache
-     *      tokencache_redis_port: (integer) the port number the redis host ist listening
-     *      tokencache_redis_db: (integer) the database to connnect to</pre>
-     * @param logger the logger to use, otherwise a default will be assigned and used
+     *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) optional cache storage (defaults to Filesystem)
+     *      cacheKeyPrefix: (string) optional prefix to append to the cache keys
+     *      cacheDefaultTTL: (integer) optional cache TTL value
+     * @param @deprecated $logger optional logger instance
+     * @param @deprecated $cacheBackend optional cache backend see
+     *  https://github.com/doctrine/cache/tree/master/lib/Doctrine/Common/Cache
+     *  https://doctrine-orm.readthedocs.org/projects/doctrine-orm/en/latest/reference/caching.html
      * @throws \InvalidArgumentException if any of the required config parameters are missing
+     * 
      */
-    public function __construct($config,\Psr\Log\LoggerInterface $logger=null) {
-        if($this->checkConfig($config)){
-            $this->config = $config;
-        };
-        $this->logger = $logger;
+    public function __construct(
+        array $config,
+        \Psr\Log\LoggerInterface $logger = null,
+        CacheProvider $cacheBackend = null
+    ) {
+        $this->checkConfig($config);
+        $this->config = $config;
+
+        $this->logger = isset($config['logger'])
+            ? $config['logger']
+            : $logger;
+
+        $cacheBackend = $cacheBackend === null
+            ? new FilesystemCache('/tmp/personaCache')
+            : $cacheBackend;
+
+        $this->cacheBackend = isset($config['cacheBackend'])
+            ? $config['cacheBackend']
+            : $cacheBackend;
+
+        $this->keyPrefix = isset($config['cacheKeyPrefix'])
+            ? $config['cacheKeyPrefix']
+            : '';
+
+        $this->defaultTtl = isset($config['cacheDefaultTTL'])
+            ? $config['cacheDefaultTTL']
+            : 3600;
+
+        if ($logger && $this->logger) {
+            $this->logger->warn('$logger attribute is deprecated');
+        }
+
+        if ($cacheBackend && $this->logger) {
+            $this->logger->warn('$cacheBackend is deprecated');
+        }
     }
 
     /**
@@ -91,9 +146,6 @@ abstract class Base
         $requiredProperties = array(
             'persona_host',
             'persona_oauth_route',
-            'tokencache_redis_host',
-            'tokencache_redis_port',
-            'tokencache_redis_db'
         );
 
         $missingProperties = array();
@@ -131,47 +183,90 @@ abstract class Base
             $this->httpClient = new Client(
                 $this->config['persona_host']
             );
+
+            $adapter = new DoctrineCacheAdapter($this->cacheBackend);
+            $storage = new DefaultCacheStorage(
+                $adapter, $this->keyPrefix, $this->defaultTtl
+            );
+
+            $this->httpClient->addSubscriber(
+                new CachePlugin(
+                    array(
+                        'storage' => $storage,
+                        'auto_purge' => true,
+                    )
+                )
+            );
         }
 
         return $this->httpClient;
     }
 
     /**
-     * Perform the request according to the $curlOptions
-     * @param $curlOptions array options to execute cURL with
-     * @param $expectResponse set true if you expect a JSON response with a 200, otherwise expect a 204 no content
-     * @return array|null
+     * Perform the request according to the $curlOptions. Only
+     * GET and HEAD requests are cached.
+     * tip: turn off caching by defining the 'Cache-Control'
+     *      header with a value of 'max-age=0, no-cache'
+     * @param string $url  request url
+     * @param array  $opts configuration / options:
+     *      timeout: (30 seconds) HTTP timeout
+     *      body: optional HTTP body
+     *      headers: optional HTTP headers
+     *      method: (default GET) HTTP method
+     *      expectResponse: (default true) parse the http response
+     *      addContentType: (default true) add type application/x-www-form-urlencoded
+     *      parseJson: (default true) parse the response as JSON
+     *      cacheTTL: optional TTL for this request only
+     * @return array|null response body
      * @throws NotFoundException if the http status was a 404
      * @throws \Exception if response not 200 and valid JSON
      */
-    protected function performRequest($url, array $opts, $expectResponse=true, $addContentType=true, $parseJson=true)
+    protected function performRequest($url, array $opts)
     {
-        $expectedResponseCode = ($expectResponse) ? 200 : 204;
-        $body = isset($opts['body']) ? $opts['body'] : null;
-        $config = array_merge(
+        $httpKeys = array('timeout', 'body');
+        $definedHttpConfig = array_intersect_key($opts, array_flip($httpKeys));
+        $httpConfig = array_merge(
             array(
-                'method' => 'GET',
                 'timeout' => 30,
+            ),
+            $definedHttpConfig
+        );
+
+        $opts = array_merge(
+            array(
                 'headers' => array(),
+                'method' => 'GET',
+                'expectResponse' => true,
+                'addContentType' => true,
+                'parseJson' => true,
+                'cacheTTL' => $this->defaultTtl,
             ),
             $opts
         );
-        if (isset($config['bearerToken'])) {
-            $config['headers']['Authorization'] = 'Bearer ' . $config['bearerToken'];
+
+        $expectedResponseCode = ($opts['expectResponse'] === true) ? 200 : 204;
+        $body = isset($opts['body']) ? $opts['body'] : null;
+
+        if (isset($opts['bearerToken'])) {
+            $httpConfig['headers']['Authorization'] = 'Bearer ' . $opts['bearerToken'];
         }
 
-        if ($body != null && $addContentType) {
-            $config['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
+        if ($body != null && $opts['addContentType']) {
+            $httpConfig['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
         }
 
         $client = $this->getHTTPClient();
         $request = $client->createRequest(
-            $config['method'],
+            $opts['method'],
             $url,
-            $config['headers'],
+            $opts['headers'],
             $body,
-            $config
+            $httpConfig
         );
+
+        // Only caches GET & HEAD requests, see 
+        // \Doctrine\Common\Cache\DefaultCanCacheStrategy
+        $request->getParams()->set('cache.override_ttl', $opts['cacheTTL']);
 
         try {
             $response = $request->send();
@@ -210,11 +305,11 @@ abstract class Base
         }
 
         // Not expecting a body to be returned
-        if ($expectResponse === false) {
+        if ($opts['expectResponse'] === false) {
             return null;
         }
 
-        if ($parseJson === false) {
+        if ($opts['parseJson'] === false) {
             return $response->getBody();
         }
 
@@ -231,5 +326,14 @@ abstract class Base
         }
 
         return $json;
+    }
+
+    /**
+     * Retrieve the cache backend
+     * @return \Doctrine\Common\Cache\CacheProvider
+     */
+    protected function getCacheBackend()
+    {
+        return $this->cacheBackend;
     }
 }

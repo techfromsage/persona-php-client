@@ -17,6 +17,7 @@ class TokensTest extends TestBase {
 
     public function setUp()
     {
+        parent::setUp();
         $this->_privateKey = file_get_contents('../keys/private_key.pem');
         $this->_publicKey = file_get_contents('../keys/public_key.pem');
     }
@@ -28,33 +29,20 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array());
     }
 
-    function testNullConfigThrowsException(){
-        $this->setExpectedException('InvalidArgumentException',
-            'No config provided to Persona Client'
-        );
-        $personaClient = new Tokens(null);
-    }
-
     function testMissingRequiredConfigParamsThrowsException(){
         $this->setExpectedException('InvalidArgumentException',
-            'Config provided does not contain values for: persona_host,persona_oauth_route,tokencache_redis_host,tokencache_redis_port,tokencache_redis_db'
+            'Config provided does not contain values for: persona_host,persona_oauth_route'
         );
         $personaClient = new Tokens(array(
             'persona_host' => null,
-            'persona_oauth_route' => null,
-            'tokencache_redis_host' => null,
-            'tokencache_redis_port' => null,
-            'tokencache_redis_db' => null
+            'persona_oauth_route' => null
         ));
     }
 
     function testValidConfigDoesNotThrowException(){
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
     }
 
@@ -64,10 +52,7 @@ class TokensTest extends TestBase {
         );
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
 
         date_default_timezone_set('UTC');
@@ -81,10 +66,7 @@ class TokensTest extends TestBase {
         );
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
 
         date_default_timezone_set('UTC');
@@ -95,10 +77,7 @@ class TokensTest extends TestBase {
     function testPresignUrlNoExpiry() {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
 
         date_default_timezone_set('UTC');
@@ -109,10 +88,7 @@ class TokensTest extends TestBase {
     function testPresignUrlNoExpiryAnchor() {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
 
         date_default_timezone_set('UTC');
@@ -128,10 +104,7 @@ class TokensTest extends TestBase {
     function testPresignUrlNoExpiryExistingQueryString() {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
 
         date_default_timezone_set('UTC');
@@ -143,10 +116,7 @@ class TokensTest extends TestBase {
     function testPresignUrlNoExpiryAnchorExistingQueryString() {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
 
         date_default_timezone_set('UTC');
@@ -162,10 +132,7 @@ class TokensTest extends TestBase {
     function testPresignUrlWithExpiry() {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute','mysecretkey',1234567890);
@@ -176,9 +143,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute#myAnchor','mysecretkey',1234567890);
@@ -189,9 +153,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo','mysecretkey',1234567890);
@@ -202,9 +163,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $signedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',1234567890);
@@ -215,9 +173,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute','mysecretkey',"+5 minutes");
@@ -229,9 +184,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo','mysecretkey',"+5 minutes");
@@ -243,9 +195,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
@@ -257,9 +206,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"-5 minutes");
@@ -271,9 +217,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
@@ -287,9 +230,6 @@ class TokensTest extends TestBase {
         $personaClient = new Tokens(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         ));
 
         $presignedUrl = $personaClient->presignUrl('http://someurl/someroute?myparam=foo#myAnchor','mysecretkey',"+5 minutes");
@@ -300,76 +240,26 @@ class TokensTest extends TestBase {
     }
 
     function testUseCacheFalseOnObtainToken() {
-        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken'),array(array(
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaObtainNewToken'),array(array(
             'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
+            'persona_oauth_route' => '/oauth/tokens'
         )));
 
         $mockClient->expects($this->once())->method("personaObtainNewToken")->will($this->returnValue(array("access_token"=>"foo","expires"=>"100","scopes"=>"su")));
-        $mockClient->expects($this->never())->method("getCacheClient");
 
         $mockClient->obtainNewToken('client_id','client_secret',array('useCache'=>false));
     }
 
-    function testUseCacheTrueOnObtainToken() {
-        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken'),array(array(
+    function testObtainToken() {
+        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaObtainNewToken'),array(array(
             'persona_host' => 'localhost',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
         )));
-
-        $mockCache = $this->getMock('\Predis\Client',array("get"),array());
-        $mockCache->expects($this->once())->method("get")->will($this->returnValue('{"access_token":"foo","expires":1000,"scopes":"su"}'));
-
-        $mockClient->expects($this->never())->method("personaObtainNewToken");
-        $mockClient->expects($this->once())->method("getCacheClient")->will($this->returnValue($mockCache));
-
-        $token = $mockClient->obtainNewToken('client_id','client_secret');
-        $this->assertEquals($token['access_token'],"foo");
-    }
-
-    function testUseCacheDefaultTrueOnObtainToken() {
-        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
-        )));
-
-        $mockCache = $this->getMock('\Predis\Client',array("get"),array());
-        $mockCache->expects($this->once())->method("get")->will($this->returnValue('{"access_token":"foo","expires":1000,"scopes":"su"}'));
-
-        $mockClient->expects($this->never())->method("personaObtainNewToken");
-        $mockClient->expects($this->once())->method("getCacheClient")->will($this->returnValue($mockCache));
-
-        $token = $mockClient->obtainNewToken('client_id','client_secret');
-        $this->assertEquals($token['access_token'],"foo");
-    }
-
-    function testUseCacheNotInCacheObtainToken() {
-        $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('getCacheClient','personaObtainNewToken','cacheToken'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2
-        )));
-
-        $mockCache = $this->getMock('\Predis\Client',array("get"),array());
-        $mockCache->expects($this->once())->method("get")->will($this->returnValue(''));
 
         $expectedToken = array("access_token"=>"foo","expires_in"=>"100","scopes"=>"su");
         $cacheKey = "obtain_token:".hash_hmac('sha256','client_id','client_secret');
 
-        $mockClient->expects($this->once())->method("getCacheClient")->will($this->returnValue($mockCache));
         $mockClient->expects($this->once())->method("personaObtainNewToken")->will($this->returnValue($expectedToken));
-        $mockClient->expects($this->once())->method("cacheToken")->with($cacheKey,$expectedToken,40);
 
         $token = $mockClient->obtainNewToken('client_id','client_secret');
         $this->assertEquals($token['access_token'],"foo");
@@ -393,13 +283,8 @@ class TokensTest extends TestBase {
             array(array(
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
-                'tokencache_redis_host' => 'localhost',
-                'tokencache_redis_port' => 6379,
-                'tokencache_redis_db' => 2
             ))
         );
-
-        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
 
         $jwt = JWT::encode(
             array(
@@ -413,9 +298,7 @@ class TokensTest extends TestBase {
             'RS256'
         );
 
-        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
         $mockClient->expects($this->once())->method('retrieveJWTCertificate')->will($this->returnValue($this->_publicKey));
-        $mockCache->expects($this->once())->method('get')->will($this->returnValue(''));
         $mockClient->expects($this->once())->method('performRequest')->will($this->returnValue(true));
 
         $result = $mockClient->validateToken(
@@ -425,98 +308,7 @@ class TokensTest extends TestBase {
             )
         );
 
-        $this->assertEquals(Talis\Persona\Client\Tokens::VERIFIED_BY_PERSONA, $result);
-    }
-
-    /**
-     * Use the cached Persona public key
-     */
-    public function testJWTUseCachePublicKey()
-    {
-        $mockClient = $this->getMock(
-            'Talis\Persona\Client\Tokens',
-            array('getCacheClient'),
-            array(array(
-                'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
-                'tokencache_redis_host' => 'localhost',
-                'tokencache_redis_port' => 6379,
-                'tokencache_redis_db' => 2
-            ))
-        );
-
-        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
-
-        $jwt = JWT::encode(
-            array(
-                'jwtid' => time(),
-                'exp' => time() + 60 * 60,
-                'nbf' => time() -1,
-                'audience' => 'standard_user',
-                'scopes' => array('su'),
-            ),
-            $this->_privateKey,
-            'RS256'
-        );
-
-        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
-        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode($this->_publicKey)));
-
-        $result = $mockClient->validateToken(
-            array(
-                'access_token' => $jwt,
-                'scope' => 'su',
-            )
-        );
-
-        $this->assertEquals(Talis\Persona\Client\Tokens::VERIFIED_BY_JWT, $result);
-    }
-
-    /**
-     * If Persona's public key hasn't been cached,
-     * retrieve and cache
-     */
-    public function testJWTUseRemotePublicKey()
-    {
-        $mockClient = $this->getMock(
-            'Talis\Persona\Client\Tokens',
-            array('getCacheClient', 'performRequest', 'cacheToken'),
-            array(array(
-                'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
-                'tokencache_redis_host' => 'localhost',
-                'tokencache_redis_port' => 6379,
-                'tokencache_redis_db' => 2
-            ))
-        );
-
-        $mockCache = $this->getMock('\Predis\Client', array('get'), array());
-
-        $jwt = JWT::encode(
-            array(
-                'jwtid' => time(),
-                'exp' => time() + 60 * 60,
-                'nbf' => time() -1,
-                'audience' => 'standard_user',
-                'scopes' => array('su'),
-            ),
-            $this->_privateKey,
-            'RS256'
-        );
-
-        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
-        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(''));
-        $mockClient->expects($this->once())->method('performRequest')->will($this->returnValue($this->_publicKey));
-        $mockClient->expects($this->once())->method('cacheToken')->with('public_key', $this->_publicKey, 600);
-
-        $result = $mockClient->validateToken(
-            array(
-                'access_token' => $jwt,
-                'scope' => 'su',
-            )
-        );
-
-        $this->assertEquals(Talis\Persona\Client\Tokens::VERIFIED_BY_JWT, $result);
+        $this->assertEquals(true, $result);
     }
 
     /**
@@ -526,17 +318,12 @@ class TokensTest extends TestBase {
     {
         $mockClient = $this->getMock(
             'Talis\Persona\Client\Tokens',
-            array('getCacheClient'),
+            array('retrieveJWTCertificate'),
             array(array(
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
-                'tokencache_redis_host' => 'localhost',
-                'tokencache_redis_port' => 6379,
-                'tokencache_redis_db' => 2
             ))
         );
-
-        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
 
         $jwt = JWT::encode(
             array(
@@ -550,8 +337,7 @@ class TokensTest extends TestBase {
             'RS256'
         );
 
-        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
-        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode($this->_publicKey)));
+        $mockClient->expects($this->once())->method('retrieveJWTCertificate')->will($this->returnValue($this->_publicKey));
 
         $result = $mockClient->validateToken(
             array(
@@ -571,17 +357,12 @@ class TokensTest extends TestBase {
     {
         $mockClient = $this->getMock(
             'Talis\Persona\Client\Tokens',
-            array('getCacheClient'),
+            array('retrieveJWTCertificate'),
             array(array(
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
-                'tokencache_redis_host' => 'localhost',
-                'tokencache_redis_port' => 6379,
-                'tokencache_redis_db' => 2
             ))
         );
-
-        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
 
         $jwt = JWT::encode(
             array(
@@ -595,8 +376,7 @@ class TokensTest extends TestBase {
             'RS256'
         );
 
-        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
-        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode($this->_publicKey)));
+        $mockClient->expects($this->once())->method('retrieveJWTCertificate')->will($this->returnValue($this->_publicKey));
 
         $result = $mockClient->validateToken(
             array(
@@ -615,17 +395,12 @@ class TokensTest extends TestBase {
     {
         $mockClient = $this->getMock(
             'Talis\Persona\Client\Tokens',
-            array('getCacheClient'),
+            array('retrieveJWTCertificate'),
             array(array(
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
-                'tokencache_redis_host' => 'localhost',
-                'tokencache_redis_port' => 6379,
-                'tokencache_redis_db' => 2
             ))
         );
-
-        $mockCache = $this->getMock('\Predis\Client', array("get"), array());
 
         $jwt = JWT::encode(
             array(
@@ -639,8 +414,7 @@ class TokensTest extends TestBase {
             'RS256'
         );
 
-        $mockClient->expects($this->once())->method('getCacheClient')->will($this->returnValue($mockCache));
-        $mockCache->expects($this->once())->method('get')->with('public_key')->will($this->returnValue(json_encode("invalid cert")));
+        $mockClient->expects($this->once())->method('retrieveJWTCertificate')->will($this->returnValue(json_encode("invalid cert")));
 
         try {
             $mockClient->validateToken(

@@ -7,10 +7,11 @@ class OAuthClients extends Base
      * Return an outh client
      * @param string $clientId
      * @param string $token
+     * @param int    $cacheTTL time to live in seconds value for cached request
      * @return array
      * @throws \Exception
      */
-    public function getOAuthClient($clientId, $token)
+    public function getOAuthClient($clientId, $token, $cacheTTL = 300)
     {
         if(!is_string($clientId) || trim($clientId) === '')
         {
@@ -25,7 +26,7 @@ class OAuthClients extends Base
 
         $url = $this->config['persona_host'].'/clients/'.$clientId;
 
-        return $this->personaGetOAuthClient($url, $token);
+        return $this->personaGetOAuthClient($url, $token, $cacheTTL);
     }
 
     /**
@@ -86,8 +87,8 @@ class OAuthClients extends Base
                 'method' => 'PATCH',
                 'body' => json_encode($properties),
                 'bearerToken' => $token,
-            ),
-            false
+                'expectResponse' => false
+            )
         );
     }
 
@@ -95,13 +96,18 @@ class OAuthClients extends Base
      * Get an OAuth Client
      * @param string $url
      * @param string $token
+     * @param int    $cacheTTL time to live in seconds value for cached request
      * @return array
      * @throws \Exception
      */
-    protected function personaGetOAuthClient($url, $token)
+    protected function personaGetOAuthClient($url, $token, $cacheTTL = 300)
     {
         return $this->performRequest(
-            $url, array('bearerToken' => $token)
+            $url,
+            array(
+                'bearerToken' => $token,
+                'cacheTTL' => $cacheTTL,
+            )
         );
     }
 

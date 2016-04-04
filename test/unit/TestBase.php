@@ -18,6 +18,27 @@ function envvalue($name, $default)
 
 abstract class TestBase extends PHPUnit_Framework_TestCase
 {
+    protected function removeCacheFolder()
+    {
+        $dir = '/tmp/personaCache';
+
+        if (!file_exists($dir)) {
+            return;
+        }
+
+        $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
+        $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getRealPath());
+            } else {
+                unlink($file->getRealPath());
+            }
+        }
+        rmdir($dir);
+    }
+
     /**
      * Retrieve Persona's configuration
      * @return array configuration (host, oauthClient, oauthSecret)
@@ -33,6 +54,7 @@ abstract class TestBase extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        $this->removeCacheFolder();
         date_default_timezone_set('Europe/London');
         $className = get_class($this);
         $testName = $this->getName();

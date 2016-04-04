@@ -34,16 +34,10 @@ class UsersTest extends TestBase {
         $this->personaClientUser = new Users(array(
             'persona_host' => $personaConf['host'],
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $this->personaClientTokens = new Tokens(array(
             'persona_host' => $personaConf['host'],
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
     }
 
@@ -110,9 +104,6 @@ class UsersTest extends TestBase {
         $personaClient = new Users(array(
             'persona_host' => 'persona',
             'persona_oauth_route' => '/oauth/tokens',
-            'tokencache_redis_host' => 'localhost',
-            'tokencache_redis_port' => 6379,
-            'tokencache_redis_db' => 2,
         ));
         $personaClient->getUserByGupid('123', '456');
     }

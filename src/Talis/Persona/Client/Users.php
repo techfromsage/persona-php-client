@@ -7,53 +7,52 @@ class Users extends Base
      * Get a user profile based off a gupid passed in
      * @param string $gupid
      * @param string $token
+     * @param integer $cacheTTL amount of time to cache the request
      * @access public
      * @return mixed
      * @throws \InvalidArgumentException
      * @throws \Exception
      */
-    public function getUserByGupid($gupid, $token){
-        if(!is_string($gupid) || trim($gupid) === '')
-        {
+    public function getUserByGupid($gupid, $token, $cacheTTL = 300)
+    {
+        if (!is_string($gupid) || trim($gupid) === '') {
             $this->getLogger()->error("Invalid gupid $gupid");
             throw new \InvalidArgumentException("Invalid gupid");
         }
-        if(!is_string($token) || trim($token) === '')
-        {
+        if (!is_string($token) || trim($token) === '') {
             $this->getLogger()->error("Invalid token $token");
             throw new \InvalidArgumentException("Invalid token");
         }
-        $url = $this->config['persona_host'].'/users?gupid='.urlencode($gupid);
 
-        return $this->personaGetUser($url, $token);
+        $url = $this->config['persona_host'] . '/users?gupid=' . urlencode($gupid);
+        return $this->personaGetUser($url, $token, $cacheTTL);
     }
 
     /**
      * Get user profiles based off an array of guids
      * @param array $guids
      * @param string $token
+     * @param integer $cacheTTL amount of time to cache the request
      * @access public
      * @return array
      * @throws \InvalidArgumentException
      * @throws \Exception
      */
-    public function getUserByGuids($guids, $token)
+    public function getUserByGuids($guids, $token, $cacheTTL = 300)
     {
-        if(!is_array($guids))
-        {
+        if (!is_array($guids)) {
             throw new \InvalidArgumentException("Invalid guids");
         }
-        if(!is_string($token) || trim($token) === '')
-        {
+        if (!is_string($token) || trim($token) === '') {
             throw new \InvalidArgumentException("Invalid token");
         }
-        $url = $this->config['persona_host'].'/users?guids='.urlencode(implode(',', $guids));
-        try
-        {
-            $users = $this->personaGetUser($url, $token);
+
+        $url = $this->config['persona_host'] . '/users?guids=' . urlencode(implode(',', $guids));
+
+        try {
+            $users = $this->personaGetUser($url, $token, $cacheTTL);
             return $users;
-        } catch(\Exception $e)
-        {
+        } catch(\Exception $e) {
             throw new \Exception('User profiles not found');
         }
     }
@@ -140,14 +139,19 @@ class Users extends Base
      * Get a persona user
      * @param string $url
      * @param string $token
+     * @param int    $cacheTTL time to live in seconds for cached responses
      * @access protected
      * @return mixed
      * @throws \Exception
      */
-    protected function personaGetUser($url, $token)
+    protected function personaGetUser($url, $token, $cacheTTL = 300)
     {
         return $this->performRequest(
-            $url, array('bearerToken' => $token)
+            $url,
+            array(
+                'bearerToken' => $token,
+                'cacheTTL' => $cacheTTL,
+            )
         );
     }
 
