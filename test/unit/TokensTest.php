@@ -2,6 +2,7 @@
 
 use \Firebase\JWT\JWT;
 use Talis\Persona\Client\Tokens;
+use Guzzle;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT'))
@@ -426,6 +427,56 @@ class TokensTest extends TestBase {
 
             $this->fail("Exception not thrown");
         } catch (InvalidArgumentException $e) {
+        }
+    }
+
+    /**
+     * HTTP endpoint returns unexpected status code
+     */
+    public function testReturnUnexpectedStatusCode()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            array('getHTTPClient'),
+            array(array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            ))
+        );
+
+        $plugin = new Guzzle\Plugin\Mock\MockPlugin();
+        $plugin->addResponse(new Guzzle\Http\Message\Response(202));
+        $httpClient = new Guzzle\Http\Client();
+        $httpClient->addSubscriber($plugin);
+
+        $jwt = JWT::encode(
+            array(
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                'scopeCount' => 10,
+            ),
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient
+            ->expects($this->once())
+            ->method('getHTTPClient')
+            ->will($this->returnValue($httpClient));
+
+        try {
+            $mockClient->validateToken(
+                array(
+                    'access_token' => $jwt,
+                    'scope' => 'su',
+                )
+            );
+
+            $this->fail('Exception not thrown');
+        } catch (\Exception $exception) {
+            $this->assertEquals(202, $exception->getCode());
         }
     }
 }

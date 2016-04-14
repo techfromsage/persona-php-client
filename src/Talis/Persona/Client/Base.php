@@ -283,25 +283,16 @@ abstract class Base
             );
         }
 
-        // Unexpected result
         if ($response->getStatusCode() != $expectedResponseCode) {
             $this->getLogger()->error(
-                "Did not retrieve successful response code",
+                "Did not retrieve expecteded response code",
                 array("opts" => $opts, "url" => $url, "response" => $response)
             );
 
-            switch ($headers['http_code']) {
-            case 404:
-                throw new NotFoundException(
-                    "Received 404 response from persona",
-                    $headers['http_code']
-                );
-            default:
-                throw new \Exception(
-                    "Did not retrieve successful response code from persona",
-                    $headers['http_code']
-                );
-            }
+            throw new \Exception(
+                "Did not retrieve expected response code from persona",
+                $response->getStatusCode()
+            );
         }
 
         // Not expecting a body to be returned
