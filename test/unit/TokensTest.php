@@ -476,7 +476,6 @@ class TokensTest extends TestBase {
 
             $this->fail('Exception not thrown');
         } catch (\Exception $exception) {
-            var_dump($exception->getMessage());
             $this->assertEquals(202, $exception->getCode());
         }
     }
