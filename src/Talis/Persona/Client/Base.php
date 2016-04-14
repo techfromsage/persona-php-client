@@ -290,16 +290,16 @@ abstract class Base
                 array("opts" => $opts, "url" => $url, "response" => $response)
             );
 
-            switch ($headers['http_code']) {
+            switch ($response->getStatusCode()) {
             case 404:
                 throw new NotFoundException(
                     "Received 404 response from persona",
-                    $headers['http_code']
+                    $response->getStatusCode()
                 );
             default:
                 throw new \Exception(
                     "Did not retrieve successful response code from persona",
-                    $headers['http_code']
+                    $response->getStatusCode()
                 );
             }
         }
