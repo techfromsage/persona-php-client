@@ -431,7 +431,7 @@ class TokensTest extends TestBase {
     }
 
     /**
-     * HTTP endpoint returns odd status code
+     * HTTP endpoint returns unexpected status code
      */
     public function testReturnUnexpectedStatusCode()
     {
