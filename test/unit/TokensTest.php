@@ -433,7 +433,7 @@ class TokensTest extends TestBase {
     /**
      * HTTP endpoint returns odd status code
      */
-    public function testReturnOddStatusCode()
+    public function testReturnUnexpectedStatusCode()
     {
         $mockClient = $this->getMock(
             'Talis\Persona\Client\Tokens',
