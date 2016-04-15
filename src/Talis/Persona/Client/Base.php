@@ -70,6 +70,7 @@ abstract class Base
      * Constructor
      *
      * @param string $appUserAgent Consuming application user agent string @since 2.0.0
+     *      examples: rl/5.2 (php/5.3), rl, rl/5, rl/5.2(php/5.3; linux/2.5)
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
