@@ -28,20 +28,26 @@ class LoginTest extends TestBase {
             );
         });
 
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->requireAuth();
     }
     function testRequireAuthInvalidProvider()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid provider');
 
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->requireAuth(array('test'), 'appid', 'appsecret');
     }
     function testRequireAuthNoAppId()
@@ -59,20 +65,26 @@ class LoginTest extends TestBase {
                 )
             );
         });
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->requireAuth('trapdoor');
     }
     function testRequireAuthInvalidAppId()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid appId');
 
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->requireAuth('trapdoor', array('appid'), 'appsecret');
     }
     function testRequireAuthNoAppSecret()
@@ -90,28 +102,37 @@ class LoginTest extends TestBase {
                 )
             );
         });
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->requireAuth('trapdoor', 'appId');
     }
     function testRequireAuthInvalidAppSecret()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid appSecret');
 
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->requireAuth('trapdoor', 'appid', array('appsecret'));
     }
     function testRequireAuthNoRedirectUri()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('login'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('login'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('login')
             ->will($this->returnValue(null));
@@ -125,18 +146,24 @@ class LoginTest extends TestBase {
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid redirectUri');
 
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->requireAuth('trapdoor', 'appid', 'appsecret', array('redirectUri'));
     }
     function testRequireAuthWithRedirectUri()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('login'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('login'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('login')
             ->will($this->returnValue(null));
@@ -149,10 +176,13 @@ class LoginTest extends TestBase {
     }
     function testRequireAuthAlreadyLoggedIn()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('isLoggedIn')
             ->will($this->returnValue(true));
@@ -164,10 +194,13 @@ class LoginTest extends TestBase {
     }
     function testRequireAuthNotAlreadyLoggedIn()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('isLoggedIn')
             ->will($this->returnValue(false));
@@ -186,30 +219,39 @@ class LoginTest extends TestBase {
     function testValidateAuthNoPayload()
     {
         $this->setExpectedException('Exception', 'Payload not set');
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->validateAuth();
     }
 
     function testValidateAuthPayloadIsAString()
     {
         $this->setExpectedException('Exception', 'Payload not json');
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_POST['persona:payload'] = 'YouShallNotPass';
         $personaClient->validateAuth();
     }
     function testValidateAuthPayloadDoesNotContainState()
     {
         $this->setExpectedException('Exception', 'Login state does not match');
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
         $_POST['persona:payload'] = base64_encode(json_encode(array('test' => 'YouShallNotPass')));
         $personaClient->validateAuth();
@@ -217,10 +259,13 @@ class LoginTest extends TestBase {
     function testValidateAuthPayloadDoesNotContainSignature()
     {
         $this->setExpectedException('Exception', 'Signature not set');
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
         $_POST['persona:payload'] = base64_encode(json_encode(array('state' => 'Tennessee')));
         $personaClient->validateAuth();
@@ -228,10 +273,13 @@ class LoginTest extends TestBase {
     function testValidateAuthPayloadMismatchingSignature()
     {
         $this->setExpectedException('Exception', 'Signature does not match');
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
         $_SESSION[Login::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
         $payload = array(
@@ -246,10 +294,13 @@ class LoginTest extends TestBase {
 
     function testValidateAuthPayloadContainsStateAndSignatureNoOtherPayload()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
         $_SESSION[Login::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
         $payload = array(
@@ -272,10 +323,13 @@ class LoginTest extends TestBase {
 
     function testValidateAuthPayloadContainsStateAndSignatureFullPayload()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
         $_SESSION[Login::LOGIN_PREFIX.':loginAppSecret'] = 'appsecret';
         $payload = array(
@@ -318,10 +372,13 @@ class LoginTest extends TestBase {
     }
     function testValidateAuthPayloadContainsStateAndSignatureFullPayloadCheckLoginIsCalled()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('isLoggedIn')
             ->will($this->returnValue(true));
@@ -356,10 +413,13 @@ class LoginTest extends TestBase {
 
     function testValidateAuthAfterRequireAuth()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->exactly(2))
             ->method('isLoggedIn')
             ->will($this->onConsecutiveCalls(false, true));
@@ -406,36 +466,48 @@ class LoginTest extends TestBase {
     // getPersistentId tests
     function testGetPersistentIdNoSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $this->assertFalse($personaClient->getPersistentId());
     }
     function testGetPersistentIdNoGupidInSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->getPersistentId());
     }
     function testGetPersistentIdNoLoginProviderInSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->getPersistentId());
     }
     function testGetPersistentIdEmptyGupids()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('gupid' => array());
 
@@ -443,10 +515,13 @@ class LoginTest extends TestBase {
     }
     function testGetPersistentIdNoMatchingGupid()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('gupid' => array(
             'google:123',
@@ -456,10 +531,13 @@ class LoginTest extends TestBase {
     }
     function testGetPersistentIdFoundMatchingGupid()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('gupid' => array(
             'google:123',
@@ -471,27 +549,36 @@ class LoginTest extends TestBase {
     // getRedirectUrl tests
     function testGetRedirectUrlNoSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $this->assertFalse($personaClient->getRedirectUrl());
     }
     function testGetRedirectUrlNoRedirectInSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->getRedirectUrl());
     }
     function testGetRedirectUrlFoundRedirectInSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('redirect' => 'http://example.com/path/to/redirect');
         $this->assertEquals('http://example.com/path/to/redirect', $personaClient->getRedirectUrl());
     }
@@ -499,55 +586,73 @@ class LoginTest extends TestBase {
     // getScopes tests
     function testGetScopesUserNoSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $this->assertFalse($personaClient->getScopes());
     }
     function testGetScopesNoProfileInSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertFalse($personaClient->getScopes());
     }
 
     function testGetScopes()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('token' => array('scope' => array('919191')));
         $this->assertEquals(array('919191'), $personaClient->getScopes());
     }
 
     function testGetProfileNoSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $this->assertEquals(array(), $personaClient->getProfile());
     }
     function testGetProfileNoProfileInSession()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
         $this->assertEquals(array(), $personaClient->getProfile());
     }
     function testGetProfile()
     {
-        $personaClient = new Login(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Login(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $profile = array('name' => '', 'email' => '');
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('profile' => $profile);
         $this->assertEquals($profile, $personaClient->getProfile());

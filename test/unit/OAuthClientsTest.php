@@ -15,27 +15,36 @@ class OAuthClientsTest extends TestBase
     // Get oauth client tests
     function testGetOAuthClientEmptyClientIdThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid clientId');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->getOAuthClient('', '');
     }
     function testGetOAuthClientEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->getOAuthClient('123', '');
     }
     function testGetOAuthClientThrowsExceptionWhenClientNotFound()
     {
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
-        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaGetOAuthClient'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaGetOAuthClient'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('personaGetOAuthClient')
             ->will($this->throwException(new Exception('Did not retrieve successful response code')));
@@ -44,10 +53,13 @@ class OAuthClientsTest extends TestBase
     }
     function testGetOAuthClientReturnsClientWhenGupidFound()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaGetOAuthClient'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaGetOAuthClient'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $expectedResponse = array(
             'rate_limit' => 1000,
             'rate_duration' => 1800,
@@ -73,136 +85,181 @@ class OAuthClientsTest extends TestBase
     function testUpdateOAuthClientNoGupid()
     {
         $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient();
     }
     function testUpdateOAuthClientNoProperties()
     {
         $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123');
     }
     function testUpdateOAuthClientNoToken()
     {
         $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array());
     }
     function testUpdateOAuthClientEmptyGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('', array(), '987');
     }
     function testUpdateOAuthClientInvalidGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient(array(), array(), '987');
     }
     function testUpdateOAuthClientEmptyProperties()
     {
         $this->setExpectedException('Exception', 'Invalid properties');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array(), '987');
     }
     function testUpdateOAuthClientInvalidProperties()
     {
         $this->setExpectedException('Exception', 'Invalid properties');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', 'PROPERTIES', '987');
     }
     function testUpdateOAuthClientInvalidPropertiesKeys()
     {
         $this->setExpectedException('Exception', 'Invalid properties');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array('INVALID' => array()), '987');
     }
     function testUpdateOAuthClientInvalidPropertiesScopeKeys1()
     {
         $this->setExpectedException('Exception', 'Invalid properties');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array('scope' => array()), '987');
     }
     function testUpdateOAuthClientInvalidPropertiesScopeKeys2()
     {
         $this->setExpectedException('Exception', 'Invalid properties');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '')), '987');
     }
     function testUpdateOAuthClientInvalidPropertiesScopeKeys3()
     {
         $this->setExpectedException('Exception', 'Invalid properties');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '', '$add' => 'test')), '987');
     }
     function testUpdateOAuthClientInvalidPropertiesScopeKeys4()
     {
         $this->setExpectedException('Exception', 'Invalid properties');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '', '$remove' => 'remove-scope', '$add' => 'add-scope')), '987');
     }
     function testUpdateOAuthClientsEmptyToken()
     {
         $this->setExpectedException('Exception', 'Invalid token');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123', array('scope' => array('$add' => 'additional-scope')), '');
     }
     function testUpdateOAuthClientsInvalidToken()
     {
         $this->setExpectedException('Exception', 'Invalid token');
-        $personaClient = new OAuthClients(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new OAuthClients(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateOAuthClient('123',  array('scope' => array('$add' => 'additional-scope')), array(''));
     }
     function testUpdateOAuthClientPutFails()
     {
         $this->setExpectedException('Exception', 'Could not retrieve OAuth response code');
-        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaPatchOAuthClient'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaPatchOAuthClient'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('personaPatchOAuthClient')
             ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
@@ -211,10 +268,13 @@ class OAuthClientsTest extends TestBase
     }
     function testUpdateOAuthClientPutSucceeds()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaPatchOAuthClient'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\OAuthClients',array('personaPatchOAuthClient'),array(
+            'unittest',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
 
         $expectedResponse = array(); // 204 has no content
         $mockClient->expects($this->once())
