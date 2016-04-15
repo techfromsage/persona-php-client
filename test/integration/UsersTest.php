@@ -32,14 +32,14 @@ class UsersTest extends TestBase {
         $this->clientSecret = $personaConf['oauthSecret'];
 
         $this->personaClientUser = new Users(
-            'unittest',
+            'integrationtest',
             array(
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens',
             )
         );
         $this->personaClientTokens = new Tokens(
-            'unittest',
+            'integrationtest',
             array(
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens',
@@ -108,7 +108,7 @@ class UsersTest extends TestBase {
     function testGetUserByGupidInvalidTokenThrowsException(){
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $personaClient = new Users(
-            'unittest',
+            'integrationtest',
             array(
                 'persona_host' => 'persona',
                 'persona_oauth_route' => '/oauth/tokens',

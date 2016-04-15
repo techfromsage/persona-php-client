@@ -28,7 +28,7 @@ class TokensTest extends TestBase {
 
         $this->personaCache = new ArrayCache();
         $this->personaClient = new Tokens(
-            'unittest',
+            'integrationtest',
             array(
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens',
