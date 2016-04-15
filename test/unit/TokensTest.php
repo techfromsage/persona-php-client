@@ -619,4 +619,21 @@ class TokensTest extends TestBase {
         $cachedTokenDetails = $mockClient->obtainNewToken('id', 'secret');
         $this->assertEquals($cachedTokenDetails, $tokenDetails);
     }
+
+    public function testInvalidUserAgentThrowsException()
+    {
+        $this->setExpectedException(
+            'InvalidArgumentException',
+            'user agent format is not valid'
+        );
+
+        $personaClient = new Tokens(
+            'unittest//.1',
+            array(
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
+
+    }
 }

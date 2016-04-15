@@ -69,7 +69,7 @@ abstract class Base
     /**
      * Constructor
      *
-     * @param string $appUserAgent Consuming application user agent string
+     * @param string $appUserAgent Consuming application user agent string @since 2.0.0
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
@@ -81,7 +81,7 @@ abstract class Base
      *  https://github.com/doctrine/cache/tree/master/lib/Doctrine/Common/Cache
      *  https://doctrine-orm.readthedocs.org/projects/doctrine-orm/en/latest/reference/caching.html
      * @throws \InvalidArgumentException if any of the required config parameters are missing
-     * 
+     * @throws \InvalidArgumentException if the user agent format is invalid
      */
     public function __construct(
         $appUserAgent,
@@ -92,6 +92,17 @@ abstract class Base
         $this->appUserAgent = $appUserAgent;
         $this->checkConfig($config);
         $this->config = $config;
+
+        $isValidUserAgent = preg_match(
+            '/^[a-z0-9\-\._]+(\/[1-9]{1}(\.?[0-9]+)?)?( \([^\)]+\))?$/i',
+            $appUserAgent
+        );
+
+        if ($isValidUserAgent == false) {
+            throw new \InvalidArgumentException(
+                'user agent format is not valid'
+            );
+        }
 
         $this->logger = isset($config['logger'])
             ? $config['logger']
