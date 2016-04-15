@@ -15,7 +15,9 @@ abstract class Base
 {
     const STATSD_CONN = 'STATSD_CONN';
     const STATSD_PREFIX = 'STATSD_PREFIX';
-    const LOGGER_NAME = "PERSONA";
+    const LOGGER_NAME = 'PERSONA';
+    const COMPOSER_VERSION_CACHE_KEY = 'composer_version';
+    const COMPOSER_VERSION_CACHE_TTL_SEC = 3600; // 1 hour
 
     /**
      * Configuration object
@@ -55,8 +57,19 @@ abstract class Base
     private $defaultTtl;
 
     /**
+     * @var string
+     */
+    private $appUA;
+
+    /**
+     * @var string
+     */
+    private $phpVersion;
+
+    /**
      * Constructor
      *
+     * @param string $appUA Consuming application user agent string
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
@@ -71,10 +84,12 @@ abstract class Base
      * 
      */
     public function __construct(
+        $appUA,
         array $config,
         \Psr\Log\LoggerInterface $logger = null,
         CacheProvider $cacheBackend = null
     ) {
+        $this->appUA = $appUA;
         $this->checkConfig($config);
         $this->config = $config;
 
@@ -97,6 +112,8 @@ abstract class Base
         $this->defaultTtl = isset($config['cacheDefaultTTL'])
             ? $config['cacheDefaultTTL']
             : 3600;
+
+        $this->phpVersion = phpversion();
 
         if ($logger && $this->logger) {
             $this->logger->warn('$logger attribute is deprecated');
@@ -203,6 +220,36 @@ abstract class Base
     }
 
     /**
+     * Retrieve the Persona client version
+     * @return string Persona client version
+     */
+    protected function getClientVersion()
+    {
+        $version = $this->getCacheBackend()->fetch(self::COMPOSER_VERSION_CACHE_KEY);
+        if ($version) {
+            return $version;
+        }
+
+        $composerFileContent = file_get_contents(__DIR__. '/../../../../composer.json');
+        if ($composerFileContent === false) {
+            return 'unknown';
+        }
+
+        $composer = json_decode($composerFileContent, true);
+        if (isset($composer['version']) === false) {
+            return 'unknown';
+        }
+
+        $this->getCacheBackend()->save(
+            self::COMPOSER_VERSION_CACHE_KEY,
+            $composer['version'],
+            self::COMPOSER_VERSION_CACHE_TTL_SEC
+        );
+
+        return $composer['version'];
+    }
+
+    /**
      * Perform the request according to the $curlOptions. Only
      * GET and HEAD requests are cached.
      * tip: turn off caching by defining the 'Cache-Control'
@@ -254,6 +301,12 @@ abstract class Base
         if ($body != null && $opts['addContentType']) {
             $httpConfig['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
         }
+
+        $version = $this->getClientVersion();
+        $httpConfig['headers']['User-Agent'] = "{$this->appUA} " .
+            "persona-php-client/{$version} (php/{$this->phpVersion})";
+
+        echo ">>>>>>>>>>>> " . $httpConfig['header']['User-Agent'];
 
         $client = $this->getHTTPClient();
         $request = $client->createRequest(
@@ -312,7 +365,7 @@ abstract class Base
             );
 
             throw new \Exception(
-                "Could not parse response from persona as JSON"
+                "Could not parse response from persona as JSON " . $response->getBody()
             );
         }
 
