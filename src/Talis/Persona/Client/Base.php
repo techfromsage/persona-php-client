@@ -77,18 +77,12 @@ abstract class Base
      *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) optional cache storage (defaults to Filesystem)
      *      cacheKeyPrefix: (string) optional prefix to append to the cache keys
      *      cacheDefaultTTL: (integer) optional cache TTL value
-     * @param @deprecated $logger optional logger instance
-     * @param @deprecated $cacheBackend optional cache backend see
-     *  https://github.com/doctrine/cache/tree/master/lib/Doctrine/Common/Cache
-     *  https://doctrine-orm.readthedocs.org/projects/doctrine-orm/en/latest/reference/caching.html
      * @throws \InvalidArgumentException if any of the required config parameters are missing
      * @throws \InvalidArgumentException if the user agent format is invalid
      */
     public function __construct(
         $appUserAgent,
-        array $config,
-        \Psr\Log\LoggerInterface $logger = null,
-        CacheProvider $cacheBackend = null
+        array $config
     ) {
         $this->appUserAgent = $appUserAgent;
         $this->checkConfig($config);
@@ -107,15 +101,11 @@ abstract class Base
 
         $this->logger = isset($config['logger'])
             ? $config['logger']
-            : $logger;
-
-        $cacheBackend = $cacheBackend === null
-            ? new FilesystemCache('/tmp/personaCache')
-            : $cacheBackend;
+            : null;
 
         $this->cacheBackend = isset($config['cacheBackend'])
             ? $config['cacheBackend']
-            : $cacheBackend;
+            : new FilesystemCache('/tmp/personaCache');
 
         $this->keyPrefix = isset($config['cacheKeyPrefix'])
             ? $config['cacheKeyPrefix']
@@ -126,14 +116,6 @@ abstract class Base
             : 3600;
 
         $this->phpVersion = phpversion();
-
-        if ($logger && $this->logger) {
-            $this->logger->warn('$logger attribute is deprecated');
-        }
-
-        if ($cacheBackend && $this->logger) {
-            $this->logger->warn('$cacheBackend is deprecated');
-        }
     }
 
     /**
