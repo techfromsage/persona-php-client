@@ -59,7 +59,7 @@ abstract class Base
     /**
      * @var string
      */
-    private $appUA;
+    private $appUserAgent;
 
     /**
      * @var string
@@ -69,7 +69,7 @@ abstract class Base
     /**
      * Constructor
      *
-     * @param string $appUA Consuming application user agent string
+     * @param string $appUserAgent Consuming application user agent string
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
@@ -84,12 +84,12 @@ abstract class Base
      * 
      */
     public function __construct(
-        $appUA,
+        $appUserAgent,
         array $config,
         \Psr\Log\LoggerInterface $logger = null,
         CacheProvider $cacheBackend = null
     ) {
-        $this->appUA = $appUA;
+        $this->appUserAgent = $appUserAgent;
         $this->checkConfig($config);
         $this->config = $config;
 
@@ -230,7 +230,10 @@ abstract class Base
             return $version;
         }
 
-        $composerFileContent = file_get_contents(__DIR__. '/../../../../composer.json');
+        $composerFileContent = file_get_contents(
+            __DIR__. '/../../../../composer.json'
+        );
+
         if ($composerFileContent === false) {
             return 'unknown';
         }
@@ -321,7 +324,7 @@ abstract class Base
         }
 
         $version = $this->getClientVersion();
-        $httpConfig['headers']['User-Agent'] = "{$this->appUA} " .
+        $httpConfig['headers']['User-Agent'] = "{$this->appUserAgent} " .
             "persona-php-client/{$version} (php/{$this->phpVersion})";
         $httpConfig['headers']['X-Request-ID'] = $this->getRequestId();
 
