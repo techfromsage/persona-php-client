@@ -250,6 +250,24 @@ abstract class Base
     }
 
     /**
+     * Returns a unique id for tracing this request.
+     * If there is already a value set as a header it uses that, otherwise it
+     * generates a new one and sets that on $_SERVER
+     * @return string
+     */
+    protected function getRequestId()
+    {
+        $requestId = null;
+        if (array_key_exists('HTTP_X_REQUEST_ID', $_SERVER)) {
+            $requestId = $_SERVER['HTTP_X_REQUEST_ID'];
+        }
+
+        return empty($requestId) === true
+            ? uniqid()
+            : $requestId;
+    }
+
+    /**
      * Perform the request according to the $curlOptions. Only
      * GET and HEAD requests are cached.
      * tip: turn off caching by defining the 'Cache-Control'
@@ -305,8 +323,7 @@ abstract class Base
         $version = $this->getClientVersion();
         $httpConfig['headers']['User-Agent'] = "{$this->appUA} " .
             "persona-php-client/{$version} (php/{$this->phpVersion})";
-
-        echo ">>>>>>>>>>>> " . $httpConfig['header']['User-Agent'];
+        $httpConfig['headers']['X-Request-ID'] = $this->getRequestId();
 
         $client = $this->getHTTPClient();
         $request = $client->createRequest(
