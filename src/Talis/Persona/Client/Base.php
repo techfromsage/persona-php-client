@@ -64,28 +64,25 @@ abstract class Base
     /**
      * Constructor
      *
-     * @param string $appUserAgent Consuming application user agent string @since 2.0.0
-     *      examples: rl/5.2, rl, rl/5, rl/5.2 (linux/2.5)
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
+     *      userAgent: Consuming application user agent string @since 2.0.0
+     *            examples: rl/5.2, rl, rl/5, rl/5.2 (linux/2.5)
      *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) optional cache storage (defaults to Filesystem)
      *      cacheKeyPrefix: (string) optional prefix to append to the cache keys
      *      cacheDefaultTTL: (integer) optional cache TTL value
      * @throws \InvalidArgumentException if any of the required config parameters are missing
      * @throws \InvalidArgumentException if the user agent format is invalid
      */
-    public function __construct(
-        $appUserAgent,
-        array $config
-    ) {
-        $this->appUserAgent = $appUserAgent;
+    public function __construct(array $config)
+    {
         $this->checkConfig($config);
         $this->config = $config;
 
         $isValidUserAgent = preg_match(
             '/^[a-z0-9\-\._]+(\/[1-9]{1}(\.?[0-9]+)?)?( \([^\)]+\))?$/i',
-            $appUserAgent
+            $config['userAgent']
         );
 
         if ($isValidUserAgent == false) {
@@ -148,6 +145,7 @@ abstract class Base
         }
 
         $requiredProperties = array(
+            'userAgent',
             'persona_host',
             'persona_oauth_route',
         );
@@ -311,9 +309,12 @@ abstract class Base
         }
 
         $version = $this->getClientVersion();
-        $httpConfig['headers']['User-Agent'] = "{$this->appUserAgent} " .
+        $httpConfig['headers']['User-Agent'] = "{$this->config['userAgent']}" .
             "persona-php-client/{$version}";
         $httpConfig['headers']['X-Request-ID'] = $this->getRequestId();
+        $httpConfig['headers']['X-Client-Version'] = $version;
+        $httpConfig['headers']['X-Client-Language'] = 'php';
+        $httpConfig['headers']['X-Client-Consumer'] = $this->config['userAgent'];
 
         $client = $this->getHTTPClient();
         $request = $client->createRequest(
