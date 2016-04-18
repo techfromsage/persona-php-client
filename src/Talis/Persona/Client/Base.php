@@ -68,7 +68,7 @@ abstract class Base
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
      *      userAgent: Consuming application user agent string @since 2.0.0
-     *            examples: rl/5.2, rl, rl/5, rl/5.2 (php/5.3; linux/2.5)
+     *            examples: rl/1723-9095ba4, rl/5.2, rl, rl/5, rl/5.2 (php/5.3; linux/2.5)
      *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) optional cache storage (defaults to Filesystem)
      *      cacheKeyPrefix: (string) optional prefix to append to the cache keys
      *      cacheDefaultTTL: (integer) optional cache TTL value
@@ -81,7 +81,7 @@ abstract class Base
         $this->config = $config;
 
         $isValidUserAgent = preg_match(
-            '/^[a-z0-9\-\._]+(\/[1-9]{1}(\.?[0-9]+)?)?( \([^\)]+\))?$/i',
+            '/^[a-z0-9\-\._]+(\/([1-9]{1}(\.?[0-9]+)?|[a-z0-9\-]+))?( \([^\)]+\))?$/i',
             $config['userAgent']
         );
 

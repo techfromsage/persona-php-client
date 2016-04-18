@@ -634,6 +634,71 @@ class TokensTest extends TestBase {
                 'persona_oauth_route' => '/oauth/tokens'
             )
         );
+    }
 
+    public function testBasicUserAgent()
+    {
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
+    }
+
+    public function testUserAgentWithVersionNumber()
+    {
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest/1.09',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
+    }
+
+    public function testUserAgentWithVersionHash()
+    {
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest/1723-9095ba4',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
+    }
+
+    public function testUserAgentWithVersionNumberWithComment()
+    {
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest/3.02 (commenting; here)',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
+    }
+
+    public function testUserAgentWithVersionHashWithComment()
+    {
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest/13f3-00934fa4 (commenting; with; hash)',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
+    }
+
+    public function testBasicUserAgentWithComment()
+    {
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest (comment; with; basic; name)',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
     }
 }
