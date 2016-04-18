@@ -80,8 +80,17 @@ abstract class Base
         $this->checkConfig($config);
         $this->config = $config;
 
+        $userAgentPattern = '' .
+            '/^[a-z0-9\-\._]+' .             // name of application
+            '(\/' .                          // optional version beginning with /
+                '([0-9]{1}(\.?[0-9]+)?' .       // either a integer or double
+                '|' .                           // or
+                '[a-z0-9\-]+' .                 // a hash
+            '))?' .
+            '( \([^\)]+\))?$/i';             // comment surrounded by round brackets
+
         $isValidUserAgent = preg_match(
-            '/^[a-z0-9\-\._]+(\/([1-9]{1}(\.?[0-9]+)?|[a-z0-9\-]+))?( \([^\)]+\))?$/i',
+            $userAgentPattern,
             $config['userAgent']
         );
 
