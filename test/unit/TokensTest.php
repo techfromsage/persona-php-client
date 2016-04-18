@@ -27,11 +27,7 @@ class TokensTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException',
             'No config provided to Persona Client'
         );
-        $personaClient = new Tokens(
-            array(
-                'userAgent' => 'unittest',
-            )
-        );
+        $personaClient = new Tokens(array());
     }
 
     function testMissingRequiredConfigParamsThrowsException(){
