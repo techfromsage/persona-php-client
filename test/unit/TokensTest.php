@@ -27,7 +27,11 @@ class TokensTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException',
             'No config provided to Persona Client'
         );
-        $personaClient = new Tokens('unittest', array());
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest',
+            )
+        );
     }
 
     function testMissingRequiredConfigParamsThrowsException(){
@@ -35,8 +39,8 @@ class TokensTest extends TestBase {
             'Config provided does not contain values for: persona_host,persona_oauth_route'
         );
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => null,
                 'persona_oauth_route' => null
             )
@@ -45,8 +49,8 @@ class TokensTest extends TestBase {
 
     function testValidConfigDoesNotThrowException(){
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -58,8 +62,8 @@ class TokensTest extends TestBase {
             'No url provided to sign'
         );
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -75,8 +79,8 @@ class TokensTest extends TestBase {
             'No secret provided to sign with'
         );
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -89,8 +93,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlNoExpiry() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -103,8 +107,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlNoExpiryAnchor() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -122,8 +126,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlNoExpiryExistingQueryString() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -137,8 +141,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlNoExpiryAnchorExistingQueryString() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -156,8 +160,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlWithExpiry() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -169,8 +173,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlWithExpiryAnchor() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -182,8 +186,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlWithExpiryExistingQuerystring() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -195,8 +199,8 @@ class TokensTest extends TestBase {
 
     function testPresignUrlWithExpiryAnchorExistingQuerystring() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -208,8 +212,8 @@ class TokensTest extends TestBase {
 
     function testIsPresignedUrlValidTimeInFuture() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -222,8 +226,8 @@ class TokensTest extends TestBase {
 
     function testIsPresignedUrlValidTimeInFutureExistingParams() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -236,8 +240,8 @@ class TokensTest extends TestBase {
 
     function testIsPresignedUrlValidTimeInFutureExistingParamsAnchor() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -250,8 +254,8 @@ class TokensTest extends TestBase {
 
     function testIsPresignedUrlValidTimeInPastExistingParamsAnchor() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -264,8 +268,8 @@ class TokensTest extends TestBase {
 
     function testIsPresignedUrlValidRemoveExpires() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -280,8 +284,8 @@ class TokensTest extends TestBase {
 
     function testIsPresignedUrlValidRemoveSig() {
         $personaClient = new Tokens(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -296,8 +300,8 @@ class TokensTest extends TestBase {
 
     function testUseCacheFalseOnObtainToken() {
         $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaObtainNewToken'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -310,8 +314,8 @@ class TokensTest extends TestBase {
 
     function testObtainToken() {
         $mockClient = $this->getMock('Talis\Persona\Client\Tokens',array('personaObtainNewToken'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -342,8 +346,8 @@ class TokensTest extends TestBase {
                 'performRequest',
             ),
             array(
-                'unittest',
                 array(
+                    'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
                     'persona_oauth_route' => '/oauth/tokens',
                 )
@@ -384,8 +388,8 @@ class TokensTest extends TestBase {
             'Talis\Persona\Client\Tokens',
             array('retrieveJWTCertificate'),
             array(
-                'unittest',
                 array(
+                    'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
                     'persona_oauth_route' => '/oauth/tokens',
                 )
@@ -426,8 +430,8 @@ class TokensTest extends TestBase {
             'Talis\Persona\Client\Tokens',
             array('retrieveJWTCertificate'),
             array(
-                'unittest',
                 array(
+                    'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
                     'persona_oauth_route' => '/oauth/tokens',
                 )
@@ -467,8 +471,8 @@ class TokensTest extends TestBase {
             'Talis\Persona\Client\Tokens',
             array('retrieveJWTCertificate'),
             array(
-                'unittest',
                 array(
+                    'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
                     'persona_oauth_route' => '/oauth/tokens',
                 )
@@ -511,8 +515,8 @@ class TokensTest extends TestBase {
             'Talis\Persona\Client\Tokens',
             array('getHTTPClient'),
             array(
-                'unittest',
                 array(
+                    'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
                     'persona_oauth_route' => '/oauth/tokens',
                 )
@@ -565,8 +569,8 @@ class TokensTest extends TestBase {
             'Talis\Persona\Client\Tokens',
             array('getHTTPClient'),
             array(
-                'unittest',
                 array(
+                    'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
                     'persona_oauth_route' => '/oauth/tokens',
                 )
@@ -628,8 +632,8 @@ class TokensTest extends TestBase {
         );
 
         $personaClient = new Tokens(
-            'unittest//.1',
             array(
+                'userAgent' => 'unittest//.1',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens'
             )

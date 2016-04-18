@@ -29,8 +29,8 @@ class LoginTest extends TestBase {
         });
 
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -42,8 +42,8 @@ class LoginTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException', 'Invalid provider');
 
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -66,8 +66,8 @@ class LoginTest extends TestBase {
             );
         });
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -79,8 +79,8 @@ class LoginTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException', 'Invalid appId');
 
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -103,8 +103,8 @@ class LoginTest extends TestBase {
             );
         });
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -116,8 +116,8 @@ class LoginTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException', 'Invalid appSecret');
 
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -127,8 +127,8 @@ class LoginTest extends TestBase {
     function testRequireAuthNoRedirectUri()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Login',array('login'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -147,8 +147,8 @@ class LoginTest extends TestBase {
         $this->setExpectedException('InvalidArgumentException', 'Invalid redirectUri');
 
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -158,8 +158,8 @@ class LoginTest extends TestBase {
     function testRequireAuthWithRedirectUri()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Login',array('login'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -177,8 +177,8 @@ class LoginTest extends TestBase {
     function testRequireAuthAlreadyLoggedIn()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -195,8 +195,8 @@ class LoginTest extends TestBase {
     function testRequireAuthNotAlreadyLoggedIn()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -220,8 +220,8 @@ class LoginTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Payload not set');
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -233,8 +233,8 @@ class LoginTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Payload not json');
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -246,8 +246,8 @@ class LoginTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Login state does not match');
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -260,8 +260,8 @@ class LoginTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Signature not set');
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -274,8 +274,8 @@ class LoginTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Signature does not match');
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -295,8 +295,8 @@ class LoginTest extends TestBase {
     function testValidateAuthPayloadContainsStateAndSignatureNoOtherPayload()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -324,8 +324,8 @@ class LoginTest extends TestBase {
     function testValidateAuthPayloadContainsStateAndSignatureFullPayload()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -373,8 +373,8 @@ class LoginTest extends TestBase {
     function testValidateAuthPayloadContainsStateAndSignatureFullPayloadCheckLoginIsCalled()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -414,8 +414,8 @@ class LoginTest extends TestBase {
     function testValidateAuthAfterRequireAuth()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn', 'login'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -467,8 +467,8 @@ class LoginTest extends TestBase {
     function testGetPersistentIdNoSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -478,8 +478,8 @@ class LoginTest extends TestBase {
     function testGetPersistentIdNoGupidInSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -490,8 +490,8 @@ class LoginTest extends TestBase {
     function testGetPersistentIdNoLoginProviderInSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -502,8 +502,8 @@ class LoginTest extends TestBase {
     function testGetPersistentIdEmptyGupids()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -516,8 +516,8 @@ class LoginTest extends TestBase {
     function testGetPersistentIdNoMatchingGupid()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -532,8 +532,8 @@ class LoginTest extends TestBase {
     function testGetPersistentIdFoundMatchingGupid()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -550,8 +550,8 @@ class LoginTest extends TestBase {
     function testGetRedirectUrlNoSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -561,8 +561,8 @@ class LoginTest extends TestBase {
     function testGetRedirectUrlNoRedirectInSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -573,8 +573,8 @@ class LoginTest extends TestBase {
     function testGetRedirectUrlFoundRedirectInSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -587,8 +587,8 @@ class LoginTest extends TestBase {
     function testGetScopesUserNoSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -598,8 +598,8 @@ class LoginTest extends TestBase {
     function testGetScopesNoProfileInSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -611,8 +611,8 @@ class LoginTest extends TestBase {
     function testGetScopes()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -624,8 +624,8 @@ class LoginTest extends TestBase {
     function testGetProfileNoSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -635,8 +635,8 @@ class LoginTest extends TestBase {
     function testGetProfileNoProfileInSession()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -647,8 +647,8 @@ class LoginTest extends TestBase {
     function testGetProfile()
     {
         $personaClient = new Login(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )

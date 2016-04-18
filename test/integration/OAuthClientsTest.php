@@ -37,22 +37,22 @@ class OAuthClientsTest extends TestBase {
         $this->clientSecret = $personaConf['oauthSecret'];
 
         $this->personaClientOAuthClient = new OAuthClients(
-            'integrationtest',
             array(
+                'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens'
             )
         );
         $this->personaClientUser = new Users(
-            'integrationtest',
             array(
+                'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens'
             )
         );
         $this->personaClientTokens = new Tokens(
-            'integrationtest',
             array(
+                'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens'
             )
@@ -124,8 +124,8 @@ class OAuthClientsTest extends TestBase {
     function testGetOAuthClientInvalidTokenThrowsException() {
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $personaClient = new OAuthClients(
-            'integrationtest',
             array(
+                'userAgent' => 'integrationtest',
                 'persona_host' => 'persona',
                 'persona_oauth_route' => '/oauth/tokens',
             )

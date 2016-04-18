@@ -14,8 +14,8 @@ class UsersTest extends TestBase {
     function testGetUserByGupidEmptyGupidThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -25,8 +25,8 @@ class UsersTest extends TestBase {
     function testGetUserByGupidEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -37,8 +37,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -52,8 +52,8 @@ class UsersTest extends TestBase {
     function testGetUserByGupidReturnsUserWhenGupidFound()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -91,8 +91,8 @@ class UsersTest extends TestBase {
     function testGetUserByGuidsInvalidGuidsThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid guids');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -102,8 +102,8 @@ class UsersTest extends TestBase {
     function testGetUserByGuidsEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -113,8 +113,8 @@ class UsersTest extends TestBase {
     function testGetUserByGuidsInvalidTokenThrowsException(){
         $this->setExpectedException('Exception', 'User profiles not found');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -125,8 +125,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'User profiles not found');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -140,8 +140,8 @@ class UsersTest extends TestBase {
     function testGetUserByGuidsReturnsUserWhenGuidsFound()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -182,8 +182,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Missing argument 1');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -194,8 +194,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Missing argument 2');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -206,8 +206,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Missing argument 3');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -219,8 +219,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -231,8 +231,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -243,8 +243,8 @@ class UsersTest extends TestBase {
     function testCreateUserEmptyProfile()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -259,8 +259,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid profile');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -272,8 +272,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -284,8 +284,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -296,8 +296,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'User not created');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -310,8 +310,8 @@ class UsersTest extends TestBase {
     function testCreateUserPostSucceeds()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -328,8 +328,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Missing argument 1');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -340,8 +340,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Missing argument 2');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -352,8 +352,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Missing argument 3');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -364,8 +364,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Invalid guid');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -376,8 +376,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Invalid guid');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -388,8 +388,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Invalid profile');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -400,8 +400,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Invalid profile');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -412,8 +412,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Invalid token');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -424,8 +424,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'Invalid token');
         $personaClient = new Users(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -436,8 +436,8 @@ class UsersTest extends TestBase {
     {
         $this->setExpectedException('Exception', 'User not updated');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
@@ -450,8 +450,8 @@ class UsersTest extends TestBase {
     function testUpdateUserPutSucceeds()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(
-            'unittest',
             array(
+                'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
             )
