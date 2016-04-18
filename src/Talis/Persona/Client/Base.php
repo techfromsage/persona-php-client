@@ -62,13 +62,18 @@ abstract class Base
     private $appUserAgent;
 
     /**
+     * @var string
+     */
+    private $phpVersion;
+
+    /**
      * Constructor
      *
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
      *      userAgent: Consuming application user agent string @since 2.0.0
-     *            examples: rl/5.2, rl, rl/5, rl/5.2 (linux/2.5)
+     *            examples: rl/5.2, rl, rl/5, rl/5.2 (php/5.3; linux/2.5)
      *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) optional cache storage (defaults to Filesystem)
      *      cacheKeyPrefix: (string) optional prefix to append to the cache keys
      *      cacheDefaultTTL: (integer) optional cache TTL value
@@ -106,6 +111,8 @@ abstract class Base
         $this->defaultTtl = isset($config['cacheDefaultTTL'])
             ? $config['cacheDefaultTTL']
             : 3600;
+
+        $this->phpVersion = phpversion();
     }
 
     /**
@@ -310,7 +317,7 @@ abstract class Base
 
         $version = $this->getClientVersion();
         $httpConfig['headers']['User-Agent'] = "{$this->config['userAgent']}" .
-            "persona-php-client/{$version}";
+            "persona-php-client/{$version} (php/{$this->phpVersion})";
         $httpConfig['headers']['X-Request-ID'] = $this->getRequestId();
         $httpConfig['headers']['X-Client-Version'] = $version;
         $httpConfig['headers']['X-Client-Language'] = 'php';
