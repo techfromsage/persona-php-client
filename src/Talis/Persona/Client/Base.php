@@ -62,11 +62,6 @@ abstract class Base
     private $appUserAgent;
 
     /**
-     * @var string
-     */
-    private $phpVersion;
-
-    /**
      * Constructor
      *
      * @param string $appUserAgent Consuming application user agent string @since 2.0.0
@@ -114,8 +109,6 @@ abstract class Base
         $this->defaultTtl = isset($config['cacheDefaultTTL'])
             ? $config['cacheDefaultTTL']
             : 3600;
-
-        $this->phpVersion = phpversion();
     }
 
     /**
@@ -319,7 +312,7 @@ abstract class Base
 
         $version = $this->getClientVersion();
         $httpConfig['headers']['User-Agent'] = "{$this->appUserAgent} " .
-            "persona-php-client/{$version} (php/{$this->phpVersion})";
+            "persona-php-client/{$version}";
         $httpConfig['headers']['X-Request-ID'] = $this->getRequestId();
 
         $client = $this->getHTTPClient();
