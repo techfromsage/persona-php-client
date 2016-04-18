@@ -59,11 +59,6 @@ abstract class Base
     /**
      * @var string
      */
-    private $appUserAgent;
-
-    /**
-     * @var string
-     */
     private $phpVersion;
 
     /**
@@ -102,7 +97,11 @@ abstract class Base
 
         $this->cacheBackend = isset($config['cacheBackend'])
             ? $config['cacheBackend']
-            : new FilesystemCache('/tmp/personaCache');
+            : new FilesystemCache(
+                sys_get_temp_dir() .
+                DIRECTORY_SEPARATOR .
+                'personaCache'
+            );
 
         $this->keyPrefix = isset($config['cacheKeyPrefix'])
             ? $config['cacheKeyPrefix']
@@ -332,7 +331,7 @@ abstract class Base
             $httpConfig
         );
 
-        // Only caches GET & HEAD requests, see 
+        // Only caches GET & HEAD requests, see
         // \Doctrine\Common\Cache\DefaultCanCacheStrategy
         $request->getParams()->set('cache.override_ttl', $opts['cacheTTL']);
 
