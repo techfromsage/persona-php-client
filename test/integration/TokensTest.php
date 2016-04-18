@@ -29,6 +29,7 @@ class TokensTest extends TestBase {
         $this->personaCache = new ArrayCache();
         $this->personaClient = new Tokens(
             array(
+                'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens',
             ),
@@ -50,30 +51,6 @@ class TokensTest extends TestBase {
         $scopes = explode(' ', $tokenDetails['scope']);
         $this->assertContains('su', $scopes);
         $this->assertContains($this->clientId, $scopes);
-    }
-
-    /**
-     * Retrieving a token with the same credentials should be cached
-     * @return null
-     */
-    public function testObtainCachedToken()
-    {
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
-
-        $this->assertArrayHasKey('access_token', $tokenDetails, 'should contain access_token');
-        $this->assertArrayHasKey('expires_in', $tokenDetails, 'should contain expires_in');
-        $this->assertArrayHasKey('token_type', $tokenDetails, 'should contain token type');
-        $this->assertArrayHasKey('scope', $tokenDetails, 'should contain scope');
-        $this->assertGreaterThan(0, $tokenDetails['expires_in']);
-        $this->assertEquals('bearer', strtolower($tokenDetails['token_type']));
-
-        $scopes = explode(' ', $tokenDetails['scope']);
-        $this->assertContains('su', $scopes);
-        $this->assertContains($this->clientId, $scopes);
-
-
-        $cachedTokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret);
-        $this->assertEquals($cachedTokenDetails, $tokenDetails);
     }
 
     function testObtainNewTokenWithValidScope(){

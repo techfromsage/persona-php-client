@@ -190,9 +190,16 @@ class Tokens extends Base
             $this->getStatsD()->endTiming("obtainNewToken.rest.get");
 
             if ($token && isset($token['expires_in'])) {
-                $this->getCacheBackend()->save(
-                    $cacheKey, $token, intval($token['expires_in'], 10)
-                );
+                // Add a 60 second leeway as the expires time does not take into
+                // consideration the time taken to communication with Persona
+                // in both directions.. This leads to a edge case where the
+                // token has expired, but the cache hasn't removed it yet
+                $expiresIn = intval($token['expires_in'], 10) - 60;
+                if ($expiresIn > 0) {
+                    $this->getCacheBackend()->save(
+                        $cacheKey, $token, $expiresIn
+                    );
+                }
             }
         }
 

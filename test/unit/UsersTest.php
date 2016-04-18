@@ -13,27 +13,36 @@ require_once $appRoot . '/test/unit/TestBase.php';
 class UsersTest extends TestBase {
     function testGetUserByGupidEmptyGupidThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->getUserByGupid('', '');
     }
     function testGetUserByGupidEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->getUserByGupid('123', '');
     }
     function testGetUserByGupidThrowsExceptionWhenGupidNotFound()
     {
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('personaGetUser')
             ->will($this->throwException(new Exception('Did not retrieve successful response code')));
@@ -42,10 +51,13 @@ class UsersTest extends TestBase {
     }
     function testGetUserByGupidReturnsUserWhenGupidFound()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $expectedResponse = array(
             '_id' => '123',
             'guid' => '456',
@@ -78,35 +90,47 @@ class UsersTest extends TestBase {
 
     function testGetUserByGuidsInvalidGuidsThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid guids');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->getUserByGuids('', '');
     }
     function testGetUserByGuidsEmptyTokenThrowsException(){
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->getUserByGuids(array('123'), '');
     }
     function testGetUserByGuidsInvalidTokenThrowsException(){
         $this->setExpectedException('Exception', 'User profiles not found');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->getUserByGuids(array('123'), '456');
     }
     function testGetUserByGuidsThrowsExceptionWhenGuidsNotFound()
     {
         $this->setExpectedException('Exception', 'User profiles not found');
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('personaGetUser')
             ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
@@ -115,10 +139,13 @@ class UsersTest extends TestBase {
     }
     function testGetUserByGuidsReturnsUserWhenGuidsFound()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaGetUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $expectedResponse = array(array(
             '_id' => '123',
             'guid' => '456',
@@ -154,56 +181,74 @@ class UsersTest extends TestBase {
     function testCreateUserNoGupid()
     {
         $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser();
     }
     function testCreateUserNoProfile()
     {
         $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser('gupid');
     }
     function testCreateUserNoToken()
     {
         $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser('gupid', 'profile');
     }
 
     function testCreateUserEmptyGupid()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser('', 'profile', 'token');
     }
     function testCreateUserInvalidGupid()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser(array('gupid'), 'profile', 'token');
     }
 
     function testCreateUserEmptyProfile()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $expectedResponse = array('gupid' => '123');
         $mockClient->expects($this->once())
             ->method('personaPostUser')
@@ -213,38 +258,50 @@ class UsersTest extends TestBase {
     function testCreateUserInvalidProfile()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid profile');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser('gupid', 'profile', 'token');
     }
 
     function testCreateUserEmptyToken()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser('gupid', array('email' => ''), '');
     }
     function testCreateUserInvalidToken()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid token');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->createUser('gupid', array('email' => ''), array(''));
     }
     function testCreateUserPostFails()
     {
         $this->setExpectedException('Exception', 'User not created');
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('personaPostUser')
             ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
@@ -252,10 +309,13 @@ class UsersTest extends TestBase {
     }
     function testCreateUserPostSucceeds()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPostUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $expectedResponse = array('gupid' => '123', 'profile' => array());
         $mockClient->expects($this->once())
             ->method('personaPostUser')
@@ -267,91 +327,121 @@ class UsersTest extends TestBase {
     function testUpdateUserNoGupid()
     {
         $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser();
     }
     function testUpdateUserNoProfile()
     {
         $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser('123');
     }
     function testUpdateUserNoToken()
     {
         $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser('123', array());
     }
     function testUpdateUserEmptyGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser('', array(), '987');
     }
     function testUpdateUserInvalidGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser(array(), array(), '987');
     }
     function testUpdateUserEmptyProfile()
     {
         $this->setExpectedException('Exception', 'Invalid profile');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser('123', array(), '987');
     }
     function testUpdateUserInvalidProfile()
     {
         $this->setExpectedException('Exception', 'Invalid profile');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser('123', 'PROFILE', '987');
     }
     function testUpdateUserEmptyToken()
     {
         $this->setExpectedException('Exception', 'Invalid token');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser('123', array('email' => 'PROFILE'), '');
     }
     function testUpdateUserInvalidToken()
     {
         $this->setExpectedException('Exception', 'Invalid token');
-        $personaClient = new Users(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        ));
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        );
         $personaClient->updateUser('123', array('email' => 'PROFILE'), array(''));
     }
     function testUpdateUserPutFails()
     {
         $this->setExpectedException('Exception', 'User not updated');
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $mockClient->expects($this->once())
             ->method('personaPatchUser')
             ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
@@ -359,10 +449,13 @@ class UsersTest extends TestBase {
     }
     function testUpdateUserPutSucceeds()
     {
-        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(array(
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-        )));
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('personaPatchUser'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+            )
+        ));
         $expectedResponse = array('gupid' => '123', 'profile' => array());
         $mockClient->expects($this->once())
             ->method('personaPatchUser')

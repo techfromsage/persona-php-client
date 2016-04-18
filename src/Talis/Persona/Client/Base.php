@@ -15,7 +15,9 @@ abstract class Base
 {
     const STATSD_CONN = 'STATSD_CONN';
     const STATSD_PREFIX = 'STATSD_PREFIX';
-    const LOGGER_NAME = "PERSONA";
+    const LOGGER_NAME = 'PERSONA';
+    const COMPOSER_VERSION_CACHE_KEY = 'composer_version';
+    const COMPOSER_VERSION_CACHE_TTL_SEC = 3600; // 1 hour
 
     /**
      * Configuration object
@@ -55,40 +57,60 @@ abstract class Base
     private $defaultTtl;
 
     /**
+     * @var string
+     */
+    private $phpVersion;
+
+    /**
      * Constructor
      *
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
+     *      userAgent: Consuming application user agent string @since 2.0.0
+     *            examples: rl/1723-9095ba4, rl/5.2, rl, rl/5, rl/5.2 (php/5.3; linux/2.5)
      *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) optional cache storage (defaults to Filesystem)
      *      cacheKeyPrefix: (string) optional prefix to append to the cache keys
      *      cacheDefaultTTL: (integer) optional cache TTL value
-     * @param @deprecated $logger optional logger instance
-     * @param @deprecated $cacheBackend optional cache backend see
-     *  https://github.com/doctrine/cache/tree/master/lib/Doctrine/Common/Cache
-     *  https://doctrine-orm.readthedocs.org/projects/doctrine-orm/en/latest/reference/caching.html
      * @throws \InvalidArgumentException if any of the required config parameters are missing
-     * 
+     * @throws \InvalidArgumentException if the user agent format is invalid
      */
-    public function __construct(
-        array $config,
-        \Psr\Log\LoggerInterface $logger = null,
-        CacheProvider $cacheBackend = null
-    ) {
+    public function __construct(array $config)
+    {
         $this->checkConfig($config);
         $this->config = $config;
 
+        $userAgentPattern = '' .
+            '/^[a-z0-9\-\._]+' .             // name of application
+            '(\/' .                          // optional version beginning with /
+                '([0-9]{1}(\.?[0-9]+)?' .       // either a integer or double
+                '|' .                           // or
+                '[a-z0-9\-]+' .                 // a hash
+            '))?' .
+            '( \([^\)]+\))?$/i';             // comment surrounded by round brackets
+
+        $isValidUserAgent = preg_match(
+            $userAgentPattern,
+            $config['userAgent']
+        );
+
+        if ($isValidUserAgent == false) {
+            throw new \InvalidArgumentException(
+                'user agent format is not valid'
+            );
+        }
+
         $this->logger = isset($config['logger'])
             ? $config['logger']
-            : $logger;
-
-        $cacheBackend = $cacheBackend === null
-            ? new FilesystemCache('/tmp/personaCache')
-            : $cacheBackend;
+            : null;
 
         $this->cacheBackend = isset($config['cacheBackend'])
             ? $config['cacheBackend']
-            : $cacheBackend;
+            : new FilesystemCache(
+                sys_get_temp_dir() .
+                DIRECTORY_SEPARATOR .
+                'personaCache'
+            );
 
         $this->keyPrefix = isset($config['cacheKeyPrefix'])
             ? $config['cacheKeyPrefix']
@@ -98,13 +120,7 @@ abstract class Base
             ? $config['cacheDefaultTTL']
             : 3600;
 
-        if ($logger && $this->logger) {
-            $this->logger->warn('$logger attribute is deprecated');
-        }
-
-        if ($cacheBackend && $this->logger) {
-            $this->logger->warn('$cacheBackend is deprecated');
-        }
+        $this->phpVersion = phpversion();
     }
 
     /**
@@ -144,6 +160,7 @@ abstract class Base
         }
 
         $requiredProperties = array(
+            'userAgent',
             'persona_host',
             'persona_oauth_route',
         );
@@ -203,6 +220,57 @@ abstract class Base
     }
 
     /**
+     * Retrieve the Persona client version
+     * @return string Persona client version
+     */
+    protected function getClientVersion()
+    {
+        $version = $this->getCacheBackend()->fetch(self::COMPOSER_VERSION_CACHE_KEY);
+        if ($version) {
+            return $version;
+        }
+
+        $composerFileContent = file_get_contents(
+            __DIR__. '/../../../../composer.json'
+        );
+
+        if ($composerFileContent === false) {
+            return 'unknown';
+        }
+
+        $composer = json_decode($composerFileContent, true);
+        if (isset($composer['version']) === false) {
+            return 'unknown';
+        }
+
+        $this->getCacheBackend()->save(
+            self::COMPOSER_VERSION_CACHE_KEY,
+            $composer['version'],
+            self::COMPOSER_VERSION_CACHE_TTL_SEC
+        );
+
+        return $composer['version'];
+    }
+
+    /**
+     * Returns a unique id for tracing this request.
+     * If there is already a value set as a header it uses that, otherwise it
+     * generates a new one and sets that on $_SERVER
+     * @return string
+     */
+    protected function getRequestId()
+    {
+        $requestId = null;
+        if (array_key_exists('HTTP_X_REQUEST_ID', $_SERVER)) {
+            $requestId = $_SERVER['HTTP_X_REQUEST_ID'];
+        }
+
+        return empty($requestId) === true
+            ? uniqid()
+            : $requestId;
+    }
+
+    /**
      * Perform the request according to the $curlOptions. Only
      * GET and HEAD requests are cached.
      * tip: turn off caching by defining the 'Cache-Control'
@@ -255,6 +323,14 @@ abstract class Base
             $httpConfig['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
         }
 
+        $version = $this->getClientVersion();
+        $httpConfig['headers']['User-Agent'] = "{$this->config['userAgent']}" .
+            "persona-php-client/{$version} (php/{$this->phpVersion})";
+        $httpConfig['headers']['X-Request-ID'] = $this->getRequestId();
+        $httpConfig['headers']['X-Client-Version'] = $version;
+        $httpConfig['headers']['X-Client-Language'] = 'php';
+        $httpConfig['headers']['X-Client-Consumer'] = $this->config['userAgent'];
+
         $client = $this->getHTTPClient();
         $request = $client->createRequest(
             $opts['method'],
@@ -264,7 +340,7 @@ abstract class Base
             $httpConfig
         );
 
-        // Only caches GET & HEAD requests, see 
+        // Only caches GET & HEAD requests, see
         // \Doctrine\Common\Cache\DefaultCanCacheStrategy
         $request->getParams()->set('cache.override_ttl', $opts['cacheTTL']);
 
@@ -312,7 +388,7 @@ abstract class Base
             );
 
             throw new \Exception(
-                "Could not parse response from persona as JSON"
+                "Could not parse response from persona as JSON " . $response->getBody()
             );
         }
 
