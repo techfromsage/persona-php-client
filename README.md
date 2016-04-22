@@ -48,7 +48,7 @@ $cacheDriver->setRedis($redis);
 $personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens/',
-    'userAgent' => 'README/2.0',
+    'userAgent' => 'my-app/2.0',
     'cacheBackend' =>  $cacheDriver,
 ));
 ```
@@ -59,7 +59,7 @@ $cacheTTL = 300;
 $users = new Talis\Persona\Client\Users(array(
     'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens/',
-    'userAgent' => 'README/2.0',
+    'userAgent' => 'my-app/2.0',
 ));
 $users->getUserByGupid($gupid, $token, $cacheTTL);
 ```
@@ -73,7 +73,7 @@ of the profile should use a 0 TTL to remove any cache.
 $personaClient = new Talis\Persona\Client\Tokens(array(
     'persona_host' => 'http://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
-    'userAgent' => 'README/2.0',
+    'userAgent' => 'my-app/2.0',
 ));
 
 // you can use it to obtain a new token
@@ -99,7 +99,7 @@ $tokenDetails = $personaClient->obtainNewToken(
 $personaClient = new Talis\Persona\Client\Users(array(
     'persona_host' => 'http://persona',
     'persona_oauth_route' => '/oauth/tokens',
-    'userAgent' => 'README/2.0',
+    'userAgent' => 'my-app/2.0',
 ));
 
 // you can use it to get a user profile with the gupid
@@ -112,7 +112,7 @@ $profile = $personaClient->getUserByGupid('google:123', 'some token');
 $personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'http://persona',
     'persona_oauth_route' => '/oauth/tokens',
-    'userAgent' => 'README/2.0',
+    'userAgent' => 'my-app/2.0',
 ));
 
 // you can use it to login
