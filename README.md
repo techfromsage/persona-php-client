@@ -3,10 +3,10 @@ persona-php-client
 
 [![Build Status](https://travis-ci.org/talis/persona-php-client.svg?branch=master)](https://travis-ci.org/talis/persona-node-client)
 
-This is a php client library for Talis Persona supporting generation, validation and caching of oauth tokens
+This is a php client library for Talis Persona supporting generation, validation and caching of oauth tokens.
 
 ## Getting Started
-Install the module via composer, by adding the following to your projects ``composer.json``
+Install the module via composer, by adding the following to your projects ``composer.json``.
 
 ```javascript
 {
@@ -27,16 +27,16 @@ $ php composer.phar update
 ```
 
 To use the module in your code, instantiate one of the following:
-```new Talis\Persona\Client\Tokens``` - for token based Persona calls
-```new Talis\Persona\Client\Login``` - for login workflow calls
-```new Talis\Persona\Client\Users``` - for user based Persona calls
-```new Talis\Persona\Client\OAuthClients``` - for oauth based Persona calls
+* ```new Talis\Persona\Client\Tokens``` - for token based Persona calls
+* ```new Talis\Persona\Client\Login``` - for login workflow calls
+* ```new Talis\Persona\Client\Users``` - for user based Persona calls
+* ```new Talis\Persona\Client\OAuthClients``` - for oauth based Persona calls
 
 ### Caching
-By default the cache storage mechanism is file based which uses the temporary directory.
+By default the cache storage mechanism is file based which uses the systems temporary directory.
 Every HTTP GET or HEAD request is cached for 500 seconds unless the TTL
 value is overridden. The storage mechanism can be changed by defining the
-cache driver.  A list of cache driver implementations can be found
+cache driver. A list of cache driver implementations can be found
 [here](https://github.com/doctrine/cache/tree/master/lib/Doctrine/Common/Cache).
 ```php
 $redis = new Redis();
@@ -45,7 +45,6 @@ $redis->connect('redis_host', 6379);
 $cacheDriver = new \Doctrine\Common\Cache\RedisCache();
 $cacheDriver->setRedis($redis);
 
-$opts, $logger, $cacheDriver
 $personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens/',
@@ -55,7 +54,7 @@ $personaClient = new Talis\Persona\Client\Login(array(
 ```
 
 Where applicable, each API call can override the global TTL by passing in a TTL value.
-```
+```php
 $cacheTTL = 300;
 $users = new Talis\Persona\Client\Users($opts);
 $users->getUserByGupid($gupid, $token, $cacheTTL);
@@ -68,7 +67,7 @@ of the profile should use a 0 TTL to remove any cache.
 ```php
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Tokens(array(
-    'persona_host' => 'http://persona',
+    'persona_host' => 'http://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'README/2.0',
 ));
@@ -91,7 +90,7 @@ $tokenDetails = $personaClient->obtainNewToken(
 ```
 
 ### User based calls
-```
+```php
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Users(array(
     'persona_host' => 'http://persona',
@@ -104,7 +103,7 @@ $profile = $personaClient->getUserByGupid('google:123', 'some token');
 ```
 
 ### Login based calls
-```
+```php
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'http://persona',
@@ -142,10 +141,10 @@ The prefix is optional, if not supplied all stats will be prefixed with `persona
 
 ## Testing
 ### Unit tests
-```
+```bash
 ant unittest
 ```
 ### Integration Tests
-```
+```bash
 ant integrationtest
 ```
