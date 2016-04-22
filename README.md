@@ -3,7 +3,7 @@ persona-php-client
 
 [![Build Status](https://travis-ci.org/talis/persona-php-client.svg?branch=master)](https://travis-ci.org/talis/persona-node-client)
 
-This is a php client library for Talis Persona supporting generation, validation and caching of oauth tokens
+This is a php client library for Talis Persona supporting generation, validation and caching of oauth tokens.
 
 ## Getting Started
 Install the module via composer, by adding the following to your projects ``composer.json``
@@ -27,10 +27,10 @@ $ php composer.phar update
 ```
 
 To use the module in your code, instantiate one of the following:
-```new Talis\Persona\Client\Tokens``` - for token based Persona calls
-```new Talis\Persona\Client\Login``` - for login workflow calls
-```new Talis\Persona\Client\Users``` - for user based Persona calls
-```new Talis\Persona\Client\OAuthClients``` - for oauth based Persona calls
+* ```new Talis\Persona\Client\Tokens``` - for token based Persona calls
+* ```new Talis\Persona\Client\Login``` - for login workflow calls
+* ```new Talis\Persona\Client\Users``` - for user based Persona calls
+* ```new Talis\Persona\Client\OAuthClients``` - for oauth based Persona calls
 
 ### Caching
 By default the cache storage mechanism is file based which uses the temporary directory.
@@ -57,7 +57,11 @@ $personaClient = new Talis\Persona\Client\Login(array(
 Where applicable, each API call can override the global TTL by passing in a TTL value.
 ```
 $cacheTTL = 300;
-$users = new Talis\Persona\Client\Users($opts);
+$users = new Talis\Persona\Client\Users(array(
+    'persona_host' => 'https://users.talis.com',
+    'persona_oauth_route' => '/oauth/tokens/',
+    'userAgent' => 'README/2.0',
+));
 $users->getUserByGupid($gupid, $token, $cacheTTL);
 ```
 The user __should take into consideration__ that they should flush the cache for a given API call if they

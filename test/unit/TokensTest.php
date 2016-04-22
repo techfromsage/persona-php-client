@@ -620,13 +620,8 @@ class TokensTest extends TestBase {
         $this->assertEquals($cachedTokenDetails, $tokenDetails);
     }
 
-    public function testInvalidUserAgentThrowsException()
+    public function testUserAgentAllowsAnyChars()
     {
-        $this->setExpectedException(
-            'InvalidArgumentException',
-            'user agent format is not valid'
-        );
-
         $personaClient = new Tokens(
             array(
                 'userAgent' => 'unittest//.1',
