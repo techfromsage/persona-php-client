@@ -71,7 +71,7 @@ of the profile should use a 0 TTL to remove any cache.
 ```php
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Tokens(array(
-    'persona_host' => 'http://users.talis.com',
+    'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
 ));
