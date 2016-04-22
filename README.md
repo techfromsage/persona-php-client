@@ -33,7 +33,7 @@ To use the module in your code, instantiate one of the following:
 * ```new Talis\Persona\Client\OAuthClients``` - for oauth based Persona calls
 
 ### Caching
-By default the cache storage mechanism is file based which uses the systems temporary directory.
+By default the cache storage mechanism is file based which uses the system's temporary directory.
 Every HTTP GET or HEAD request is cached for 500 seconds unless the TTL
 value is overridden. The storage mechanism can be changed by defining the
 cache driver. A list of cache driver implementations can be found
