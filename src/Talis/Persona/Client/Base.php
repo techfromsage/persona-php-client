@@ -83,10 +83,8 @@ abstract class Base
         $userAgentPattern = '' .
             '/^[a-z0-9\-\._]+' .             // name of application
             '(\/' .                          // optional version beginning with /
-                '([0-9]{1}(\.?[0-9]+)?' .       // either a integer or double
-                '|' .                           // or
-                '[a-z0-9\-]+' .                 // a hash
-            '))?' .
+                '[^\s]+' .                   // anything but whitespace
+            ')?' .
             '( \([^\)]+\))?$/i';             // comment surrounded by round brackets
 
         $isValidUserAgent = preg_match(

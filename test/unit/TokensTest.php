@@ -620,13 +620,8 @@ class TokensTest extends TestBase {
         $this->assertEquals($cachedTokenDetails, $tokenDetails);
     }
 
-    public function testInvalidUserAgentThrowsException()
+    public function testUserAgentAllowsAnyChars()
     {
-        $this->setExpectedException(
-            'InvalidArgumentException',
-            'user agent format is not valid'
-        );
-
         $personaClient = new Tokens(
             array(
                 'userAgent' => 'unittest//.1',
@@ -635,6 +630,23 @@ class TokensTest extends TestBase {
             )
         );
     }
+
+    public function testUserAgentFailsWithDoubleSpace()
+    {
+        $this->setExpectedException(		
+            'InvalidArgumentException',		
+            'user agent format is not valid'		
+        );
+
+        $personaClient = new Tokens(
+            array(
+                'userAgent' => 'unittest//.1  (blah)',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens'
+            )
+        );
+    }
+
 
     public function testBasicUserAgent()
     {
