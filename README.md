@@ -97,7 +97,7 @@ $tokenDetails = $personaClient->obtainNewToken(
 ```php
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Users(array(
-    'persona_host' => 'http://persona',
+    'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
 ));
@@ -110,7 +110,7 @@ $profile = $personaClient->getUserByGupid('google:123', 'some token');
 ```php
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Login(array(
-    'persona_host' => 'http://persona',
+    'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
 ));
