@@ -17,7 +17,7 @@ Install the module via composer, by adding the following to your projects ``comp
         },
     ],
     "require" :{
-        "talis/persona-php-client": "2.0.0"
+        "talis/persona-php-client": "2.0.1"
     }
 }
 ```
