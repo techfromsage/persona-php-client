@@ -1,10 +1,9 @@
 <?php
 namespace Talis\Persona\Client;
 
+use Guzzle\Http\Exception\ClientErrorResponseException;
 use Monolog\Logger;
 use Guzzle\Http\Client;
-use Doctrine\Common\Cache\ArrayCache;
-use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\FilesystemCache;
 use Guzzle\Http\Exception\RequestException;
 use Guzzle\Cache\DoctrineCacheAdapter;
@@ -345,21 +344,30 @@ abstract class Base
         try {
             $response = $request->send();
         } catch(RequestException $exception) {
-            if (isset($exception->hasResponse) && $exception->hasResponse) {
-                $status = $exception->getResponse()->getStatusCode();
-            } else {
+            $response = $exception->getRequest()->getResponse();
+            if(isset($response))
+            {
+                $status = $response->getStatusCode();
+            }
+            else
+            {
                 $status = -1;
             }
 
+            if($status === 404)
+            {
+                throw new NotFoundException();
+            }
+
             throw new \Exception(
-                "Did not retrieve successful response code from persona: " . $status,
+                "Did not retrieve successful response code from persona: ${status}",
                 $status
             );
         }
 
         if ($response->getStatusCode() != $expectedResponseCode) {
             $this->getLogger()->error(
-                "Did not retrieve expecteded response code",
+                "Did not retrieve expected response code",
                 array("opts" => $opts, "url" => $url, "response" => $response)
             );
 
