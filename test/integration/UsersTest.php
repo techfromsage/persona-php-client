@@ -25,7 +25,8 @@ class UsersTest extends TestBase {
     private $clientId;
     private $clientSecret;
 
-    function setUp(){
+    function setUp()
+    {
         parent::setUp();
         $personaConf = $this->getPersonaConfig();
         $this->clientId = $personaConf['oauthClient'];
@@ -83,6 +84,7 @@ class UsersTest extends TestBase {
         $this->assertEquals('Sarah Connor', $users[0]['profile']['name']);
         $this->assertEquals($email, $users[0]['profile']['email']);
     }
+
     function testCreateUserThenPatchUser()
     {
         $tokenDetails = $this->personaClientTokens->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
@@ -105,7 +107,9 @@ class UsersTest extends TestBase {
         $this->assertEquals('John Connor', $user['profile']['name']);
         $this->assertEquals($email, $user['profile']['email']);
     }
-    function testGetUserByGupidInvalidTokenThrowsException(){
+
+    function testGetUserByGupidInvalidTokenThrowsException()
+    {
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $personaClient = new Users(
             array(
@@ -115,5 +119,18 @@ class UsersTest extends TestBase {
             )
         );
         $personaClient->getUserByGupid('123', '456');
+    }
+
+    function testGetUserByGupidThrowsNotFoundExceptionWhenUserNotFound()
+    {
+        $this->setExpectedException('Talis\Persona\Client\NotFoundException');
+
+        $tokenDetails = $this->personaClientTokens->obtainNewToken($this->clientId, $this->clientSecret, array(
+            'useCache' => false
+        ));
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $this->personaClientUser->getUserByGupid('trapdoor:notfound', $token);
     }
 }
