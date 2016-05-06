@@ -391,7 +391,7 @@ class Tokens extends Base
             $url,
             array(
                 'method' => 'POST',
-                'body' => http_build_query($query),
+                'body' => http_build_query($query, '', '&'),
             )
         );
     }
