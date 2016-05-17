@@ -69,6 +69,12 @@ class Tokens extends Base
 
         try {
             $decoded = (array) JWT::decode($token, $cert, array('RS256'));
+        } catch (\DomainException $exception) {
+            $this->getLogger()->error('Invalid signature', array($exception));
+            return false;
+        } catch (\InvalidArgumentException $exception) {
+            $this->getLogger()->error('Invalid public key', array($exception));
+            return false;
         } catch (\UnexpectedValueException $exception) {
             // Expired, before valid, invalid json, etc
             $this->getLogger()->debug('Invalid token', array($exception));
