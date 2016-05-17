@@ -2,7 +2,6 @@
 
 use \Firebase\JWT\JWT;
 use Talis\Persona\Client\Tokens;
-use Guzzle;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT'))
@@ -19,6 +18,7 @@ class TokensTest extends TestBase {
     public function setUp()
     {
         parent::setUp();
+        $this->_wrongPrivateKey = file_get_contents('../keys/wrong_private_key.pem');
         $this->_privateKey = file_get_contents('../keys/private_key.pem');
         $this->_publicKey = file_get_contents('../keys/public_key.pem');
     }
@@ -483,23 +483,20 @@ class TokensTest extends TestBase {
                 'audience' => 'standard_user',
                 'scopes' => array('su'),
             ),
-            $this->_privateKey,
+            $this->_wrongPrivateKey,
             'RS256'
         );
 
-        $mockClient->expects($this->once())->method('retrieveJWTCertificate')->will($this->returnValue(json_encode("invalid cert")));
+        $mockClient->expects($this->once())
+            ->method('retrieveJWTCertificate')
+            ->will($this->returnValue($this->_privateKey));
 
-        try {
-            $mockClient->validateToken(
-                array(
-                    'access_token' => $jwt,
-                    'scope' => 'su',
-                )
-            );
-
-            $this->fail("Exception not thrown");
-        } catch (InvalidArgumentException $e) {
-        }
+        $this->assertEquals(false, $mockClient->validateToken(
+            array(
+                'access_token' => $jwt,
+                'scope' => 'su',
+            )
+        ));
     }
 
     /**
