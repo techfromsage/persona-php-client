@@ -53,6 +53,11 @@ $personaClient = new Talis\Persona\Client\Login(array(
 ));
 ```
 
+** WARNING **
+The FileSystemCache caching mechanism has been found to generated 32 folders per cache
+key & does not clean down old cache keys. This causes the file system to deplete all
+available inodes. It is recommended to not use the FileSystemCache object.
+
 Where applicable, each API call can override the global TTL by passing in a TTL value.
 ```php
 $cacheTTL = 300;
