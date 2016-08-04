@@ -18,6 +18,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getUserByGupid('', '');
@@ -29,6 +30,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getUserByGupid('123', '');
@@ -41,6 +43,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -56,6 +59,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $expectedResponse = array(
@@ -95,6 +99,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getUserByGuids('', '');
@@ -106,6 +111,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getUserByGuids(array('123'), '');
@@ -117,6 +123,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getUserByGuids(array('123'), '456');
@@ -129,6 +136,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -144,6 +152,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $expectedResponse = array(array(
@@ -186,6 +195,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser();
@@ -198,6 +208,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser('gupid');
@@ -210,6 +221,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser('gupid', 'profile');
@@ -223,6 +235,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser('', 'profile', 'token');
@@ -235,6 +248,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser(array('gupid'), 'profile', 'token');
@@ -247,6 +261,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $expectedResponse = array('gupid' => '123');
@@ -263,6 +278,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser('gupid', 'profile', 'token');
@@ -276,6 +292,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser('gupid', array('email' => ''), '');
@@ -288,6 +305,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->createUser('gupid', array('email' => ''), array(''));
@@ -300,6 +318,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -314,6 +333,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $expectedResponse = array('gupid' => '123', 'profile' => array());
@@ -332,6 +352,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser();
@@ -344,6 +365,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser('123');
@@ -356,6 +378,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser('123', array());
@@ -368,6 +391,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser('', array(), '987');
@@ -380,6 +404,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser(array(), array(), '987');
@@ -392,6 +417,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser('123', array(), '987');
@@ -404,6 +430,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser('123', 'PROFILE', '987');
@@ -416,6 +443,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser('123', array('email' => 'PROFILE'), '');
@@ -428,6 +456,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateUser('123', array('email' => 'PROFILE'), array(''));
@@ -440,6 +469,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -454,6 +484,7 @@ class UsersTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $expectedResponse = array('gupid' => '123', 'profile' => array());

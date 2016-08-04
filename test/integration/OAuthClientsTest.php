@@ -40,21 +40,24 @@ class OAuthClientsTest extends TestBase {
             array(
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
-                'persona_oauth_route' => '/oauth/tokens'
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $this->personaClientUser = new Users(
             array(
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
-                'persona_oauth_route' => '/oauth/tokens'
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $this->personaClientTokens = new Tokens(
             array(
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
-                'persona_oauth_route' => '/oauth/tokens'
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
     }
@@ -128,6 +131,7 @@ class OAuthClientsTest extends TestBase {
                 'userAgent' => 'integrationtest',
                 'persona_host' => 'persona',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getOAuthClient('123', '456');

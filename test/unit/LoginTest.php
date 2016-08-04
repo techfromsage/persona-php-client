@@ -10,6 +10,8 @@ if (!defined('APPROOT'))
 
 require_once $appRoot . '/test/unit/TestBase.php';
 
+
+
 class LoginTest extends TestBase {
     // requireAuth tests
     function testRequireAuthNoProvider()
@@ -33,6 +35,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->requireAuth();
@@ -46,6 +49,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->requireAuth(array('test'), 'appid', 'appsecret');
@@ -70,6 +74,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->requireAuth('trapdoor');
@@ -83,6 +88,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->requireAuth('trapdoor', array('appid'), 'appsecret');
@@ -107,6 +113,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->requireAuth('trapdoor', 'appId');
@@ -120,6 +127,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->requireAuth('trapdoor', 'appid', array('appsecret'));
@@ -131,6 +139,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -151,6 +160,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->requireAuth('trapdoor', 'appid', 'appsecret', array('redirectUri'));
@@ -162,6 +172,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -181,6 +192,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -199,6 +211,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -224,6 +237,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->validateAuth();
@@ -237,6 +251,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_POST['persona:payload'] = 'YouShallNotPass';
@@ -250,6 +265,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
@@ -264,6 +280,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
@@ -278,6 +295,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
@@ -299,6 +317,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
@@ -328,6 +347,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
@@ -377,6 +397,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -418,6 +439,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->exactly(2))
@@ -471,6 +493,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $this->assertFalse($personaClient->getPersistentId());
@@ -482,6 +505,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
@@ -494,6 +518,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
@@ -506,6 +531,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
@@ -520,6 +546,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
@@ -536,6 +563,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginProvider'] = 'trapdoor';
@@ -554,6 +582,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $this->assertFalse($personaClient->getRedirectUrl());
@@ -565,6 +594,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
@@ -577,6 +607,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('redirect' => 'http://example.com/path/to/redirect');
@@ -591,6 +622,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $this->assertFalse($personaClient->getScopes());
@@ -602,6 +634,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
@@ -615,6 +648,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('token' => array('scope' => array('919191')));
@@ -628,6 +662,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $this->assertEquals(array(), $personaClient->getProfile());
@@ -639,6 +674,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array();
@@ -651,6 +687,7 @@ class LoginTest extends TestBase {
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $profile = array('name' => '', 'email' => '');

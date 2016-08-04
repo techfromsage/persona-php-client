@@ -4,6 +4,8 @@ if (!defined('APPROOT'))
     define('APPROOT', dirname(dirname(__DIR__)));
 }
 
+use Doctrine\Common\Cache\FilesystemCache;
+
 /**
  * Retrieve environment variable, else return a default
  * @param string $name name of environment value
@@ -18,6 +20,15 @@ function envvalue($name, $default)
 
 abstract class TestBase extends PHPUnit_Framework_TestCase
 {
+    protected $cacheBackend = null;
+
+    public function __construct()
+    {
+        $this->cacheBackend = new FilesystemCache(
+            sys_get_temp_dir() . DIRECTORY_SEPARATOR .  'personaCache'
+        );
+    }
+
     protected function removeCacheFolder()
     {
         $dir = '/tmp/personaCache';

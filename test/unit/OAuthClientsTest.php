@@ -20,6 +20,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getOAuthClient('', '');
@@ -31,6 +32,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->getOAuthClient('123', '');
@@ -43,6 +45,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -58,6 +61,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $expectedResponse = array(
@@ -90,6 +94,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient();
@@ -102,6 +107,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123');
@@ -114,6 +120,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array());
@@ -126,6 +133,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('', array(), '987');
@@ -138,6 +146,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient(array(), array(), '987');
@@ -150,6 +159,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array(), '987');
@@ -162,6 +172,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', 'PROPERTIES', '987');
@@ -174,6 +185,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array('INVALID' => array()), '987');
@@ -186,6 +198,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array('scope' => array()), '987');
@@ -198,6 +211,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '')), '987');
@@ -210,6 +224,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '', '$add' => 'test')), '987');
@@ -222,6 +237,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array('scope' => array('blah' => '', '$remove' => 'remove-scope', '$add' => 'add-scope')), '987');
@@ -234,6 +250,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123', array('scope' => array('$add' => 'additional-scope')), '');
@@ -246,6 +263,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         );
         $personaClient->updateOAuthClient('123',  array('scope' => array('$add' => 'additional-scope')), array(''));
@@ -258,6 +276,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
         $mockClient->expects($this->once())
@@ -273,6 +292,7 @@ class OAuthClientsTest extends TestBase
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
                 'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
             )
         ));
 
