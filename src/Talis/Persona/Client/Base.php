@@ -4,7 +4,6 @@ namespace Talis\Persona\Client;
 use Guzzle\Http\Exception\ClientErrorResponseException;
 use Monolog\Logger;
 use Guzzle\Http\Client;
-use Doctrine\Common\Cache\FilesystemCache;
 use Guzzle\Http\Exception\RequestException;
 use Guzzle\Cache\DoctrineCacheAdapter;
 use Guzzle\Plugin\Cache\CachePlugin;
@@ -101,13 +100,7 @@ abstract class Base
             ? $config['logger']
             : null;
 
-        $this->cacheBackend = isset($config['cacheBackend'])
-            ? $config['cacheBackend']
-            : new FilesystemCache(
-                sys_get_temp_dir() .
-                DIRECTORY_SEPARATOR .
-                'personaCache'
-            );
+        $this->cacheBackend = $config['cacheBackend'];
 
         $this->keyPrefix = isset($config['cacheKeyPrefix'])
             ? $config['cacheKeyPrefix']
@@ -160,6 +153,7 @@ abstract class Base
             'userAgent',
             'persona_host',
             'persona_oauth_route',
+            'cacheBackend'
         );
 
         $missingProperties = array();

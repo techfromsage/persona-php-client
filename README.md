@@ -33,10 +33,9 @@ To use the module in your code, instantiate one of the following:
 * ```new Talis\Persona\Client\OAuthClients``` - for oauth based Persona calls
 
 ### Caching
-By default the cache storage mechanism is file based which uses the system's temporary directory.
 Every HTTP GET or HEAD request is cached for 500 seconds unless the TTL
-value is overridden. The storage mechanism can be changed by defining the
-cache driver. A list of cache driver implementations can be found
+value is overridden. The storage mechanism is defined the cache driver.
+A list of cache driver implementations can be found
 [here](https://github.com/doctrine/cache/tree/master/lib/Doctrine/Common/Cache).
 ```php
 $redis = new Redis();
@@ -52,6 +51,11 @@ $personaClient = new Talis\Persona\Client\Login(array(
     'cacheBackend' =>  $cacheDriver,
 ));
 ```
+
+**WARNING**
+The FileSystemCache caching mechanism has been found to generated 32 folders per cache
+key & does not clean down old cache keys. This causes the file system to deplete all
+available inodes. It is recommended to not use the FileSystemCache object.
 
 Where applicable, each API call can override the global TTL by passing in a TTL value.
 ```php
@@ -74,6 +78,7 @@ $personaClient = new Talis\Persona\Client\Tokens(array(
     'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
+    'cacheBackend' => $cacheBackend,
 ));
 
 // you can use it to obtain a new token
@@ -100,6 +105,7 @@ $personaClient = new Talis\Persona\Client\Users(array(
     'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
+    'cacheBackend' => $cacheBackend,
 ));
 
 // you can use it to get a user profile with the gupid
@@ -113,6 +119,7 @@ $personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'https://users.talis.com',
     'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
+    'cacheBackend' => $cacheBackend,
 ));
 
 // you can use it to login
