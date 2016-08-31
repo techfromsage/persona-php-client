@@ -151,6 +151,10 @@ class Users extends Base
         {
             throw new \InvalidArgumentException('Invalid gupid');
         }
+        if(!is_string($token) || trim($token) === '')
+        {
+            throw new \InvalidArgumentException('Invalid token');
+        }
         $url = $this->config['persona_host'].'/users/'.$guid.'/gupids';
 
         try
