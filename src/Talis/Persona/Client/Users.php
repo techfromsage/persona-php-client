@@ -133,6 +133,36 @@ class Users extends Base
         }
     }
 
+    /**
+     * @param string $guid
+     * @param string $gupid
+     * @param string $token
+     * @return mixed
+     * @throws \InvalidArgumentException
+     * @throws \Exception
+     */
+    public function addGupidToUser($guid, $gupid, $token)
+    {
+        if(!is_string($guid) || trim($guid) === '')
+        {
+            throw new \InvalidArgumentException('Invalid guid');
+        }
+        if(!is_string($gupid) || trim($gupid) === '')
+        {
+            throw new \InvalidArgumentException('Invalid gupid');
+        }
+        $url = $this->config['persona_host'].'/users/'.$guid.'/gupids';
+
+        try
+        {
+            $user = $this->personaPatchGupid($url, array($gupid), $token);
+            return $user;
+        } catch (\Exception $e)
+        {
+            throw new \Exception ('User gupid not updated: '.$e->getMessage());
+        }
+    }
+
     /* Protected functions */
 
     /**
@@ -169,6 +199,26 @@ class Users extends Base
             $url,
             array(
                 'method' => 'POST',
+                'body' => json_encode($query),
+                'bearerToken' => $token,
+            )
+        );
+    }
+
+    /**
+     * Patch a Persona gupid
+     * @param string $url
+     * @param array $query
+     * @param string $token
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function personaPatchGupid($url, $query, $token)
+    {
+        return $this->performRequest(
+            $url,
+            array(
+                'method' => 'PATCH',
                 'body' => json_encode($query),
                 'bearerToken' => $token,
             )
