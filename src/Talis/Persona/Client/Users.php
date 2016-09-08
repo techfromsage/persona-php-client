@@ -25,7 +25,13 @@ class Users extends Base
         }
 
         $url = $this->config['persona_host'] . '/users?gupid=' . urlencode($gupid);
-        return $this->personaGetUser($url, $token, $cacheTTL);
+        return $this->performRequest(
+            $url,
+            array(
+                'bearerToken' => $token,
+                'cacheTTL' => $cacheTTL,
+            )
+        );
     }
 
     /**
@@ -50,8 +56,13 @@ class Users extends Base
         $url = $this->config['persona_host'] . '/users?guids=' . urlencode(implode(',', $guids));
 
         try {
-            $users = $this->personaGetUser($url, $token, $cacheTTL);
-            return $users;
+            return $this->performRequest(
+                $url,
+                array(
+                    'bearerToken' => $token,
+                    'cacheTTL' => $cacheTTL,
+                )
+            );
         } catch(\Exception $e) {
             throw new \Exception('User profiles not found');
         }
@@ -90,8 +101,14 @@ class Users extends Base
         }
         try
         {
-            $user = $this->personaPostUser($url, $query, $token);
-            return $user;
+            return $this->performRequest(
+                $url,
+                array(
+                    'method' => 'POST',
+                    'body' => json_encode($query),
+                    'bearerToken' => $token,
+                )
+            );
         } catch(\Exception $e)
         {
             throw new \Exception('User not created');
@@ -125,8 +142,14 @@ class Users extends Base
 
         try
         {
-            $user = $this->personaPatchUser($url, $profile, $token);
-            return $user;
+            return $this->performRequest(
+                $url,
+                array(
+                    'method' => 'PUT',
+                    'body' => json_encode($profile),
+                    'bearerToken' => $token,
+                )
+            );
         } catch(\Exception $e)
         {
             throw new \Exception('User not updated');
@@ -137,9 +160,10 @@ class Users extends Base
      * @param string $guid
      * @param string $gupid
      * @param string $token
-     * @return mixed
+     * @return array|null
      * @throws \InvalidArgumentException
      * @throws \Exception
+     * @access public
      */
     public function addGupidToUser($guid, $gupid, $token)
     {
@@ -159,93 +183,17 @@ class Users extends Base
 
         try
         {
-            $user = $this->personaPatchGupid($url, array($gupid), $token);
-            return $user;
+            return $this->performRequest(
+                $url,
+                array(
+                    'method' => 'PATCH',
+                    'body' => json_encode(array($gupid)),
+                    'bearerToken' => $token,
+                )
+            );
         } catch (\Exception $e)
         {
             throw new \Exception ('User gupid not updated: '.$e->getMessage());
         }
-    }
-
-    /* Protected functions */
-
-    /**
-     * Get a persona user
-     * @param string $url
-     * @param string $token
-     * @param int    $cacheTTL time to live in seconds for cached responses
-     * @access protected
-     * @return mixed
-     * @throws \Exception
-     */
-    protected function personaGetUser($url, $token, $cacheTTL = 300)
-    {
-        return $this->performRequest(
-            $url,
-            array(
-                'bearerToken' => $token,
-                'cacheTTL' => $cacheTTL,
-            )
-        );
-    }
-
-    /**
-     * Create a new user in Persona
-     * @param string $url
-     * @param array $query
-     * @param string $token
-     * @throws \Exception
-     * @return array
-     */
-    protected function personaPostUser($url, $query, $token)
-    {
-        return $this->performRequest(
-            $url,
-            array(
-                'method' => 'POST',
-                'body' => json_encode($query),
-                'bearerToken' => $token,
-            )
-        );
-    }
-
-    /**
-     * Patch a Persona gupid
-     * @param string $url
-     * @param array $query
-     * @param string $token
-     * @return mixed
-     * @throws \Exception
-     */
-    protected function personaPatchGupid($url, $query, $token)
-    {
-        return $this->performRequest(
-            $url,
-            array(
-                'method' => 'PATCH',
-                'body' => json_encode($query),
-                'bearerToken' => $token,
-            )
-        );
-    }
-
-    /**
-     * Patch a Persona user
-     * @param string $url
-     * @param array $query
-     * @param string $token
-     * @return mixed
-     * @throws \Exception
-     */
-    protected function personaPatchUser($url, $query, $token)
-    {
-        return $this->performRequest(
-            $url,
-            array(
-                'method' => 'PUT',
-                'body' => json_encode($query),
-                'bearerToken' => $token,
-            )
-        );
     }
 }
