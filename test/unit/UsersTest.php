@@ -117,7 +117,8 @@ class UsersTest extends TestBase {
         $personaClient->getUserByGuids(array('123'), '');
     }
     function testGetUserByGuidsInvalidTokenThrowsException(){
-        $this->setExpectedException('Exception', 'User profiles not found');
+        $this->setExpectedException('Exception', 
+            'Error finding user profiles: Did not retrieve successful response code from persona: -1');
         $personaClient = new Users(
             array(
                 'userAgent' => 'unittest',
@@ -130,7 +131,7 @@ class UsersTest extends TestBase {
     }
     function testGetUserByGuidsThrowsExceptionWhenGuidsNotFound()
     {
-        $this->setExpectedException('Exception', 'User profiles not found');
+        $this->setExpectedException('Exception', 'Error finding user profiles: Could not retrieve OAuth response code');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('performRequest'),array(
             array(
                 'userAgent' => 'unittest',
@@ -312,7 +313,7 @@ class UsersTest extends TestBase {
     }
     function testCreateUserPostFails()
     {
-        $this->setExpectedException('Exception', 'User not created');
+        $this->setExpectedException('Exception', 'Error creating user: Could not retrieve OAuth response code');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('performRequest'),array(
             array(
                 'userAgent' => 'unittest',
@@ -463,7 +464,7 @@ class UsersTest extends TestBase {
     }
     function testUpdateUserPutFails()
     {
-        $this->setExpectedException('Exception', 'User not updated');
+        $this->setExpectedException('Exception', 'Error updating user: Could not retrieve OAuth response code');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('performRequest'),array(
             array(
                 'userAgent' => 'unittest',
@@ -588,7 +589,7 @@ class UsersTest extends TestBase {
     }
     function testAddGupidToUserPatchFails()
     {
-        $this->setExpectedException('Exception', 'User gupid not updated');
+        $this->setExpectedException('Exception', 'Error adding gupid to user: Could not retrieve OAuth response code');
         $mockClient = $this->getMock('Talis\Persona\Client\Users',array('performRequest'),array(
             array(
                 'userAgent' => 'unittest',
