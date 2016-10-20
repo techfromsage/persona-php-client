@@ -16,22 +16,25 @@ class Users extends Base
     public function getUserByGupid($gupid, $token, $cacheTTL = 300)
     {
         if (!is_string($gupid) || trim($gupid) === '') {
-            $this->getLogger()->error("Invalid gupid $gupid");
             throw new \InvalidArgumentException("Invalid gupid");
         }
         if (!is_string($token) || trim($token) === '') {
-            $this->getLogger()->error("Invalid token $token");
             throw new \InvalidArgumentException("Invalid token");
         }
 
         $url = $this->config['persona_host'] . '/users?gupid=' . urlencode($gupid);
-        return $this->performRequest(
-            $url,
-            array(
-                'bearerToken' => $token,
-                'cacheTTL' => $cacheTTL,
-            )
-        );
+        try {
+            return $this->performRequest(
+                $url,
+                array(
+                    'bearerToken' => $token,
+                    'cacheTTL' => $cacheTTL,
+                )
+            );
+        } catch(\Exception $e) {
+            $this->getLogger()->error("Error finding user profile for gupid $gupid | " . $e->getMessage());
+            throw new \Exception('Error finding user profile: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -53,7 +56,8 @@ class Users extends Base
             throw new \InvalidArgumentException("Invalid token");
         }
 
-        $url = $this->config['persona_host'] . '/users?guids=' . urlencode(implode(',', $guids));
+        $guidsString = implode(',', $guids);
+        $url = $this->config['persona_host'] . '/users?guids=' . urlencode($guidsString);
 
         try {
             return $this->performRequest(
@@ -64,7 +68,8 @@ class Users extends Base
                 )
             );
         } catch(\Exception $e) {
-            throw new \Exception('User profiles not found');
+            $this->getLogger()->error("Error finding user profiles for guids $guidsString | " . $e->getMessage());
+            throw new \Exception('Error finding user profiles: ' . $e->getMessage());
         }
     }
 
@@ -111,7 +116,9 @@ class Users extends Base
             );
         } catch(\Exception $e)
         {
-            throw new \Exception('User not created');
+            $profileString = implode(',', $profile);
+            $this->getLogger()->error("Error creating user | gupid: $gupid | profile: $profileString | " . $e->getMessage());
+            throw new \Exception('Error creating user: ' . $e->getMessage());
         }
     }
 
@@ -152,7 +159,9 @@ class Users extends Base
             );
         } catch(\Exception $e)
         {
-            throw new \Exception('User not updated');
+            $profileString = implode(',', $profile);
+            $this->getLogger()->error("Error updating user | guid: $guid | profile: $profileString | " . $e->getMessage());
+            throw new \Exception('Error updating user: ' . $e->getMessage());
         }
     }
 
@@ -193,7 +202,8 @@ class Users extends Base
             );
         } catch (\Exception $e)
         {
-            throw new \Exception ('User gupid not updated: '.$e->getMessage());
+            $this->getLogger()->error("Error adding gupid to user | guid: $guid | gupid: $gupid | " . $e->getMessage());
+            throw new \Exception ('Error adding gupid to user: '.$e->getMessage());
         }
     }
 }
