@@ -23,18 +23,13 @@ class Users extends Base
         }
 
         $url = $this->config['persona_host'] . '/users?gupid=' . urlencode($gupid);
-        try {
-            return $this->performRequest(
-                $url,
-                array(
-                    'bearerToken' => $token,
-                    'cacheTTL' => $cacheTTL,
-                )
-            );
-        } catch(\Exception $e) {
-            $this->getLogger()->error("Error finding user profile for gupid $gupid | " . $e->getMessage());
-            throw new \Exception('Error finding user profile: ' . $e->getMessage());
-        }
+        return $this->performRequest(
+            $url,
+            array(
+                'bearerToken' => $token,
+                'cacheTTL' => $cacheTTL,
+            )
+        );
     }
 
     /**
