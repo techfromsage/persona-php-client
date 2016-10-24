@@ -15,14 +15,10 @@ class Users extends Base
      */
     public function getUserByGupid($gupid, $token, $cacheTTL = 300)
     {
-        if (!is_string($gupid) || trim($gupid) === '') {
-            throw new \InvalidArgumentException("Invalid gupid");
-        }
-        if (!is_string($token) || trim($token) === '') {
-            throw new \InvalidArgumentException("Invalid token");
-        }
+        $this->validateStringParam('gupid', $gupid);
+        $this->validateStringParam('token', $token);
 
-        $url = $this->config['persona_host'] . '/users?gupid=' . urlencode($gupid);
+        $url = $this->getPersonaHost() . '/users?gupid=' . urlencode($gupid);
         return $this->performRequest(
             $url,
             array(
@@ -44,16 +40,10 @@ class Users extends Base
      */
     public function getUserByGuids($guids, $token, $cacheTTL = 300)
     {
-        if (!is_array($guids)) {
-            throw new \InvalidArgumentException("Invalid guids");
-        }
-        if (!is_string($token) || trim($token) === '') {
-            throw new \InvalidArgumentException("Invalid token");
-        }
+        $this->validateArrayParam('guids', $guids);
+        $this->validateStringParam('token', $token);
 
-        $guidsString = implode(',', $guids);
-        $url = $this->config['persona_host'] . '/users?guids=' . urlencode($guidsString);
-
+        $url = $this->getPersonaHost() . '/users?guids=' . urlencode(implode(',', $guids));
         try {
             return $this->performRequest(
                 $url,
@@ -62,45 +52,41 @@ class Users extends Base
                     'cacheTTL' => $cacheTTL,
                 )
             );
-        } catch(\Exception $e) {
-            $this->getLogger()->error("Error finding user profiles for guids $guidsString | " . $e->getMessage());
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Error finding user profiles',
+                array('guids' => $guids, 'error' => $e->getMessage()));
             throw new \Exception('Error finding user profiles: ' . $e->getMessage());
         }
     }
 
     /**
      * Create a user in Persona
-     * @param string $gupid
-     * @param array $profile
+     * @param string $gupid the gupid for the user
+     * @param array $profile the profile data for the user
      * @param string $token
+     * @access public
      * @return array
+     * @throws \InvalidArgumentException
      * @throws \Exception
      */
     public function createUser($gupid, $profile, $token)
     {
-        if(!is_string($gupid) || trim($gupid) === '')
-        {
-            throw new \InvalidArgumentException('Invalid gupid');
-        }
-        if(!is_array($profile) && !empty($profile))
-        {
-            throw new \InvalidArgumentException('Invalid profile');
-        }
-        if(!is_string($token) || trim($token) === '')
-        {
-            throw new \InvalidArgumentException('Invalid token');
-        }
+        $this->validateStringParam('gupid', $gupid);
+        $this->validateStringParam('token', $token);
 
-        $url = $this->config['persona_host'].'/users';
+        $url = $this->getPersonaHost() . '/users';
         $query = array(
             'gupid' => $gupid
         );
-        if (!empty($profile))
+
+        // Profile may be empty - only validate and add to query if it is non-empty
+        if(!empty($profile))
         {
+            $this->validateArrayParam('profile', $profile);
             $query['profile'] = $profile;
         }
-        try
-        {
+
+        try {
             return $this->performRequest(
                 $url,
                 array(
@@ -109,41 +95,32 @@ class Users extends Base
                     'bearerToken' => $token,
                 )
             );
-        } catch(\Exception $e)
-        {
-            $profileString = implode(',', $profile);
-            $this->getLogger()->error("Error creating user | gupid: $gupid | profile: $profileString | " . $e->getMessage());
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Error creating user',
+                array('gupid' => $gupid, 'profile' => $profile, 'error' => $e->getMessage()));
             throw new \Exception('Error creating user: ' . $e->getMessage());
         }
     }
 
     /**
      * Update an existing user in Persona
-     * @param string $guid
-     * @param array $profile
+     * @param string $guid the guid of the existing user
+     * @param array $profile data to update the user profile with
      * @param string $token
+     * @access public
      * @return mixed
+     * @throws \InvalidArgumentException
      * @throws \Exception
      */
     public function updateUser($guid, $profile, $token)
     {
-        if(!is_string($guid) || trim($guid) === '')
-        {
-            throw new \InvalidArgumentException('Invalid guid');
-        }
-        if(!is_array($profile) || empty($profile))
-        {
-            throw new \InvalidArgumentException('Invalid profile');
-        }
-        if(!is_string($token) || trim($token) === '')
-        {
-            throw new \InvalidArgumentException('Invalid token');
-        }
+        $this->validateStringParam('guid', $guid);
+        $this->validateArrayParam('profile', $profile);
+        $this->validateStringParam('token', $token);
 
-        $url = $this->config['persona_host'].'/users/'.$guid.'/profile';
+        $url = $this->getPersonaHost() . '/users/' . $guid . '/profile';
 
-        try
-        {
+        try {
             return $this->performRequest(
                 $url,
                 array(
@@ -152,41 +129,32 @@ class Users extends Base
                     'bearerToken' => $token,
                 )
             );
-        } catch(\Exception $e)
-        {
-            $profileString = implode(',', $profile);
-            $this->getLogger()->error("Error updating user | guid: $guid | profile: $profileString | " . $e->getMessage());
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Error updating user',
+                array('guid' => $guid, 'profile' => $profile, 'error' => $e->getMessage()));
             throw new \Exception('Error updating user: ' . $e->getMessage());
         }
     }
 
     /**
-     * @param string $guid
-     * @param string $gupid
+     * Add a gupid to an existing user in Persona
+     * @param string $guid the guid of the existing user
+     * @param string $gupid the gupid to add to the user
      * @param string $token
+     * @access public
      * @return array|null
      * @throws \InvalidArgumentException
      * @throws \Exception
-     * @access public
      */
     public function addGupidToUser($guid, $gupid, $token)
     {
-        if(!is_string($guid) || trim($guid) === '')
-        {
-            throw new \InvalidArgumentException('Invalid guid');
-        }
-        if(!is_string($gupid) || trim($gupid) === '')
-        {
-            throw new \InvalidArgumentException('Invalid gupid');
-        }
-        if(!is_string($token) || trim($token) === '')
-        {
-            throw new \InvalidArgumentException('Invalid token');
-        }
-        $url = $this->config['persona_host'].'/users/'.$guid.'/gupids';
+        $this->validateStringParam('guid', $guid);
+        $this->validateStringParam('gupid', $gupid);
+        $this->validateStringParam('token', $token);
 
-        try
-        {
+        $url = $this->getPersonaHost() . '/users/' . $guid . '/gupids';
+
+        try {
             return $this->performRequest(
                 $url,
                 array(
@@ -195,10 +163,50 @@ class Users extends Base
                     'bearerToken' => $token,
                 )
             );
-        } catch (\Exception $e)
-        {
-            $this->getLogger()->error("Error adding gupid to user | guid: $guid | gupid: $gupid | " . $e->getMessage());
-            throw new \Exception ('Error adding gupid to user: '.$e->getMessage());
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Error adding gupid to user',
+                array('guid' => $guid, 'gupid' => $gupid, 'error' => $e->getMessage()));
+            throw new \Exception ('Error adding gupid to user: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Validate function argument is a non-empty string
+     * @param string $name name of argument
+     * @param string $value value of argument
+     * @access protected
+     * @throws \InvalidArgumentException
+     */
+    protected function validateStringParam($name, $value)
+    {
+        if (!is_string($value) || trim($value) === '') {
+            $this->getLogger()->error("Invalid $name", array($name => $value));
+            throw new \InvalidArgumentException("Invalid $name");
+        }
+    }
+
+    /**
+     * Validate function argument is a non-empty array
+     * @param string $name name of argument
+     * @param array $value value of argument
+     * @access protected
+     * @throws \InvalidArgumentException
+     */
+    protected function validateArrayParam($name, $value)
+    {
+        if (!is_array($value) || empty($value)) {
+            $this->getLogger()->error("Invalid $name", array($name => $value));
+            throw new \InvalidArgumentException("Invalid $name");
+        }
+    }
+
+    /**
+     * Return Persona host from the configuration object
+     * @access protected
+     * @return string
+     */
+    protected function getPersonaHost()
+    {
+        return $this->config['persona_host'];
     }
 }
