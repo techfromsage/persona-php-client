@@ -109,6 +109,29 @@ class UsersTest extends TestBase {
         $this->assertEquals('John Connor', $user['profile']['name']);
         $this->assertEquals($email, $user['profile']['email']);
     }
+    function testCreateUserThenAddGupidToUser()
+    {
+        $tokenDetails = $this->personaClientTokens->obtainNewToken($this->clientId, $this->clientSecret, array("useCache"=>false));
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $token = $tokenDetails['access_token'];
+
+        $gupid = uniqid('trapdoor:');
+        $email = uniqid().'@example.com';
+        $userCreate = $this->personaClientUser->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
+
+        // Update gupid
+        $anotherGupid = uniqid('trapdoor:');
+        $this->personaClientUser->addGupidToUser($userCreate['guid'], $anotherGupid, $token);
+
+        $user = $this->personaClientUser->getUserByGupid($anotherGupid, $token);
+
+        $this->assertEquals($userCreate['guid'], $user['guid']);
+        $this->assertCount(2, $user['gupids']);
+        $this->assertContains($gupid, $user['gupids']);
+        $this->assertContains($anotherGupid, $user['gupids']);
+        $this->assertEquals('Sarah Connor', $user['profile']['name']);
+        $this->assertEquals($email, $user['profile']['email']);
+    }
 
     function testGetUserByGupidInvalidTokenThrowsException()
     {
