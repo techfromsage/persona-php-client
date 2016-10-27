@@ -67,7 +67,7 @@ abstract class Base
      *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
      *      userAgent: Consuming application user agent string @since 2.0.0
      *            examples: rl/1723-9095ba4, rl/5.2, rl, rl/5, rl/5.2 (php/5.3; linux/2.5)
-     *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) optional cache storage (defaults to Filesystem)
+     *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) cache storage
      *      cacheKeyPrefix: (string) optional prefix to append to the cache keys
      *      cacheDefaultTTL: (integer) optional cache TTL value
      * @throws \InvalidArgumentException if any of the required config parameters are missing
