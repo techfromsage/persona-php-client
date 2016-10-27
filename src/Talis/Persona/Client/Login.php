@@ -61,9 +61,19 @@ class Login extends Base
      */
     public function validateAuth()
     {
+        if (isset($_POST['persona:signature']))
+        {
+            $payloadSignature = $_POST['persona:signature'];
+        } else {
+            $this->getLogger()->error("Signature not set");
+            throw new \Exception('Signature not set');
+        }
+
+
         if(isset($_POST['persona:payload']))
         {
-            $payload = json_decode(base64_decode($_POST['persona:payload']),true);
+            $encodedPayload = $_POST['persona:payload'];
+            $payload = json_decode(base64_decode($encodedPayload), true);
 
             // Check for invalid payload strings
             if(!$payload || !is_array($payload))
@@ -80,18 +90,8 @@ class Login extends Base
                 throw new \Exception('Login state does not match');
             }
 
-            if(!isset($payload['signature']))
-            {
-                unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
-                $this->getLogger()->error("Signature not set");
-                throw new \Exception('Signature not set');
-            }
-
             // Verify signature matches
-            $payloadSignature = $payload['signature'];
-            unset($payload['signature']);
-
-            if($payloadSignature !== hash_hmac("sha256", json_encode($payload), $_SESSION[self::LOGIN_PREFIX.':loginAppSecret']))
+            if($payloadSignature !== hash_hmac("sha256", $encodedPayload, $_SESSION[self::LOGIN_PREFIX.':loginAppSecret']))
             {
                 unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
                 $this->getLogger()->error("Signature does not match");
@@ -115,7 +115,7 @@ class Login extends Base
                 $this->getLogger()->debug("Auth successful");
                 return true;
             }
-        } else{
+        } else {
             $this->getLogger()->error("Payload not set");
             throw new \Exception('Payload not set');
         }
