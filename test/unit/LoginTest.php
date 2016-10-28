@@ -229,7 +229,7 @@ class LoginTest extends TestBase {
     }
 
     // validateAuth tests
-    function testValidateAuthPayloadDoesNotContainSignature()
+    function testValidateAuthThrowsExceptionWhenPayloadDoesNotContainSignature()
     {
         $this->setExpectedException('Exception', 'Signature not set');
         $personaClient = new Login(
@@ -243,7 +243,7 @@ class LoginTest extends TestBase {
         $personaClient->validateAuth();
     }
 
-    function testValidateAuthNoPayload()
+    function testValidateAuthThrowsExceptionWhenPayloadDoesNotExist()
     {
         $this->setExpectedException('Exception', 'Payload not set');
         $personaClient = new Login(
@@ -258,7 +258,7 @@ class LoginTest extends TestBase {
         $personaClient->validateAuth();
     }
 
-    function testValidateAuthPayloadIsAString()
+    function testValidateAuthThrowsExceptionWhenPayloadIsAString()
     {
         $this->setExpectedException('Exception', 'Payload not json');
         $personaClient = new Login(
@@ -274,7 +274,7 @@ class LoginTest extends TestBase {
         $personaClient->validateAuth();
     }
 
-    function testValidateAuthPayloadDoesNotContainState()
+    function testValidateAuthThrowsExceptionWhenPayloadIsMissingState()
     {
         $this->setExpectedException('Exception', 'Login state does not match');
         $personaClient = new Login(
