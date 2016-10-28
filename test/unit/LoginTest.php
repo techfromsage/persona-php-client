@@ -229,6 +229,20 @@ class LoginTest extends TestBase {
     }
 
     // validateAuth tests
+    function testValidateAuthPayloadDoesNotContainSignature()
+    {
+        $this->setExpectedException('Exception', 'Signature not set');
+        $personaClient = new Login(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->validateAuth();
+    }
+
     function testValidateAuthNoPayload()
     {
         $this->setExpectedException('Exception', 'Payload not set');
@@ -240,6 +254,7 @@ class LoginTest extends TestBase {
                 'cacheBackend' => $this->cacheBackend,
             )
         );
+        $_POST['persona:signature'] = 'DummySignature';
         $personaClient->validateAuth();
     }
 
@@ -254,9 +269,11 @@ class LoginTest extends TestBase {
                 'cacheBackend' => $this->cacheBackend,
             )
         );
+        $_POST['persona:signature'] = 'DummySignature';
         $_POST['persona:payload'] = 'YouShallNotPass';
         $personaClient->validateAuth();
     }
+
     function testValidateAuthPayloadDoesNotContainState()
     {
         $this->setExpectedException('Exception', 'Login state does not match');
@@ -269,24 +286,11 @@ class LoginTest extends TestBase {
             )
         );
         $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
+        $_POST['persona:signature'] = 'DummySignature';
         $_POST['persona:payload'] = base64_encode(json_encode(array('test' => 'YouShallNotPass')));
         $personaClient->validateAuth();
     }
-    function testValidateAuthPayloadDoesNotContainSignature()
-    {
-        $this->setExpectedException('Exception', 'Signature not set');
-        $personaClient = new Login(
-            array(
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
-                'cacheBackend' => $this->cacheBackend,
-            )
-        );
-        $_SESSION[Login::LOGIN_PREFIX.':loginState'] = 'Tennessee';
-        $_POST['persona:payload'] = base64_encode(json_encode(array('state' => 'Tennessee')));
-        $personaClient->validateAuth();
-    }
+
     function testValidateAuthPayloadMismatchingSignature()
     {
         $this->setExpectedException('Exception', 'Signature does not match');
@@ -303,8 +307,10 @@ class LoginTest extends TestBase {
         $payload = array(
             'state' => 'Tennessee'
         );
-        $signature = hash_hmac("sha256", json_encode($payload), 'notmyappsecret');
-        $payload['signature'] = $signature;
+
+        $encodedPayload = base64_encode(json_encode($payload));
+        $signature = hash_hmac("sha256", $encodedPayload, 'notmyappsecret');
+        $_POST['persona:signature'] = $signature;
 
         $_POST['persona:payload'] = base64_encode(json_encode($payload));
         $personaClient->validateAuth();
@@ -325,10 +331,13 @@ class LoginTest extends TestBase {
         $payload = array(
             'state' => 'Tennessee'
         );
-        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
-        $payload['signature'] = $signature;
 
-        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $encodedPayload = base64_encode(json_encode($payload));
+        $_POST['persona:payload'] = $encodedPayload;
+
+        $signature = hash_hmac("sha256", $encodedPayload, 'appsecret');
+        $_POST['persona:signature'] = $signature;
+
         $this->assertTrue($personaClient->validateAuth());
 
         $this->assertEquals('appsecret', $_SESSION[Login::LOGIN_PREFIX.':loginAppSecret']);
@@ -370,10 +379,13 @@ class LoginTest extends TestBase {
             'redirect' => 'http://example.com/wherever',
             'state' => 'Tennessee'
         );
-        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
-        $payload['signature'] = $signature;
 
-        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $encodedPayload = base64_encode(json_encode($payload));
+        $_POST['persona:payload'] = $encodedPayload;
+
+        $signature = hash_hmac("sha256", $encodedPayload, 'appsecret');
+        $_POST['persona:signature'] = $signature;
+
         $this->assertTrue($personaClient->validateAuth());
 
         $this->assertEquals('appsecret', $_SESSION[Login::LOGIN_PREFIX.':loginAppSecret']);
@@ -390,6 +402,7 @@ class LoginTest extends TestBase {
         $this->assertEquals('alexmurphy@detroit.pd', $_SESSION[Login::LOGIN_PREFIX.':loginSSO']['profile']['email']);
         $this->assertEquals('http://example.com/wherever', $_SESSION[Login::LOGIN_PREFIX.':loginSSO']['redirect']);
     }
+
     function testValidateAuthPayloadContainsStateAndSignatureFullPayloadCheckLoginIsCalled()
     {
         $mockClient = $this->getMock('Talis\Persona\Client\Login',array('isLoggedIn'),array(
@@ -424,10 +437,12 @@ class LoginTest extends TestBase {
             'redirect' => 'http://example.com/wherever',
             'state' => 'Tennessee'
         );
-        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
-        $payload['signature'] = $signature;
 
-        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $encodedPayload = base64_encode(json_encode($payload));
+        $_POST['persona:payload'] = $encodedPayload;
+
+        $signature = hash_hmac("sha256", $encodedPayload, 'appsecret');
+        $_POST['persona:signature'] = $signature;
 
         $mockClient->validateAuth();
     }
@@ -473,10 +488,12 @@ class LoginTest extends TestBase {
             'redirect' => 'http://example.com/wherever',
             'state' => 'Tennessee'
         );
-        $signature = hash_hmac("sha256", json_encode($payload), 'appsecret');
-        $payload['signature'] = $signature;
 
-        $_POST['persona:payload'] = base64_encode(json_encode($payload));
+        $encodedPayload = base64_encode(json_encode($payload));
+        $_POST['persona:payload'] = $encodedPayload;
+
+        $signature = hash_hmac("sha256", $encodedPayload, 'appsecret');
+        $_POST['persona:signature'] = $signature;
 
         $this->assertTrue($mockClient->validateAuth());
 
