@@ -63,13 +63,8 @@ class UsersTest extends TestBase {
             )
         ));
         $expectedResponse = array(
-            '_id' => '123',
             'guid' => '456',
             'gupids' => array('google:789'),
-            'created' => array(
-                'sec' => 1,
-                'u' => 2
-            ),
             'profile' => array(
                 'email' => 'max@payne.com',
                 'name' => 'Max Payne'
@@ -80,12 +75,10 @@ class UsersTest extends TestBase {
             ->will($this->returnValue($expectedResponse));
 
         $user = $mockClient->getUserByGupid('123', '456');
-        $this->assertEquals('123', $user['_id']);
         $this->assertEquals('456', $user['guid']);
         $this->assertInternalType('array', $user['gupids']);
         $this->assertCount(1, $user['gupids']);
         $this->assertEquals('google:789', $user['gupids'][0]);
-        $this->assertInternalType('array', $user['created']);
         $this->assertInternalType('array', $user['profile']);
         $this->assertCount(2, $user['profile']);
         $this->assertEquals('max@payne.com', $user['profile']['email']);
@@ -117,7 +110,7 @@ class UsersTest extends TestBase {
         $personaClient->getUserByGuids(array('123'), '');
     }
     function testGetUserByGuidsInvalidTokenThrowsException(){
-        $this->setExpectedException('Exception', 
+        $this->setExpectedException('Exception',
             'Error finding user profiles: Did not retrieve successful response code from persona: -1');
         $personaClient = new Users(
             array(
@@ -157,13 +150,8 @@ class UsersTest extends TestBase {
             )
         ));
         $expectedResponse = array(array(
-            '_id' => '123',
             'guid' => '456',
             'gupids' => array('google:789'),
-            'created' => array(
-                'sec' => 1,
-                'u' => 2
-            ),
             'profile' => array(
                 'email' => 'max@payne.com',
                 'name' => 'Max Payne'
@@ -175,12 +163,10 @@ class UsersTest extends TestBase {
 
         $users = $mockClient->getUserByGuids(array('123'), '456');
         $this->assertCount(1, $users);
-        $this->assertEquals('123', $users[0]['_id']);
         $this->assertEquals('456', $users[0]['guid']);
         $this->assertInternalType('array', $users[0]['gupids']);
         $this->assertCount(1, $users[0]['gupids']);
         $this->assertEquals('google:789', $users[0]['gupids'][0]);
-        $this->assertInternalType('array', $users[0]['created']);
         $this->assertInternalType('array', $users[0]['profile']);
         $this->assertCount(2, $users[0]['profile']);
         $this->assertEquals('max@payne.com', $users[0]['profile']['email']);
