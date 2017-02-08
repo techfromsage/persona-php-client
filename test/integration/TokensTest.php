@@ -32,11 +32,12 @@ class TokensTest extends TestBase {
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens',
-                'cacheBackend' => $this->cacheBackend,
+                'cacheBackend' => $this->personaCache,
             ),
-            null,
-            $this->personaCache
-        );
+            function($token) {
+                $_COOKIE['access_token'] = json_encode($token);
+            }
+       );
     }
 
     function testObtainNewToken(){
@@ -98,6 +99,36 @@ class TokensTest extends TestBase {
         $this->assertNotEquals(999, $tokenDetails['expires_in']);
         $this->assertNotEquals('some token type', $tokenDetails['token_type']);
         $this->assertNotEquals('example', $tokenDetails['scope']);
+    }
+
+    function testObtainNewTokenDoesNotSetAccessTokenCookie(){
+        unset($_COOKIE['access_token']);
+        $this->personaClient->obtainNewToken(
+            $this->clientId,
+            $this->clientSecret,
+            array('useCache' => false)
+        );
+
+        $this->assertEquals(false, isset($_COOKIE['access_token']));
+    }
+
+    function testObtainNewTokenDoesSetAccessTokenCookie(){
+        unset($_COOKIE['access_token']);
+        $this->personaClient->obtainNewToken(
+            $this->clientId,
+            $this->clientSecret,
+            array(
+                'useCache' => false,
+                'setAccessTokenCookie' => true,
+            )
+        );
+
+        $this->assertTrue(isset($_COOKIE['access_token']));
+        $tokenDetails = json_decode($_COOKIE['access_token'], true);
+        $this->assertArrayHasKey('access_token', $tokenDetails);
+        $this->assertArrayHasKey('expires_in', $tokenDetails);
+        $this->assertArrayHasKey('token_type', $tokenDetails);
+        $this->assertArrayHasKey('scope', $tokenDetails);
     }
 
     function testValidateTokenThrowsExceptionNoTokenToValidate() {

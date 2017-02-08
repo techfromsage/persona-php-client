@@ -7,6 +7,23 @@ class ScopesNotDefinedException extends \Exception
 {
 }
 
+function setCookieFuncDefault($token) {
+    if (headers_sent()) {
+        $this->getLogger()->error(
+          'Cannot set access token within cookie as ' .
+          'the headers have already been sent'
+        );
+    } else {
+        $this->getLogger()->debug('Setting access token in cookie');
+
+        setcookie(
+            'access_token',
+            json_encode($token),
+            time() + $token['expires_in']
+        );
+    }
+};
+
 class Tokens extends Base
 {
     /**
@@ -14,6 +31,18 @@ class Tokens extends Base
      * @var \Predis\Client
      */
     protected $tokenCacheClient = null;
+    private $setCookieFunc;
+
+    public function __construct(array $config, $setCookieFunc = null)
+    {
+        parent::__construct($config);
+        if (is_null($setCookieFunc)) {
+            global $setCookieFuncDefault;
+            $this->setCookieFunc = $setCookieFuncDefault;
+        } else {
+            $this->setCookieFunc = $setCookieFunc;
+        }
+    }
 
     /**
      * Validates the supplied token using JWT or a remote Persona server.
@@ -53,7 +82,7 @@ class Tokens extends Base
 
     /**
      * Validate the given token by using JWT
-     * @param string $token a token to validate explicitly, if you do not 
+     * @param string $token a token to validate explicitly, if you do not
      *      specify one the method tries to find one
      * @param string $scope specify this if you wish to validate a scoped token
      * @param int $cacheTTL time to live value in seconds for the certificate to stay within cache
@@ -156,7 +185,8 @@ class Tokens extends Base
      * @param $clientSecret
      * @param array $params a set of optional parameters you can pass into this method <pre>
      *          scope: (string) to obtain a new scoped token
-     *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token (and setting a new cookie with the resultant token)
+     *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token
+     *          setAccessTokenCookie: (boolean) to enable setting the access token as a cookie
      *          use_cache: (boolean) use cached called (defaults to true)</pre>
      * @return array containing the token details
      * @throws \Exception if we were unable to generate a new token or if credentials were missing
@@ -209,8 +239,16 @@ class Tokens extends Base
             }
         }
 
-        if ($useCookies) {
-            $this->setTokenCookie($token);
+        $setAccessTokenCookie = isset($params['setAccessTokenCookie'])
+            ? $params['setAccessTokenCookie'] === true
+            : false;
+
+        if ($setAccessTokenCookie) {
+            $this->getLogger()->debug('Setting access_token cookie', $params);
+            $func = $this->setCookieFunc;
+            $func($token);
+        } else {
+            $this->getLogger()->debug('Not setting access_token cookie', $params);
         }
 
         return $token;
@@ -400,15 +438,6 @@ class Tokens extends Base
                 'body' => http_build_query($query, '', '&'),
             )
         );
-    }
-
-    /**
-     * Method to set the token cookie, for mocking
-     * @param $token
-     */
-    protected function setTokenCookie($token)
-    {
-        if (!headers_sent()) setcookie("access_token",json_encode($token),time()+$token['expires_in']);
     }
 
     /**
