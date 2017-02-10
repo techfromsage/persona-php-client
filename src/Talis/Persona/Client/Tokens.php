@@ -7,23 +7,6 @@ class ScopesNotDefinedException extends \Exception
 {
 }
 
-function setCookieFuncDefault($token) {
-    if (headers_sent()) {
-        $this->getLogger()->error(
-          'Cannot set access token within cookie as ' .
-          'the headers have already been sent'
-        );
-    } else {
-        $this->getLogger()->debug('Setting access token in cookie');
-
-        setcookie(
-            'access_token',
-            json_encode($token),
-            time() + $token['expires_in']
-        );
-    }
-};
-
 class Tokens extends Base
 {
     /**
@@ -31,18 +14,6 @@ class Tokens extends Base
      * @var \Predis\Client
      */
     protected $tokenCacheClient = null;
-    private $setCookieFunc;
-
-    public function __construct(array $config, $setCookieFunc = null)
-    {
-        parent::__construct($config);
-        if (is_null($setCookieFunc)) {
-            global $setCookieFuncDefault;
-            $this->setCookieFunc = $setCookieFuncDefault;
-        } else {
-            $this->setCookieFunc = $setCookieFunc;
-        }
-    }
 
     /**
      * Validates the supplied token using JWT or a remote Persona server.
@@ -175,29 +146,21 @@ class Tokens extends Base
     }
 
     /**
-     * Use this method to generate a new token. Works by first checking to see if a cookie is set containing the
-     * access_token, if so this is returned. If there is no cookie we request a new one from persona. You must
-     * specify client credentials to do this, for that reason this method will throw an exception if the
-     * credentials are missing. If configured, this method will also use the token cache for recently created tokens
-     * instead of going to Persona.
+     * Use this method to generate a new token.  You must specify client credentials
+     * to do this, for that reason this method will throw an exception if the
+     * credentials are missing. If configured, this method will also use the token
+     * cache for recently created tokens instead of going to Persona.
      *
      * @param $clientId
      * @param $clientSecret
      * @param array $params a set of optional parameters you can pass into this method <pre>
      *          scope: (string) to obtain a new scoped token
-     *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token
-     *          setAccessTokenCookie: (boolean) to enable setting the access token as a cookie
      *          use_cache: (boolean) use cached called (defaults to true)</pre>
      * @return array containing the token details
      * @throws \Exception if we were unable to generate a new token or if credentials were missing
      */
     public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
         $this->getStatsD()->increment("obtainNewToken");
-        $useCookies = isset($params['useCookies']) ? $params['useCookies'] : true;
-
-        if ($useCookies && isset($_COOKIE['access_token'])) {
-            return json_decode($_COOKIE['access_token'], true);
-        }
 
         if (empty($clientId) || empty($clientSecret)) {
             throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
@@ -237,18 +200,6 @@ class Tokens extends Base
                     );
                 }
             }
-        }
-
-        $setAccessTokenCookie = isset($params['setAccessTokenCookie'])
-            ? $params['setAccessTokenCookie'] === true
-            : false;
-
-        if ($setAccessTokenCookie) {
-            $this->getLogger()->debug('Setting access_token cookie', $params);
-            $func = $this->setCookieFunc;
-            $func($token);
-        } else {
-            $this->getLogger()->debug('Not setting access_token cookie', $params);
         }
 
         return $token;
