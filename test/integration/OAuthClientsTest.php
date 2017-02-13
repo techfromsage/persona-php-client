@@ -120,8 +120,7 @@ class OAuthClientsTest extends TestBase {
         $userCreate = $this->personaClientUser->createUser($gupid, array('name' => 'Sarah Connor', 'email' => $email), $token);
         $user = $this->personaClientUser->getUserByGupid($userCreate['gupids'][0], $token);
         $client = $this->personaClientOAuthClient->getOAuthClient($user['guid'], $token);
-        $this->assertContains('guid', $client);
-        $this->assertContains('scope', $client);
+        $this->assertArrayHasKey('scope', $client);
     }
 
     function testGetOAuthClientInvalidTokenThrowsException() {

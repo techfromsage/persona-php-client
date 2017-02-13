@@ -53,7 +53,7 @@ class Tokens extends Base
 
     /**
      * Validate the given token by using JWT
-     * @param string $token a token to validate explicitly, if you do not 
+     * @param string $token a token to validate explicitly, if you do not
      *      specify one the method tries to find one
      * @param string $scope specify this if you wish to validate a scoped token
      * @param int $cacheTTL time to live value in seconds for the certificate to stay within cache
@@ -146,28 +146,21 @@ class Tokens extends Base
     }
 
     /**
-     * Use this method to generate a new token. Works by first checking to see if a cookie is set containing the
-     * access_token, if so this is returned. If there is no cookie we request a new one from persona. You must
-     * specify client credentials to do this, for that reason this method will throw an exception if the
-     * credentials are missing. If configured, this method will also use the token cache for recently created tokens
-     * instead of going to Persona.
+     * Use this method to generate a new token.  You must specify client credentials
+     * to do this, for that reason this method will throw an exception if the
+     * credentials are missing. If configured, this method will also use the token
+     * cache for recently created tokens instead of going to Persona.
      *
      * @param $clientId
      * @param $clientSecret
      * @param array $params a set of optional parameters you can pass into this method <pre>
      *          scope: (string) to obtain a new scoped token
-     *          useCookies: (boolean) to enable or disable checking cookies for pre-existing access_token (and setting a new cookie with the resultant token)
      *          use_cache: (boolean) use cached called (defaults to true)</pre>
      * @return array containing the token details
      * @throws \Exception if we were unable to generate a new token or if credentials were missing
      */
     public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
         $this->getStatsD()->increment("obtainNewToken");
-        $useCookies = isset($params['useCookies']) ? $params['useCookies'] : true;
-
-        if ($useCookies && isset($_COOKIE['access_token'])) {
-            return json_decode($_COOKIE['access_token'], true);
-        }
 
         if (empty($clientId) || empty($clientSecret)) {
             throw new \Exception("You must specify clientId, and clientSecret to obtain a new token");
@@ -207,10 +200,6 @@ class Tokens extends Base
                     );
                 }
             }
-        }
-
-        if ($useCookies) {
-            $this->setTokenCookie($token);
         }
 
         return $token;
@@ -400,15 +389,6 @@ class Tokens extends Base
                 'body' => http_build_query($query, '', '&'),
             )
         );
-    }
-
-    /**
-     * Method to set the token cookie, for mocking
-     * @param $token
-     */
-    protected function setTokenCookie($token)
-    {
-        if (!headers_sent()) setcookie("access_token",json_encode($token),time()+$token['expires_in']);
     }
 
     /**

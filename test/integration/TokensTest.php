@@ -32,11 +32,9 @@ class TokensTest extends TestBase {
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
                 'persona_oauth_route' => '/oauth/tokens',
-                'cacheBackend' => $this->cacheBackend,
-            ),
-            null,
-            $this->personaCache
-        );
+                'cacheBackend' => $this->personaCache,
+            )
+       );
     }
 
     function testObtainNewToken(){
@@ -78,26 +76,6 @@ class TokensTest extends TestBase {
     function testObtainNewTokenThrowsExceptionIfInvalidScope(){
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
         $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array('scope'=>'wibble','useCache'=>false));
-    }
-
-    function testObtainNewTokenReturnsAccessTokenIfSetOnCookie() {
-        $_COOKIE['access_token'] = json_encode( array('access_token'=> 'my token', 'expires_in'=>999, 'token_type'=>'some token type', 'scope'=>'example'));
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret, array('useCache'=>false));
-
-        $this->assertEquals('my token', $tokenDetails['access_token']);
-        $this->assertEquals(999, $tokenDetails['expires_in']);
-        $this->assertEquals('some token type', $tokenDetails['token_type']);
-        $this->assertEquals('example', $tokenDetails['scope']);
-    }
-
-    function testObtainNewTokenReturnsNewAccessTokenIfSetOnCookieButUseCookieFalse(){
-        $_COOKIE['access_token'] = json_encode( array('access_token'=> 'my token', 'expires_in'=>999, 'token_type'=>'some token type', 'scope'=>'example'));
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret,array('useCookies'=>false,'useCache'=>false));
-
-        $this->assertNotEquals('my token', $tokenDetails['access_token']);
-        $this->assertNotEquals(999, $tokenDetails['expires_in']);
-        $this->assertNotEquals('some token type', $tokenDetails['token_type']);
-        $this->assertNotEquals('example', $tokenDetails['scope']);
     }
 
     function testValidateTokenThrowsExceptionNoTokenToValidate() {
