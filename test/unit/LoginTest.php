@@ -711,4 +711,42 @@ class LoginTest extends TestBase {
         $_SESSION[Login::LOGIN_PREFIX.':loginSSO'] = array('profile' => $profile);
         $this->assertEquals($profile, $personaClient->getProfile());
     }
+    function testRequireAuthRequireProfile()
+    {
+        $arguments = array(array(
+            'userAgent' => 'unittest',
+            'persona_host' => 'http://localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'cacheBackend' => $this->cacheBackend,
+        ));
+
+        $client = $this->getMock(
+            'Talis\Persona\Client\Login',
+            array('redirect', 'getLoginState'),
+            $arguments
+        );
+
+        $client->expects($this->once())
+            ->method('getLoginState')
+            ->will($this->returnValue('loginState'));
+
+        $client->expects($this->once())
+            ->method('redirect')
+            ->with(
+                'http://localhost/auth/providers/trapdoor/login' .
+                '?require=profile' .
+                '&redirectUri=http%3A%2F%2Fexample.com' .
+                '&state=loginState' .
+                '&app=test_client'
+            )
+            ->will($this->returnValue(null));
+
+        $client->requireAuth(
+            'trapdoor',
+            'test_client',
+            'secret',
+            'http://example.com',
+            array('require' => 'profile')
+        );
+    }
 }
