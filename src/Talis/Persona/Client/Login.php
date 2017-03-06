@@ -12,11 +12,12 @@ class Login extends Base
      * @param string $appId The ID of the persona application (http://docs.talispersona.apiary.io/#applications)
      * @param string $appSecret The secret of the persona application (http://docs.talispersona.apiary.io/#applications)
      * @param string $redirectUri Origin of the request - used to send a user back to where they originated from
+     * @param array $query parameters passed to Persona (currently supports require=profile)
      * @access public
      * @return mixed
      * @throws \InvalidArgumentException
      */
-    public function requireAuth($provider, $appId, $appSecret, $redirectUri = '')
+    public function requireAuth($provider, $appId, $appSecret, $redirectUri = '', $query = null)
     {
         // Already authenticated
         if($this->isLoggedIn())
@@ -50,7 +51,7 @@ class Login extends Base
         $_SESSION[self::LOGIN_PREFIX.':loginAppSecret'] = $appSecret;
 
         // Login
-        $this->login($redirectUri);
+        $this->login($redirectUri, $query);
     }
 
     /**
@@ -209,21 +210,24 @@ class Login extends Base
     /**
      * Perform a Persona login to the login provider of choice
      * @param string $redirectUri
+     * @param array $query parameters passed in Persona (currently supports require=profile)
      * @access protected
      */
-    protected function login($redirectUri = '')
+    protected function login($redirectUri = '', $query = null)
     {
         // Create a uniq ID for state - prefixed with md5 hash of app ID
-        $loginState = uniqid(md5($_SESSION[self::LOGIN_PREFIX.':loginAppId'])."::", true);
+        $loginState = $this->getLoginState();
 
         // Save login state in session
         $_SESSION[self::LOGIN_PREFIX.':loginState'] = $loginState;
 
         // Log user in
         $redirect = $this->config['persona_host'].'/auth/providers/'.$_SESSION[self::LOGIN_PREFIX.':loginProvider'].'/login';
-        $query = array();
-        if($redirectUri !== '')
-        {
+        if (empty($query)) {
+            $query = array();
+        }
+
+        if($redirectUri !== '') {
             $query['redirectUri'] = $redirectUri;
         }
         $query['state'] = $loginState;
@@ -231,7 +235,17 @@ class Login extends Base
 
         $redirect .= '?'.http_build_query($query);
 
-        header("Location: ".$redirect);
+        $this->redirect($redirect);
+    }
+
+    protected function getLoginState()
+    {
+        return uniqid(md5($_SESSION[self::LOGIN_PREFIX.':loginAppId'])."::", true);
+    }
+
+    protected function redirect($location)
+    {
+        header("Location: $location");
         exit;
     }
 }
