@@ -132,7 +132,7 @@ class Tokens extends Base
             $url .= '?scope=';
             $url .= $scope !== 'su'
                 ? 'su,' . $scope
-                : $scoppe;
+                : $scope;
         }
 
         $this->getStatsD()->startTiming('validateToken.rest.get');
