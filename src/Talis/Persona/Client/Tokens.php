@@ -129,7 +129,10 @@ class Tokens extends Base
         $url = $this->config['persona_host'] . $this->config['persona_oauth_route'] . '/' . $token;
 
         if (empty($scope) === false) {
-            $url .= '?scope=su,' . $scope;
+            $url .= '?scope=';
+            $url .= $scope !== 'su'
+                ? 'su,' . $scope
+                : $scoppe;
         }
 
         $this->getStatsD()->startTiming('validateToken.rest.get');
