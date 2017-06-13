@@ -66,7 +66,6 @@ class Tokens extends Base
     protected function validateTokenUsingJWT($token, $scope, $cacheTTL = 300)
     {
         $cert = $this->retrieveJWTCertificate($cacheTTL);
-
         try {
             $decoded = (array) JWT::decode($token, $cert, array('RS256'));
         } catch (\DomainException $exception) {
