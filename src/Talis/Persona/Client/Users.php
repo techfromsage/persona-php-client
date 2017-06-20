@@ -169,6 +169,39 @@ class Users extends Base
             throw new \Exception ('Error adding gupid to user: ' . $e->getMessage());
         }
     }
+    
+    /**
+     * Merge two existing users in Persona
+     * @param string $oldGuid the guid of the old user (source)
+     * @param string $newGuid the guid of the new user (target)
+     * @param string $token
+     * @access public
+     * @return array|null
+     * @throws \InvalidArgumentException
+     * @throws \Exception
+     */
+    public function mergeUsers($oldGuid, $newGuid, $token)
+    {
+        $this->validateStringParam('oldGuid', $oldGuid);
+        $this->validateStringParam('newGuid', $newGuid);
+        $this->validateStringParam('token', $token);
+
+        $url = $this->getPersonaHost() . '/users?action=merge&target=' . $newGuid . '&source=' . $oldGuid;
+
+        try {
+            return $this->performRequest(
+                $url,
+                array(
+                    'method' => 'POST',
+                    'bearerToken' => $token,
+                )
+            );
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Error merging users',
+                array('oldGuid' => $oldGuid, 'newGuid' => $newGuid, 'error' => $e->getMessage()));
+            throw new \Exception ('Error merging users: ' . $e->getMessage());
+        }
+    }
 
     /**
      * Validate function argument is a non-empty string
