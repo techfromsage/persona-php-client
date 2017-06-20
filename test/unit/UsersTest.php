@@ -605,4 +605,129 @@ class UsersTest extends TestBase {
             ->will($this->returnValue($expectedResponse));
         $this->assertEquals($expectedResponse, $mockClient->addGupidToUser('123', '456', '987'));
     }
+
+    // mergeUsers tests
+    function testMergeUsersNoOldGuid()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 1');
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->mergeUsers();
+    }
+    function testMergeUsersNoNewGuid()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 2');
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->mergeUsers('123');
+    }
+    function testMergeUsesrNoToken()
+    {
+        $this->setExpectedException('Exception', 'Missing argument 3');
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->mergeUsers('123', '456');
+    }
+    function testMergeUsersInvalidOldGuid()
+    {
+        $this->setExpectedException('Exception', 'Invalid oldGuid');
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->mergeUsers(array(), '456', '987');
+    }
+    function testMergeUsersInvalidNewGuid()
+    {
+        $this->setExpectedException('Exception', 'Invalid newGuid');
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->mergeUsers('123', array(), '987');
+    }
+    function testMergeUsersEmptyToken()
+    {
+        $this->setExpectedException('Exception', 'Invalid token');
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->mergeUsers('123', '456', '');
+    }
+    function testMergeUsersInvalidToken()
+    {
+        $this->setExpectedException('Exception', 'Invalid token');
+        $personaClient = new Users(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        );
+        $personaClient->mergeUsers('123', '456', array());
+    }
+    function testMergeUsersPostFails()
+    {
+        $this->setExpectedException('Exception', 'Error merging users: Could not retrieve OAuth response code');
+        $mockClient = $this->getMock('Talis\Persona\Client\Users', array('performRequest'), array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        ));
+        $mockClient->expects($this->once())
+            ->method('performRequest')
+            ->will($this->throwException(new Exception('Could not retrieve OAuth response code')));
+        $mockClient->mergeUsers('123', '456', '987');
+    }
+    function testMergeUsersPostSucceeds()
+    {
+        $mockClient = $this->getMock('Talis\Persona\Client\Users',array('performRequest'),array(
+            array(
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
+                'cacheBackend' => $this->cacheBackend,
+            )
+        ));
+        $expectedResponse = array('gupid' => '456', 'profile' => array());
+        $mockClient->expects($this->once())
+            ->method('performRequest')
+            ->will($this->returnValue($expectedResponse));
+        $this->assertEquals($expectedResponse, $mockClient->mergeUsers('123', '456', '987'));
+    }
 }
