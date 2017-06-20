@@ -186,19 +186,19 @@ class Users extends Base
         $this->validateStringParam('newGuid', $newGuid);
         $this->validateStringParam('token', $token);
 
-        $url = $this->getPersonaHost() . '/users?action=merge&target=' . $newGuid . '&source=' . $oldGuid;
+        $url = $this->getPersonaHost() . "/users?action=merge&target=$newGuid&source=$oldGuid";
 
         try {
             return $this->performRequest(
                 $url,
-                array(
+                [
                     'method' => 'POST',
                     'bearerToken' => $token,
-                )
+                ]
             );
         } catch (\Exception $e) {
             $this->getLogger()->error('Error merging users',
-                array('oldGuid' => $oldGuid, 'newGuid' => $newGuid, 'error' => $e->getMessage()));
+                ['oldGuid' => $oldGuid, 'newGuid' => $newGuid, 'error' => $e->getMessage()]);
             throw new \Exception ('Error merging users: ' . $e->getMessage());
         }
     }
