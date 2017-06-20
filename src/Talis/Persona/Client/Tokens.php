@@ -1,5 +1,6 @@
 <?php
 namespace Talis\Persona\Client;
+
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\ExpiredException;
 
@@ -31,7 +32,7 @@ class Tokens extends Base
      * @throws DomainException invalid public key
      * @throw InvalidArgumentException Invalid public key format
      */
-    public function validateToken($params = array())
+    public function validateToken($params = [])
     {
         if (isset($params['access_token']) && !empty($params['access_token'])) {
             $token = $params['access_token'];
@@ -46,7 +47,7 @@ class Tokens extends Base
 
         try {
             return $this->validateTokenUsingJWT($token, $scope);
-        } catch(ScopesNotDefinedException $exception) {
+        } catch (ScopesNotDefinedException $exception) {
             return $this->validateTokenUsingPersona($token, $scope);
         }
     }
@@ -67,25 +68,27 @@ class Tokens extends Base
     {
         $cert = $this->retrieveJWTCertificate($cacheTTL);
         try {
-            $decoded = (array) JWT::decode($token, $cert, array('RS256'));
+            $decoded = (array)JWT::decode($token, $cert, ['RS256']);
         } catch (\DomainException $exception) {
-            $this->getLogger()->error('Invalid signature', array($exception));
+            $this->getLogger()->error('Invalid signature', [$exception]);
             return false;
         } catch (\InvalidArgumentException $exception) {
-            $this->getLogger()->error('Invalid public key', array($exception));
+            $this->getLogger()->error('Invalid public key', [$exception]);
             return false;
         } catch (\UnexpectedValueException $exception) {
             // Expired, before valid, invalid json, etc
-            $this->getLogger()->debug('Invalid token', array($exception));
+            $this->getLogger()->debug('Invalid token', [$exception]);
             return false;
         }
 
         if ($scope === null) {
             return true;
-        } else if (isset($decoded['scopeCount'])) {
-            // user scopes not included within
-            // the JWT as there are too many
-            throw new ScopesNotDefinedException();
+        } else {
+            if (isset($decoded['scopeCount'])) {
+                // user scopes not included within
+                // the JWT as there are too many
+                throw new ScopesNotDefinedException();
+            }
         }
 
         $isSu = in_array('su', $decoded['scopes'], true);
@@ -104,12 +107,12 @@ class Tokens extends Base
     {
         return $this->performRequest(
             '/oauth/keys',
-            array(
+            [
                 'expectResponse' => true,
                 'addContentType' => true,
                 'parseJson' => false,
                 'cacheTTL' => $cacheTTL,
-            )
+            ]
         );
     }
 
@@ -161,7 +164,8 @@ class Tokens extends Base
      * @return array containing the token details
      * @throws \Exception if we were unable to generate a new token or if credentials were missing
      */
-    public function obtainNewToken($clientId = "", $clientSecret = "", $params = array()) {
+    public function obtainNewToken($clientId = "", $clientSecret = "", $params = [])
+    {
         $this->getStatsD()->increment("obtainNewToken");
 
         if (empty($clientId) || empty($clientSecret)) {
@@ -175,11 +179,11 @@ class Tokens extends Base
         }
 
         if (empty($token)) {
-            $query = array(
-                'grant_type'    => 'client_credentials',
-                'client_id'     => $clientId,
+            $query = [
+                'grant_type' => 'client_credentials',
+                'client_id' => $clientId,
                 'client_secret' => $clientSecret,
-            );
+            ];
 
             if (isset($params['scope']) && !empty($params['scope'])) {
                 $query['scope'] = $params['scope'];
@@ -187,7 +191,7 @@ class Tokens extends Base
 
             $url = $this->config['persona_host'] . $this->config['persona_oauth_route'];
             $this->getStatsD()->startTiming("obtainNewToken.rest.get");
-            $token =  $this->personaObtainNewToken($url, $query);
+            $token = $this->personaObtainNewToken($url, $query);
             $this->getStatsD()->endTiming("obtainNewToken.rest.get");
 
             if ($token && isset($token['expires_in'])) {
@@ -215,32 +219,35 @@ class Tokens extends Base
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function presignUrl($url,$secret,$expiry=null) {
+    public function presignUrl($url, $secret, $expiry = null)
+    {
         $this->getStatsD()->increment("presignUrl");
 
-        if(empty($url)){
+        if (empty($url)) {
             throw new \InvalidArgumentException("No url provided to sign");
         }
-        if(empty($secret)){
+        if (empty($secret)) {
             throw new \InvalidArgumentException("No secret provided to sign with");
         }
-        if ($expiry==null) $expiry = "+15 minutes";
+        if ($expiry == null) {
+            $expiry = "+15 minutes";
+        }
 
-        $expParam = (strpos($url,'?')===FALSE) ? "?":"&";
-        $expParam .= (is_int($expiry)) ? "expires=".$expiry : "expires=".strtotime($expiry);
-        if (strpos($url,'#')!==FALSE) {
-            $url = substr_replace($url, $expParam, strpos($url,'#'), 0);
+        $expParam = (strpos($url, '?') === false) ? "?" : "&";
+        $expParam .= (is_int($expiry)) ? "expires=" . $expiry : "expires=" . strtotime($expiry);
+        if (strpos($url, '#') !== false) {
+            $url = substr_replace($url, $expParam, strpos($url, '#'), 0);
         } else {
             $url .= $expParam;
         }
 
         $this->getStatsD()->startTiming("presignUrl.sign");
-        $sig = $this->getSignature($url,$secret);
+        $sig = $this->getSignature($url, $secret);
         $this->getStatsD()->endTiming("presignUrl.sign");
 
-        $sigParam = (strpos($url,'?')===FALSE) ? "?signature=".$sig : "&signature=".$sig;
-        if (strpos($url,'#')!==FALSE) {
-            $url = substr_replace($url, $sigParam, strpos($url,'#'), 0);
+        $sigParam = (strpos($url, '?') === false) ? "?signature=" . $sig : "&signature=" . $sig;
+        if (strpos($url, '#') !== false) {
+            $url = substr_replace($url, $sigParam, strpos($url, '#'), 0);
         } else {
             $url .= $sigParam;
         }
@@ -254,21 +261,28 @@ class Tokens extends Base
      * @param string $secret
      * @return bool
      */
-    public function isPresignedUrlValid($url,$secret) {
+    public function isPresignedUrlValid($url, $secret)
+    {
         $urlParts = parse_url($url);
         parse_str($urlParts['query']);
 
         // no expires?
-        if (!isset($expires)) return false;
+        if (!isset($expires)) {
+            return false;
+        }
 
         // no signature?
-        if (!isset($signature)) return false;
+        if (!isset($signature)) {
+            return false;
+        }
 
         // $expires less than current time?
-        if (intval($expires)<time()) return false;
+        if (intval($expires) < time()) {
+            return false;
+        }
 
         // still here? Check sig
-        $valid = ($signature == $this->getSignature($this->removeQuerystringVar($url,"signature"),$secret));
+        $valid = ($signature == $this->getSignature($this->removeQuerystringVar($url, "signature"), $secret));
         $this->getStatsD()->increment(($valid) ? "presignUrl.valid" : "presignUrl.invalid");
         return $valid;
     }
@@ -282,9 +296,10 @@ class Tokens extends Base
      * @return mixed the access token if it is found
      * @throws \Exception if no access token is found
      */
-    protected function getTokenFromRequest(){
-        $headers = array();
-        foreach($_SERVER as $key => $value) {
+    protected function getTokenFromRequest()
+    {
+        $headers = [];
+        foreach ($_SERVER as $key => $value) {
             if (substr($key, 0, 5) <> 'HTTP_') {
                 continue;
             }
@@ -298,8 +313,12 @@ class Tokens extends Base
             return $matches[1];
         }
 
-        if (isset($_GET['access_token'])) return $_GET['access_token'];
-        if (isset($_POST['access_token'])) return $_POST['access_token'];
+        if (isset($_GET['access_token'])) {
+            return $_GET['access_token'];
+        }
+        if (isset($_POST['access_token'])) {
+            return $_POST['access_token'];
+        }
 
         $this->getLogger()->error("No OAuth token supplied in headers, GET or POST");
         throw new \Exception("No OAuth token supplied");
@@ -313,28 +332,30 @@ class Tokens extends Base
      * @return bool if config passed
      * @throws \InvalidArgumentException if the config is invalid
      */
-    protected function checkConfig($config){
-        if(empty($config)){
+    protected function checkConfig($config)
+    {
+        if (empty($config)) {
             throw new \InvalidArgumentException("No config provided to Persona Client");
         }
 
-        $requiredProperties = array(
+        $requiredProperties = [
             'persona_host',
             'persona_oauth_route',
-        );
+        ];
 
-        $missingProperties = array();
-        foreach($requiredProperties as $property){
-            if(!isset($config[$property])){
+        $missingProperties = [];
+        foreach ($requiredProperties as $property) {
+            if (!isset($config[$property])) {
                 array_push($missingProperties, $property);
             }
         }
 
-        if(empty($missingProperties)){
+        if (empty($missingProperties)) {
             return true;
         } else {
-            $this->getLogger()->error("Config provided does not contain values",$missingProperties);
-            throw new \InvalidArgumentException("Config provided does not contain values for: " . implode(",", $missingProperties));
+            $this->getLogger()->error("Config provided does not contain values", $missingProperties);
+            throw new \InvalidArgumentException("Config provided does not contain values for: " . implode(",",
+                    $missingProperties));
         }
     }
 
@@ -346,15 +367,16 @@ class Tokens extends Base
      * @param $url string this is the full qualified url that will be hit
      * @return bool true if persona responds that the token was valid
      */
-    protected function personaCheckTokenIsValid($url){
+    protected function personaCheckTokenIsValid($url)
+    {
         try {
             $body = $this->performRequest(
                 $url,
-                array(
-                    'headers' => array(
+                [
+                    'headers' => [
                         'Cache-Control' => 'max-age=0, no-cache',
-                    )
-                )
+                    ]
+                ]
             );
         } catch (\Exception $exception) {
             $this->getLogger()->debug("Token invalid at server");
@@ -386,10 +408,10 @@ class Tokens extends Base
     {
         return $this->performRequest(
             $url,
-            array(
+            [
                 'method' => 'POST',
                 'body' => http_build_query($query, '', '&'),
-            )
+            ]
         );
     }
 
@@ -399,8 +421,9 @@ class Tokens extends Base
      * @param $secret
      * @return string
      */
-    protected function getSignature($msg,$secret) {
-        return hash_hmac('sha256',$msg,$secret);
+    protected function getSignature($msg, $secret)
+    {
+        return hash_hmac('sha256', $msg, $secret);
     }
 
     /**
@@ -410,10 +433,11 @@ class Tokens extends Base
      * @see http://www.addedbytes.com/blog/code/php-querystring-functions/
      * @return string
      */
-    protected function removeQuerystringVar($url, $key) {
-        $anchor = (strpos($url,'#')!==false) ? substr($url,strpos($url,'#')) : null;
+    protected function removeQuerystringVar($url, $key)
+    {
+        $anchor = (strpos($url, '#') !== false) ? substr($url, strpos($url, '#')) : null;
         $url = preg_replace('/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&');
         $url = substr($url, 0, -1);
-        return (empty($anchor)) ? $url : $url.$anchor;
+        return (empty($anchor)) ? $url : $url . $anchor;
     }
 }

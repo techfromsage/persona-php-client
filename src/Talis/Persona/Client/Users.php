@@ -21,10 +21,10 @@ class Users extends Base
         $url = $this->getPersonaHost() . '/users?gupid=' . urlencode($gupid);
         return $this->performRequest(
             $url,
-            array(
+            [
                 'bearerToken' => $token,
                 'cacheTTL' => $cacheTTL,
-            )
+            ]
         );
     }
 
@@ -47,14 +47,14 @@ class Users extends Base
         try {
             return $this->performRequest(
                 $url,
-                array(
+                [
                     'bearerToken' => $token,
                     'cacheTTL' => $cacheTTL,
-                )
+                ]
             );
         } catch (\Exception $e) {
             $this->getLogger()->error('Error finding user profiles',
-                array('guids' => $guids, 'error' => $e->getMessage()));
+                ['guids' => $guids, 'error' => $e->getMessage()]);
             throw new \Exception('Error finding user profiles: ' . $e->getMessage());
         }
     }
@@ -75,13 +75,12 @@ class Users extends Base
         $this->validateStringParam('token', $token);
 
         $url = $this->getPersonaHost() . '/users';
-        $query = array(
+        $query = [
             'gupid' => $gupid
-        );
+        ];
 
         // Profile may be empty - only validate and add to query if it is non-empty
-        if(!empty($profile))
-        {
+        if (!empty($profile)) {
             $this->validateArrayParam('profile', $profile);
             $query['profile'] = $profile;
         }
@@ -89,15 +88,15 @@ class Users extends Base
         try {
             return $this->performRequest(
                 $url,
-                array(
+                [
                     'method' => 'POST',
                     'body' => json_encode($query),
                     'bearerToken' => $token,
-                )
+                ]
             );
         } catch (\Exception $e) {
             $this->getLogger()->error('Error creating user',
-                array('gupid' => $gupid, 'profile' => $profile, 'error' => $e->getMessage()));
+                ['gupid' => $gupid, 'profile' => $profile, 'error' => $e->getMessage()]);
             throw new \Exception('Error creating user: ' . $e->getMessage());
         }
     }
@@ -123,15 +122,15 @@ class Users extends Base
         try {
             return $this->performRequest(
                 $url,
-                array(
+                [
                     'method' => 'PUT',
                     'body' => json_encode($profile),
                     'bearerToken' => $token,
-                )
+                ]
             );
         } catch (\Exception $e) {
             $this->getLogger()->error('Error updating user',
-                array('guid' => $guid, 'profile' => $profile, 'error' => $e->getMessage()));
+                ['guid' => $guid, 'profile' => $profile, 'error' => $e->getMessage()]);
             throw new \Exception('Error updating user: ' . $e->getMessage());
         }
     }
@@ -157,19 +156,19 @@ class Users extends Base
         try {
             return $this->performRequest(
                 $url,
-                array(
+                [
                     'method' => 'PATCH',
-                    'body' => json_encode(array($gupid)),
+                    'body' => json_encode([$gupid]),
                     'bearerToken' => $token,
-                )
+                ]
             );
         } catch (\Exception $e) {
             $this->getLogger()->error('Error adding gupid to user',
-                array('guid' => $guid, 'gupid' => $gupid, 'error' => $e->getMessage()));
+                ['guid' => $guid, 'gupid' => $gupid, 'error' => $e->getMessage()]);
             throw new \Exception ('Error adding gupid to user: ' . $e->getMessage());
         }
     }
-    
+
     /**
      * Merge two existing users in Persona
      * @param string $oldGuid the guid of the old user (source)
@@ -213,7 +212,7 @@ class Users extends Base
     protected function validateStringParam($name, $value)
     {
         if (!is_string($value) || trim($value) === '') {
-            $this->getLogger()->error("Invalid $name", array($name => $value));
+            $this->getLogger()->error("Invalid $name", [$name => $value]);
             throw new \InvalidArgumentException("Invalid $name");
         }
     }
@@ -228,7 +227,7 @@ class Users extends Base
     protected function validateArrayParam($name, $value)
     {
         if (!is_array($value) || empty($value)) {
-            $this->getLogger()->error("Invalid $name", array($name => $value));
+            $this->getLogger()->error("Invalid $name", [$name => $value]);
             throw new \InvalidArgumentException("Invalid $name");
         }
     }

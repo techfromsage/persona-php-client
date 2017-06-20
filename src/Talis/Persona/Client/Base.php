@@ -81,7 +81,7 @@ abstract class Base
         $userAgentPattern = '' .
             '/^[a-z0-9\-\._]+' .             // name of application
             '(\/' .                          // optional version beginning with /
-                '[^\s]+' .                   // anything but whitespace
+            '[^\s]+' .                       // anything but whitespace
             ')?' .
             '( \([^\)]+\))?$/i';             // comment surrounded by round brackets
 
@@ -117,12 +117,13 @@ abstract class Base
      * Lazy-load statsD
      * @return \Domnikl\Statsd\Client
      */
-    public function getStatsD() {
-        if ($this->statsD==null) {
+    public function getStatsD()
+    {
+        if ($this->statsD == null) {
             $connStr = getenv(self::STATSD_CONN);
-            if (!empty($connStr))  {
-                list($host,$port) = explode(":",$connStr);
-                $conn = new \Domnikl\Statsd\Connection\Socket($host,$port);
+            if (!empty($connStr)) {
+                list($host, $port) = explode(":", $connStr);
+                $conn = new \Domnikl\Statsd\Connection\Socket($host, $port);
             } else {
                 $conn = new \Domnikl\Statsd\Connection\Blackhole();
             }
@@ -144,29 +145,31 @@ abstract class Base
      * @return bool if config passed
      * @throws \InvalidArgumentException if the config is invalid
      */
-    protected function checkConfig($config){
-        if(empty($config)){
+    protected function checkConfig($config)
+    {
+        if (empty($config)) {
             throw new \InvalidArgumentException("No config provided to Persona Client");
         }
 
-        $requiredProperties = array(
+        $requiredProperties = [
             'userAgent',
             'persona_host',
             'persona_oauth_route',
             'cacheBackend'
-        );
+        ];
 
-        $missingProperties = array();
-        foreach($requiredProperties as $property){
-            if(!isset($config[$property])){
+        $missingProperties = [];
+        foreach ($requiredProperties as $property) {
+            if (!isset($config[$property])) {
                 array_push($missingProperties, $property);
             }
         }
 
-        if(empty($missingProperties)){
+        if (empty($missingProperties)) {
             return true;
         } else {
-            throw new \InvalidArgumentException("Config provided does not contain values for: " . implode(",", $missingProperties));
+            throw new \InvalidArgumentException("Config provided does not contain values for: " . implode(",",
+                    $missingProperties));
         }
     }
 
@@ -175,8 +178,7 @@ abstract class Base
      */
     protected function getLogger()
     {
-        if ($this->logger==null)
-        {
+        if ($this->logger == null) {
             $this->logger = new Logger(self::LOGGER_NAME);
         }
         return $this->logger;
@@ -199,10 +201,10 @@ abstract class Base
 
             $this->httpClient->addSubscriber(
                 new CachePlugin(
-                    array(
+                    [
                         'storage' => $storage,
                         'auto_purge' => true,
-                    )
+                    ]
                 )
             );
         }
@@ -222,7 +224,7 @@ abstract class Base
         }
 
         $composerFileContent = file_get_contents(
-            __DIR__. '/../../../../composer.json'
+            __DIR__ . '/../../../../composer.json'
         );
 
         if ($composerFileContent === false) {
@@ -266,8 +268,8 @@ abstract class Base
      * GET and HEAD requests are cached.
      * tip: turn off caching by defining the 'Cache-Control'
      *      header with a value of 'max-age=0, no-cache'
-     * @param string $url  request url
-     * @param array  $opts configuration / options:
+     * @param string $url request url
+     * @param array $opts configuration / options:
      *      timeout: (30 seconds) HTTP timeout
      *      body: optional HTTP body
      *      headers: optional HTTP headers
@@ -282,24 +284,24 @@ abstract class Base
      */
     protected function performRequest($url, array $opts)
     {
-        $httpKeys = array('timeout', 'body');
+        $httpKeys = ['timeout', 'body'];
         $definedHttpConfig = array_intersect_key($opts, array_flip($httpKeys));
         $httpConfig = array_merge(
-            array(
+            [
                 'timeout' => 30,
-            ),
+            ],
             $definedHttpConfig
         );
 
         $opts = array_merge(
-            array(
-                'headers' => array(),
+            [
+                'headers' => [],
                 'method' => 'GET',
                 'expectResponse' => true,
                 'addContentType' => true,
                 'parseJson' => true,
                 'cacheTTL' => $this->defaultTtl,
-            ),
+            ],
             $opts
         );
 
@@ -337,19 +339,15 @@ abstract class Base
 
         try {
             $response = $request->send();
-        } catch(RequestException $exception) {
+        } catch (RequestException $exception) {
             $response = $exception->getRequest()->getResponse();
-            if(isset($response))
-            {
+            if (isset($response)) {
                 $status = $response->getStatusCode();
-            }
-            else
-            {
+            } else {
                 $status = -1;
             }
 
-            if($status === 404)
-            {
+            if ($status === 404) {
                 throw new NotFoundException();
             }
 
@@ -362,7 +360,7 @@ abstract class Base
         if ($response->getStatusCode() != $expectedResponseCode) {
             $this->getLogger()->error(
                 "Did not retrieve expected response code",
-                array("opts" => $opts, "url" => $url, "response" => $response)
+                ["opts" => $opts, "url" => $url, "response" => $response]
             );
 
             throw new \Exception(
