@@ -20,35 +20,30 @@ class Login extends Base
     public function requireAuth($provider, $appId, $appSecret, $redirectUri = '', $query = null)
     {
         // Already authenticated
-        if($this->isLoggedIn())
-        {
+        if ($this->isLoggedIn()) {
             return;
         }
 
-        if(!is_string($provider))
-        {
+        if (!is_string($provider)) {
             $this->getLogger()->error("Invalid provider");
             throw new \InvalidArgumentException("Invalid provider");
         }
-        if(!is_string($appId))
-        {
+        if (!is_string($appId)) {
             $this->getLogger()->error("Invalid appId");
             throw new \InvalidArgumentException("Invalid appId");
         }
-        if(!is_string($appSecret))
-        {
+        if (!is_string($appSecret)) {
             $this->getLogger()->error("Invalid appSecret");
             throw new \InvalidArgumentException("Invalid appSecret");
         }
-        if($redirectUri !== '' && !is_string($redirectUri))
-        {
+        if ($redirectUri !== '' && !is_string($redirectUri)) {
             $this->getLogger()->error("Invalid redirectUri");
             throw new \InvalidArgumentException("Invalid redirectUri");
         }
 
-        $_SESSION[self::LOGIN_PREFIX.':loginAppId'] = $appId;
-        $_SESSION[self::LOGIN_PREFIX.':loginProvider'] = $provider;
-        $_SESSION[self::LOGIN_PREFIX.':loginAppSecret'] = $appSecret;
+        $_SESSION[self::LOGIN_PREFIX . ':loginAppId'] = $appId;
+        $_SESSION[self::LOGIN_PREFIX . ':loginProvider'] = $provider;
+        $_SESSION[self::LOGIN_PREFIX . ':loginAppSecret'] = $appSecret;
 
         // Login
         $this->login($redirectUri, $query);
@@ -62,8 +57,7 @@ class Login extends Base
      */
     public function validateAuth()
     {
-        if (isset($_POST['persona:signature']))
-        {
+        if (isset($_POST['persona:signature'])) {
             $payloadSignature = $_POST['persona:signature'];
         } else {
             $this->getLogger()->error("Signature not set");
@@ -71,48 +65,45 @@ class Login extends Base
         }
 
 
-        if(isset($_POST['persona:payload']))
-        {
+        if (isset($_POST['persona:payload'])) {
             $encodedPayload = $_POST['persona:payload'];
             $payload = json_decode(base64_decode($encodedPayload), true);
 
             // Check for invalid payload strings
-            if(!$payload || !is_array($payload))
-            {
+            if (!$payload || !is_array($payload)) {
                 $this->getLogger()->error("Payload not json: {$_POST['persona:payload']}");
                 throw new \Exception('Payload not json');
             }
 
-            if(!isset($_SESSION[self::LOGIN_PREFIX.':loginState']) || !isset($payload['state']) || $payload['state'] !==  $_SESSION[self::LOGIN_PREFIX.':loginState'])
-            {
+            if (!isset($_SESSION[self::LOGIN_PREFIX . ':loginState']) || !isset($payload['state']) || $payload['state'] !== $_SESSION[self::LOGIN_PREFIX . ':loginState']) {
                 // Error with state - not authenticated
                 $this->getLogger()->error("Login state does not match");
-                unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+                unset($_SESSION[self::LOGIN_PREFIX . ':loginState']);
                 throw new \Exception('Login state does not match');
             }
 
             // Verify signature matches
-            if($payloadSignature !== hash_hmac("sha256", $encodedPayload, $_SESSION[self::LOGIN_PREFIX.':loginAppSecret']))
-            {
-                unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+            if ($payloadSignature !== hash_hmac("sha256", $encodedPayload,
+                    $_SESSION[self::LOGIN_PREFIX . ':loginAppSecret'])
+            ) {
+                unset($_SESSION[self::LOGIN_PREFIX . ':loginState']);
                 $this->getLogger()->error("Signature does not match");
                 throw new \Exception('Signature does not match');
             }
 
             // Delete the login state ready for next login
-            unset($_SESSION[self::LOGIN_PREFIX.':loginState']);
+            unset($_SESSION[self::LOGIN_PREFIX . ':loginState']);
 
             // Final step - validate the token
-            $_SESSION[self::LOGIN_PREFIX.':loginSSO'] = array(
+            $_SESSION[self::LOGIN_PREFIX . ':loginSSO'] = [
                 'token' => isset($payload['token']) ? $payload['token'] : false,
                 'guid' => isset($payload['guid']) ? $payload['guid'] : '',
-                'gupid' => isset($payload['gupid']) ? $payload['gupid'] : array(),
-                'profile' => isset($payload['profile']) ? $payload['profile'] : array(),
+                'gupid' => isset($payload['gupid']) ? $payload['gupid'] : [],
+                'profile' => isset($payload['profile']) ? $payload['profile'] : [],
                 'redirect' => isset($payload['redirect']) ? $payload['redirect'] : ''
-            );
+            ];
 
-            if($this->isLoggedIn())
-            {
+            if ($this->isLoggedIn()) {
                 $this->getLogger()->debug("Auth successful");
                 return true;
             }
@@ -129,19 +120,15 @@ class Login extends Base
      */
     public function getPersistentId()
     {
-        if(!isset($_SESSION[self::LOGIN_PREFIX.':loginProvider']))
-        {
+        if (!isset($_SESSION[self::LOGIN_PREFIX . ':loginProvider'])) {
             return false;
         }
-        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid']) && !empty($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid']))
-        {
+        if (isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['gupid']) && !empty($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['gupid'])) {
             // Loop through all gupids and match against the login provider - it should be
             // the prefix of the persona profile
-            foreach($_SESSION[self::LOGIN_PREFIX.':loginSSO']['gupid'] as $gupid)
-            {
-                if(strpos($gupid, $_SESSION[self::LOGIN_PREFIX.':loginProvider']) === 0)
-                {
-                    return str_replace($_SESSION[self::LOGIN_PREFIX.':loginProvider'].':', '', $gupid);
+            foreach ($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['gupid'] as $gupid) {
+                if (strpos($gupid, $_SESSION[self::LOGIN_PREFIX . ':loginProvider']) === 0) {
+                    return str_replace($_SESSION[self::LOGIN_PREFIX . ':loginProvider'] . ':', '', $gupid);
                 }
             }
         }
@@ -155,9 +142,8 @@ class Login extends Base
      */
     public function getRedirectUrl()
     {
-        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect']) && !empty($_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect']))
-        {
-            return $_SESSION[self::LOGIN_PREFIX.':loginSSO']['redirect'];
+        if (isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['redirect']) && !empty($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['redirect'])) {
+            return $_SESSION[self::LOGIN_PREFIX . ':loginSSO']['redirect'];
         }
         return false;
     }
@@ -169,10 +155,10 @@ class Login extends Base
      */
     public function getScopes()
     {
-        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']) && isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['token']) &&
-            isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['token']['scope']))
-        {
-            return $_SESSION[self::LOGIN_PREFIX.':loginSSO']['token']['scope'];
+        if (isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO']) && isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['token']) &&
+            isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['token']['scope'])
+        ) {
+            return $_SESSION[self::LOGIN_PREFIX . ':loginSSO']['token']['scope'];
         }
         return false;
     }
@@ -184,11 +170,10 @@ class Login extends Base
      */
     public function getProfile()
     {
-        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']) && isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']['profile']))
-        {
-            return $_SESSION[self::LOGIN_PREFIX.':loginSSO']['profile'];
+        if (isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO']) && isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO']['profile'])) {
+            return $_SESSION[self::LOGIN_PREFIX . ':loginSSO']['profile'];
         }
-        return array();
+        return [];
     }
 
     /**
@@ -198,8 +183,7 @@ class Login extends Base
      */
     protected function isLoggedIn()
     {
-        if(isset($_SESSION[self::LOGIN_PREFIX.':loginSSO']))
-        {
+        if (isset($_SESSION[self::LOGIN_PREFIX . ':loginSSO'])) {
             return true;
         }
 
@@ -219,28 +203,28 @@ class Login extends Base
         $loginState = $this->getLoginState();
 
         // Save login state in session
-        $_SESSION[self::LOGIN_PREFIX.':loginState'] = $loginState;
+        $_SESSION[self::LOGIN_PREFIX . ':loginState'] = $loginState;
 
         // Log user in
-        $redirect = $this->config['persona_host'].'/auth/providers/'.$_SESSION[self::LOGIN_PREFIX.':loginProvider'].'/login';
+        $redirect = $this->config['persona_host'] . '/auth/providers/' . $_SESSION[self::LOGIN_PREFIX . ':loginProvider'] . '/login';
         if (empty($query)) {
-            $query = array();
+            $query = [];
         }
 
-        if($redirectUri !== '') {
+        if ($redirectUri !== '') {
             $query['redirectUri'] = $redirectUri;
         }
         $query['state'] = $loginState;
-        $query['app'] = $_SESSION[self::LOGIN_PREFIX.':loginAppId'];
+        $query['app'] = $_SESSION[self::LOGIN_PREFIX . ':loginAppId'];
 
-        $redirect .= '?'.http_build_query($query);
+        $redirect .= '?' . http_build_query($query);
 
         $this->redirect($redirect);
     }
 
     protected function getLoginState()
     {
-        return uniqid(md5($_SESSION[self::LOGIN_PREFIX.':loginAppId'])."::", true);
+        return uniqid(md5($_SESSION[self::LOGIN_PREFIX . ':loginAppId']) . "::", true);
     }
 
     protected function redirect($location)

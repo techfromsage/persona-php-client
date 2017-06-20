@@ -1,6 +1,5 @@
 <?php
-if (!defined('APPROOT'))
-{
+if (!defined('APPROOT')) {
     define('APPROOT', dirname(dirname(__DIR__)));
 }
 
@@ -25,7 +24,7 @@ abstract class TestBase extends PHPUnit_Framework_TestCase
     public function __construct()
     {
         $this->cacheBackend = new FilesystemCache(
-            sys_get_temp_dir() . DIRECTORY_SEPARATOR .  'personaCache'
+            sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'personaCache'
         );
     }
 
@@ -56,11 +55,11 @@ abstract class TestBase extends PHPUnit_Framework_TestCase
      */
     protected function getPersonaConfig()
     {
-        return array(
+        return [
             "host" => envvalue("PERSONA_TEST_HOST", "http://persona"),
             "oauthClient" => envvalue("PERSONA_TEST_OAUTH_CLIENT", "primate"),
             "oauthSecret" => envvalue("PERSONA_TEST_OAUTH_SECRET", "bananas"),
-        );
+        ];
     }
 
     protected function setUp()
