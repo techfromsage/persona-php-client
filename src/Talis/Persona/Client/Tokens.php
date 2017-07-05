@@ -2,7 +2,6 @@
 namespace Talis\Persona\Client;
 
 use \Firebase\JWT\JWT;
-use \Firebase\JWT\ExpiredException;
 
 class ScopesNotDefinedException extends \Exception
 {
@@ -10,12 +9,6 @@ class ScopesNotDefinedException extends \Exception
 
 class Tokens extends Base
 {
-    /**
-     * Cached connection to redis
-     * @var \Predis\Client
-     */
-    protected $tokenCacheClient = null;
-
     /**
      * Validates the supplied token using JWT or a remote Persona server.
      * An optional scope can be supplied to validate against. If a token

@@ -1,7 +1,6 @@
 <?php
 namespace Talis\Persona\Client;
 
-use Guzzle\Http\Exception\ClientErrorResponseException;
 use Monolog\Logger;
 use Guzzle\Http\Client;
 use Guzzle\Http\Exception\RequestException;
@@ -36,7 +35,7 @@ abstract class Base
     private $logger;
 
     /**
-     * @var \GuzzleHttp\Client
+     * @var \Guzzle\Http\Client
      */
     private $httpClient;
 
@@ -195,7 +194,7 @@ abstract class Base
     }
 
     /**
-     * @return \GuzzleHttp\Client
+     * @return \Guzzle\Http\Client
      */
     protected function getHTTPClient()
     {
