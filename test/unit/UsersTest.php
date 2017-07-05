@@ -118,21 +118,6 @@ class UsersTest extends TestBase
         $personaClient->getUserByGuids(['123'], '');
     }
 
-    function testGetUserByGuidsInvalidTokenThrowsException()
-    {
-        $this->setExpectedException('Exception',
-            'Error finding user profiles: Did not retrieve successful response code from persona: 401');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->getUserByGuids(['123'], '456');
-    }
-
     function testGetUserByGuidsThrowsExceptionWhenGuidsNotFound()
     {
         $this->setExpectedException('Exception', 'Error finding user profiles: Could not retrieve OAuth response code');
