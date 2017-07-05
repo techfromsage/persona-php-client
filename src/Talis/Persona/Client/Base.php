@@ -60,11 +60,6 @@ abstract class Base
     private $phpVersion;
 
     /**
-     * @var string
-     */
-    private $personaApiVersion;
-
-    /**
      * Constructor
      *
      * @param array $config An array of options with the following keys: <pre>
@@ -409,7 +404,6 @@ abstract class Base
 
     /**
      * Return Persona host from the configuration object
-     * @access protected
      * @return string
      */
     protected function getPersonaHost()
