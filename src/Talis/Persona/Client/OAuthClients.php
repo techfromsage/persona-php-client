@@ -22,7 +22,7 @@ class OAuthClients extends Base
             throw new \InvalidArgumentException("Invalid token");
         }
 
-        $url = $this->config['persona_host'] . '/clients/' . $clientId;
+        $url = $this->getPersonaHost() . '/clients/' . $clientId;
 
         return $this->personaGetOAuthClient($url, $token, $cacheTTL);
     }
@@ -63,7 +63,7 @@ class OAuthClients extends Base
             throw new \InvalidArgumentException('Invalid token');
         }
 
-        $url = $this->config['persona_host'] . '/clients/' . $clientId;
+        $url = $this->getPersonaHost() . '/clients/' . $clientId;
 
         return $this->personaPatchOAuthClient($url, $properties, $token);
     }

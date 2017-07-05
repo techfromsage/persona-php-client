@@ -1,7 +1,6 @@
 <?php
 namespace Talis\Persona\Client;
 
-use Guzzle\Http\Exception\ClientErrorResponseException;
 use Monolog\Logger;
 use Guzzle\Http\Client;
 use Guzzle\Http\Exception\RequestException;
@@ -16,6 +15,7 @@ abstract class Base
     const LOGGER_NAME = 'PERSONA';
     const COMPOSER_VERSION_CACHE_KEY = 'composer_version';
     const COMPOSER_VERSION_CACHE_TTL_SEC = 3600; // 1 hour
+    const PERSONA_API_VERSION = '3';
 
     /**
      * Configuration object
@@ -35,7 +35,7 @@ abstract class Base
     private $logger;
 
     /**
-     * @var \GuzzleHttp\Client
+     * @var \Guzzle\Http\Client
      */
     private $httpClient;
 
@@ -185,7 +185,7 @@ abstract class Base
     }
 
     /**
-     * @return \GuzzleHttp\Client
+     * @return \Guzzle\Http\Client
      */
     protected function getHTTPClient()
     {
@@ -400,5 +400,14 @@ abstract class Base
     protected function getCacheBackend()
     {
         return $this->cacheBackend;
+    }
+
+    /**
+     * Return Persona host from the configuration object
+     * @return string
+     */
+    protected function getPersonaHost()
+    {
+        return $this->config['persona_host'] . '/' . self::PERSONA_API_VERSION;
     }
 }

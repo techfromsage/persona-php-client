@@ -231,14 +231,4 @@ class Users extends Base
             throw new \InvalidArgumentException("Invalid $name");
         }
     }
-
-    /**
-     * Return Persona host from the configuration object
-     * @access protected
-     * @return string
-     */
-    protected function getPersonaHost()
-    {
-        return $this->config['persona_host'];
-    }
 }

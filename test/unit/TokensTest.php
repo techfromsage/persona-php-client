@@ -711,7 +711,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $expectedValidationUrl = 'localhost/oauth/tokens/'
+        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
             . $accessToken
             . '?scope=su,invalidScope';
 
@@ -765,7 +765,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $expectedValidationUrl = 'localhost/oauth/tokens/'
+        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
             . $accessToken
             . '?scope=su,invalidScope';
 
@@ -819,7 +819,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $expectedValidationUrl = 'localhost/oauth/tokens/'
+        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
             . $accessToken
             . '?scope=su';
 

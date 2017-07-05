@@ -759,7 +759,7 @@ class LoginTest extends TestBase
         $client->expects($this->once())
             ->method('redirect')
             ->with(
-                'http://localhost/auth/providers/trapdoor/login' .
+                'http://' . $this->versionedPersonaHost() . '/auth/providers/trapdoor/login' .
                 '?require=profile' .
                 '&redirectUri=http%3A%2F%2Fexample.com' .
                 '&state=loginState' .

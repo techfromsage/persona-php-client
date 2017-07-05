@@ -169,4 +169,12 @@ class UsersTest extends TestBase
 
         $this->personaClientUser->getUserByGupid('trapdoor:notfound', $token);
     }
+
+    function testGetUserByGuidsInvalidTokenThrowsException()
+    {
+        $this->setExpectedException('Exception',
+            'Error finding user profiles: Did not retrieve successful response code from persona: 401');
+
+        $this->personaClientUser->getUserByGuids(['123'], '456');
+    }
 }
