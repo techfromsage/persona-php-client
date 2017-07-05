@@ -92,7 +92,7 @@ abstract class Base
 
         if ($isValidUserAgent == false) {
             throw new \InvalidArgumentException(
-                'user agent format is not valid'
+                'user agent format is not valid (' . $config['userAgent'] . ')'
             );
         }
 
