@@ -121,7 +121,7 @@ class UsersTest extends TestBase
     function testGetUserByGuidsInvalidTokenThrowsException()
     {
         $this->setExpectedException('Exception',
-            'Error finding user profiles: Did not retrieve successful response code from persona: -1');
+            'Error finding user profiles: Did not retrieve successful response code from persona: 401');
         $personaClient = new Users(
             [
                 'userAgent' => 'unittest',
