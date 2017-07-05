@@ -115,10 +115,6 @@ abstract class Base
             ? $config['cacheDefaultTTL']
             : 3600;
 
-        $this->personaApiVersion = isset($this->config['persona_api_version'])
-            ? $this->config['persona_api_version']
-            : self::PERSONA_API_VERSION;
-
         $this->phpVersion = phpversion();
     }
 
@@ -418,6 +414,6 @@ abstract class Base
      */
     protected function getPersonaHost()
     {
-        return $this->config['persona_host'] . '/' . $this->personaApiVersion;
+        return $this->config['persona_host'] . '/' . self::PERSONA_API_VERSION;
     }
 }
