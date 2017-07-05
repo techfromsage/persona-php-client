@@ -206,7 +206,7 @@ class Login extends Base
         $_SESSION[self::LOGIN_PREFIX . ':loginState'] = $loginState;
 
         // Log user in
-        $redirect = $this->config['persona_host'] . '/auth/providers/' . $_SESSION[self::LOGIN_PREFIX . ':loginProvider'] . '/login';
+        $redirect = $this->getPersonaHost() . '/auth/providers/' . $_SESSION[self::LOGIN_PREFIX . ':loginProvider'] . '/login';
         if (empty($query)) {
             $query = [];
         }

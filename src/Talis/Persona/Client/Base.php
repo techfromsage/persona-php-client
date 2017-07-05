@@ -16,6 +16,7 @@ abstract class Base
     const LOGGER_NAME = 'PERSONA';
     const COMPOSER_VERSION_CACHE_KEY = 'composer_version';
     const COMPOSER_VERSION_CACHE_TTL_SEC = 3600; // 1 hour
+    const PERSONA_API_VERSION = '3';
 
     /**
      * Configuration object
@@ -58,6 +59,11 @@ abstract class Base
      * @var string
      */
     private $phpVersion;
+
+    /**
+     * @var string
+     */
+    private $personaApiVersion;
 
     /**
      * Constructor
@@ -109,6 +115,10 @@ abstract class Base
         $this->defaultTtl = isset($config['cacheDefaultTTL'])
             ? $config['cacheDefaultTTL']
             : 3600;
+
+        $this->personaApiVersion = isset($this->config['persona_api_version'])
+            ? $this->config['persona_api_version']
+            : self::PERSONA_API_VERSION;
 
         $this->phpVersion = phpversion();
     }
@@ -400,5 +410,15 @@ abstract class Base
     protected function getCacheBackend()
     {
         return $this->cacheBackend;
+    }
+
+    /**
+     * Return Persona host from the configuration object
+     * @access protected
+     * @return string
+     */
+    protected function getPersonaHost()
+    {
+        return $this->config['persona_host'] . '/' . $this->personaApiVersion;
     }
 }

@@ -128,7 +128,7 @@ class Tokens extends Base
     {
         // verify against persona
         $this->getStatsD()->increment('validateToken.cache.miss');
-        $url = $this->config['persona_host'] . $this->config['persona_oauth_route'] . '/' . $token;
+        $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
 
         if (empty($scope) === false) {
             $url .= '?scope=';
@@ -189,7 +189,7 @@ class Tokens extends Base
                 $query['scope'] = $params['scope'];
             }
 
-            $url = $this->config['persona_host'] . $this->config['persona_oauth_route'];
+            $url = $this->getPersonaHost() . $this->config['persona_oauth_route'];
             $this->getStatsD()->startTiming("obtainNewToken.rest.get");
             $token = $this->personaObtainNewToken($url, $query);
             $this->getStatsD()->endTiming("obtainNewToken.rest.get");
