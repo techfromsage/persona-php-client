@@ -125,7 +125,7 @@ class Tokens extends Base
             $suKey = array_search('su', $scopes, true);
 
             if ($suKey === false) {
-                array_push($scopes, 'su');
+                array_unshift($scopes, 'su');
             }
 
             $url .= '?scope=' . join(',', $scopes);
