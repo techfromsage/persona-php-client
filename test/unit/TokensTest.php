@@ -950,12 +950,22 @@ class TokensTest extends TestBase
 
     public function testLocalValidationCallsMultipleScopes()
     {
-        $client = new Tokens([
-            'userAgent' => 'unittest',
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'cacheBackend' => $this->cacheBackend,
-        ]);
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            [ 'retrieveJWTCertificate' ],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $mockClient->expects($this->once())
+            ->method('retrieveJWTCertificate')
+            ->will($this->returnValue($this->_publicKey));
 
         $accessToken = json_encode(
             [
@@ -975,7 +985,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertTrue($client->validateToken([
+        $this->assertTrue($mockClient->validateToken([
             'access_token' => $accessToken,
             'scope' => ['scope1', 'scope2'],
         ]));
@@ -983,12 +993,22 @@ class TokensTest extends TestBase
 
     public function testLocalValidationCallsMultipleScopesWithSu()
     {
-        $client = new Tokens([
-            'userAgent' => 'unittest',
-            'persona_host' => 'localhost',
-            'persona_oauth_route' => '/oauth/tokens',
-            'cacheBackend' => $this->cacheBackend,
-        ]);
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            [ 'retrieveJWTCertificate' ],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $mockClient->expects($this->once())
+            ->method('retrieveJWTCertificate')
+            ->will($this->returnValue($this->_publicKey));
 
         $accessToken = json_encode(
             [
