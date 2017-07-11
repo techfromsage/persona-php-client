@@ -948,13 +948,6 @@ class TokensTest extends TestBase
         ]));
     }
 
-
-
-
-
-
-
-
     public function testLocalValidationCallsMultipleScopes()
     {
         $client = new Tokens([
@@ -988,7 +981,7 @@ class TokensTest extends TestBase
         ]));
     }
 
-    public function testRemoteValidationCallsMultipleScopesWithSu()
+    public function testLocalValidationCallsMultipleScopesWithSu()
     {
         $client = new Tokens([
             'userAgent' => 'unittest',
