@@ -122,7 +122,9 @@ class Tokens extends Base
         $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
 
         if (empty($scopes) === false) {
-            if (empty(array_search('su', $scopes, true))) {
+            $suKey = array_search('su', $scopes, true);
+
+            if ($suKey === false) {
                 array_push($scopes, 'su');
             }
 
