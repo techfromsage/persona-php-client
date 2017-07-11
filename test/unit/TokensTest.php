@@ -840,6 +840,187 @@ class TokensTest extends TestBase
         ]));
     }
 
+    public function testRemoteValidationCallsMultipleScopes()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            ['personaCheckTokenIsValid', 'validateTokenUsingJWT'],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $accessToken = json_encode(
+            [
+                'access_token' => JWT::encode(
+                    [
+                        'jwtid' => time(),
+                        'exp' => time() + 100,
+                        'nbf' => time() - 1,
+                        'audience' => 'standard_user',
+                        'scopeCount' => 50,
+                    ],
+                    $this->_privateKey,
+                    'RS256'
+                ),
+                'expires_in' => 100,
+                'token_type' => 'bearer',
+            ]
+        );
+
+        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
+            . $accessToken
+            . '?scope=su,scope1,scope2';
+
+        $mockClient
+            ->expects($this->once())
+            ->method('validateTokenUsingJWT')
+            ->will($this->throwException(new ScopesNotDefinedException()));
+
+        $mockClient
+            ->expects($this->once())
+            ->method('personaCheckTokenIsValid')
+            ->with($this->equalTo($expectedValidationUrl))
+            ->will($this->returnValue(false));
+
+        $this->assertFalse($mockClient->validateToken([
+            'access_token' => $accessToken,
+            'scope' => ['scope1', 'scope2'],
+        ]));
+    }
+
+    public function testRemoteValidationCallsMultipleScopesWithSu()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            ['personaCheckTokenIsValid', 'validateTokenUsingJWT'],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $accessToken = json_encode(
+            [
+                'access_token' => JWT::encode(
+                    [
+                        'jwtid' => time(),
+                        'exp' => time() + 100,
+                        'nbf' => time() - 1,
+                        'audience' => 'standard_user',
+                        'scopeCount' => 50,
+                    ],
+                    $this->_privateKey,
+                    'RS256'
+                ),
+                'expires_in' => 100,
+                'token_type' => 'bearer',
+            ]
+        );
+
+        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
+            . $accessToken
+            . '?scope=scope1,su,scope2';
+
+        $mockClient
+            ->expects($this->once())
+            ->method('validateTokenUsingJWT')
+            ->will($this->throwException(new ScopesNotDefinedException()));
+
+        $mockClient
+            ->expects($this->once())
+            ->method('personaCheckTokenIsValid')
+            ->with($this->equalTo($expectedValidationUrl))
+            ->will($this->returnValue(false));
+
+        $this->assertFalse($mockClient->validateToken([
+            'access_token' => $accessToken,
+            'scope' => ['scope1', 'su', 'scope2'],
+        ]));
+    }
+
+
+
+
+
+
+
+
+    public function testLocalValidationCallsMultipleScopes()
+    {
+        $client = new Tokens([
+            'userAgent' => 'unittest',
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'cacheBackend' => $this->cacheBackend,
+        ]);
+
+        $accessToken = json_encode(
+            [
+                'access_token' => JWT::encode(
+                    [
+                        'jwtid' => time(),
+                        'exp' => time() + 100,
+                        'nbf' => time() - 1,
+                        'audience' => 'standard_user',
+                        'scopes' => ['invalid1', 'scope2'],
+                    ],
+                    $this->_privateKey,
+                    'RS256'
+                ),
+                'expires_in' => 100,
+                'token_type' => 'bearer',
+            ]
+        );
+
+        $this->assertTrue($client->validateToken([
+            'access_token' => $accessToken,
+            'scope' => ['scope1', 'scope2'],
+        ]));
+    }
+
+    public function testRemoteValidationCallsMultipleScopesWithSu()
+    {
+        $client = new Tokens([
+            'userAgent' => 'unittest',
+            'persona_host' => 'localhost',
+            'persona_oauth_route' => '/oauth/tokens',
+            'cacheBackend' => $this->cacheBackend,
+        ]);
+
+        $accessToken = json_encode(
+            [
+                'access_token' => JWT::encode(
+                    [
+                        'jwtid' => time(),
+                        'exp' => time() + 100,
+                        'nbf' => time() - 1,
+                        'audience' => 'standard_user',
+                        'scopes' => ['invalid1', 'scope2'],
+                    ],
+                    $this->_privateKey,
+                    'RS256'
+                ),
+                'expires_in' => 100,
+                'token_type' => 'bearer',
+            ]
+        );
+
+        $this->assertTrue($client->validateToken([
+            'access_token' => $accessToken,
+            'scope' => ['scope1', 'scope2', 'su'],
+        ]));
+    }
+
     public function testUserAgentAllowsAnyChars()
     {
         $personaClient = new Tokens(
