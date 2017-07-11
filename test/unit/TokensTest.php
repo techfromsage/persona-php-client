@@ -967,26 +967,20 @@ class TokensTest extends TestBase
             ->method('retrieveJWTCertificate')
             ->will($this->returnValue($this->_publicKey));
 
-        $accessToken = json_encode(
+        $jwt = JWT::encode(
             [
-                'access_token' => JWT::encode(
-                    [
-                        'jwtid' => time(),
-                        'exp' => time() + 100,
-                        'nbf' => time() - 1,
-                        'audience' => 'standard_user',
-                        'scopes' => ['invalid1', 'scope2'],
-                    ],
-                    $this->_privateKey,
-                    'RS256'
-                ),
-                'expires_in' => 100,
-                'token_type' => 'bearer',
-            ]
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                'scopes' => ['invalid1', 'scope2'],
+            ],
+            $this->_privateKey,
+            'RS256'
         );
 
         $this->assertTrue($mockClient->validateToken([
-            'access_token' => $accessToken,
+            'access_token' => $jwt,
             'scope' => ['scope1', 'scope2'],
         ]));
     }
@@ -1010,26 +1004,20 @@ class TokensTest extends TestBase
             ->method('retrieveJWTCertificate')
             ->will($this->returnValue($this->_publicKey));
 
-        $accessToken = json_encode(
+        $jwt = JWT::encode(
             [
-                'access_token' => JWT::encode(
-                    [
-                        'jwtid' => time(),
-                        'exp' => time() + 100,
-                        'nbf' => time() - 1,
-                        'audience' => 'standard_user',
-                        'scopes' => ['invalid1', 'scope2'],
-                    ],
-                    $this->_privateKey,
-                    'RS256'
-                ),
-                'expires_in' => 100,
-                'token_type' => 'bearer',
-            ]
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                'scopes' => ['invalid1', 'scope2'],
+            ],
+            $this->_privateKey,
+            'RS256'
         );
 
         $this->assertTrue($mockClient->validateToken([
-            'access_token' => $accessToken,
+            'access_token' => $jwt,
             'scope' => ['scope1', 'scope2', 'su'],
         ]));
     }
