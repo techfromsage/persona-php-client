@@ -1028,7 +1028,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertTrue($client->validateToken([
+        $this->assertTrue($mockClient->validateToken([
             'access_token' => $accessToken,
             'scope' => ['scope1', 'scope2', 'su'],
         ]));
