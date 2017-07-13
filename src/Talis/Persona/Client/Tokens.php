@@ -125,6 +125,11 @@ class Tokens extends Base
             $suKey = array_search('su', $scopes, true);
 
             if ($suKey === false) {
+                // When validating remotely persona will ensure at least one of
+                // the scopes validates against the token. As `su` should
+                // override all other scopes, it should always be appended to
+                // the `scope` parameter. If it isn't appended it would mean
+                // that the scopes must explicity exist.
                 array_unshift($scopes, 'su');
             }
 
