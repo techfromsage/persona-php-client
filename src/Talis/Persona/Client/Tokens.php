@@ -19,7 +19,7 @@ class Tokens extends Base
      *
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
-     *      scope: (string) specify this if you wish to validate a scoped token
+     *      scope: (string|array) specify this if you wish to validate a scoped token
      * @return bool|string will return false if could not validate the token, else true
      * @throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      * @throws DomainException invalid public key
@@ -33,10 +33,8 @@ class Tokens extends Base
             $token = $this->getTokenFromRequest();
         }
 
-        $scope = null;
-        if (isset($params['scope'])) {
-            $scope = $params['scope'];
-        }
+        $scope = isset($params['scope']) ? $params['scope'] : null;
+        $scope = is_null($scope) || is_array($scope) ? $scope : [$scope];
 
         try {
             return $this->validateTokenUsingJWT($token, $scope);
@@ -49,7 +47,7 @@ class Tokens extends Base
      * Validate the given token by using JWT
      * @param string $token a token to validate explicitly, if you do not
      *      specify one the method tries to find one
-     * @param string $scope specify this if you wish to validate a scoped token
+     * @param array|null $scopes specify this if you wish to validate a scoped token
      * @param int $cacheTTL time to live value in seconds for the certificate to stay within cache
      * @return bool|string will return false if could not validate the token, else true
      * @throws ScopesNotDefinedException if the JWT token doesn't include the user's scopes
@@ -57,7 +55,7 @@ class Tokens extends Base
      * @throws DomainException invalid public key
      * @throw InvalidArgumentException invalid public key format
      */
-    protected function validateTokenUsingJWT($token, $scope, $cacheTTL = 300)
+    protected function validateTokenUsingJWT($token, $scopes, $cacheTTL = 300)
     {
         $cert = $this->retrieveJWTCertificate($cacheTTL);
         try {
@@ -74,7 +72,7 @@ class Tokens extends Base
             return false;
         }
 
-        if ($scope === null) {
+        if ($scopes === null) {
             return true;
         } else {
             if (isset($decoded['scopeCount'])) {
@@ -85,7 +83,7 @@ class Tokens extends Base
         }
 
         $isSu = in_array('su', $decoded['scopes'], true);
-        $hasScope = in_array($scope, $decoded['scopes'], true);
+        $hasScope = count(array_intersect($scopes, $decoded['scopes'])) > 0;
         return $isSu || $hasScope ? true : false;
     }
 
@@ -113,21 +111,29 @@ class Tokens extends Base
      * Validate the given token by using Persona
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
-     *      scope: (string) specify this if you wish to validate a scoped token
+     *      scopes: (array) specify this if you wish to validate a scoped token
      * @return bool|string will return false if could not validate the token, else true
      * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      */
-    protected function validateTokenUsingPersona($token, $scope)
+    protected function validateTokenUsingPersona($token, $scopes)
     {
         // verify against persona
         $this->getStatsD()->increment('validateToken.cache.miss');
         $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
 
-        if (empty($scope) === false) {
-            $url .= '?scope=';
-            $url .= $scope !== 'su'
-                ? 'su,' . $scope
-                : $scope;
+        if (empty($scopes) === false) {
+            $suKey = array_search('su', $scopes, true);
+
+            if ($suKey === false) {
+                // When validating remotely persona will ensure at least one of
+                // the scopes validates against the token. As `su` should
+                // override all other scopes, it should always be appended to
+                // the `scope` parameter. If it isn't appended it would mean
+                // that the scopes must explicity exist.
+                array_unshift($scopes, 'su');
+            }
+
+            $url .= '?scope=' . join(',', $scopes);
         }
 
         $this->getStatsD()->startTiming('validateToken.rest.get');
