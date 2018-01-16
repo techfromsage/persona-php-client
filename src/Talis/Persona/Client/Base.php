@@ -64,7 +64,6 @@ abstract class Base
      *
      * @param array $config An array of options with the following keys: <pre>
      *      persona_host: (string) the persona host you'll be making requests to (e.g. 'http://localhost')
-     *      persona_oauth_route: (string) the token api route to query ( e.g: '/oauth/tokens')
      *      userAgent: Consuming application user agent string @since 2.0.0
      *            examples: rl/1723-9095ba4, rl/5.2, rl, rl/5, rl/5.2 (php/5.3; linux/2.5)
      *      cacheBackend: (Doctrine\Common\Cache\CacheProvider) cache storage
@@ -77,6 +76,7 @@ abstract class Base
     {
         $this->checkConfig($config);
         $this->config = $config;
+        $this->config['persona_oauth_route'] = '/oauth/tokens';
 
         $userAgentPattern = '' .
             '/^[a-z0-9\-\._]+' .             // name of application
@@ -154,7 +154,6 @@ abstract class Base
         $requiredProperties = [
             'userAgent',
             'persona_host',
-            'persona_oauth_route',
             'cacheBackend'
         ];
 

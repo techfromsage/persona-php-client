@@ -339,7 +339,6 @@ class Tokens extends Base
 
         $requiredProperties = [
             'persona_host',
-            'persona_oauth_route',
         ];
 
         $missingProperties = [];
