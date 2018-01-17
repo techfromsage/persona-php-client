@@ -526,6 +526,19 @@ class LoginTest extends TestBase
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
+        $_SESSION[Login::LOGIN_PREFIX . ':loginSSO'] = [];
+        $this->assertFalse($personaClient->getPersistentId());
+    }
+
+    function testGetPersistentIdEmptyGupids()
+    {
+        $personaClient = new Login(
+            [
+                'userAgent' => 'unittest',
+                'persona_host' => 'localhost',
+                'cacheBackend' => $this->cacheBackend,
+            ]
+        );
         $_SESSION[Login::LOGIN_PREFIX . ':loginProvider'] = 'trapdoor';
         $_SESSION[Login::LOGIN_PREFIX . ':loginSSO'] = ['gupid' => []];
 
@@ -679,6 +692,20 @@ class LoginTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'cacheBackend' => $this->cacheBackend,
+            ]
+        );
+        $profile = ['name' => '', 'email' => ''];
+        $_SESSION[Login::LOGIN_PREFIX . ':loginSSO'] = ['profile' => $profile];
+        $this->assertEquals($profile, $personaClient->getProfile());
+    }
+
+    function testRequireAuthRequireProfile()
+    {
+        $arguments = [
+            [
+                'userAgent' => 'unittest',
+                'persona_host' => 'http://localhost',
                 'cacheBackend' => $this->cacheBackend,
             ]
         ];
