@@ -2,6 +2,8 @@
 
 use Talis\Persona\Client\Tokens;
 use Doctrine\Common\Cache\ArrayCache;
+use Guzzle\Plugin\Mock\MockPlugin;
+use Guzzle\Http\Message\Response;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT')) {
@@ -9,6 +11,14 @@ if (!defined('APPROOT')) {
 }
 
 require_once $appRoot . '/test/unit/TestBase.php';
+
+class MockableTokens extends Tokens
+{
+    public function getHTTPClient()
+    {
+        return parent::getHTTPClient();
+    }
+}
 
 class TokensTest extends TestBase
 {
@@ -28,7 +38,7 @@ class TokensTest extends TestBase
         $this->clientSecret = $personaConf['oauthSecret'];
 
         $this->personaCache = new ArrayCache();
-        $this->personaClient = new Tokens(
+        $this->personaClient = new MockableTokens(
             [
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
@@ -81,8 +91,16 @@ class TokensTest extends TestBase
     function testObtainNewTokenThrowsExceptionIfInvalidScope()
     {
         $this->setExpectedException('Exception', 'Did not retrieve successful response code');
-        $tokenDetails = $this->personaClient->obtainNewToken($this->clientId, $this->clientSecret,
-            ['scope' => 'wibble', 'useCache' => false]);
+
+        $mock = new MockPlugin();
+        $mock->addResponse(new Response(400));
+        $this->personaClient->getHTTPClient()->addSubscriber($mock);
+
+        $this->personaClient->obtainNewToken(
+            $this->clientId,
+            $this->clientSecret,
+            ['scope' => 'wibble', 'useCache' => false]
+        );
     }
 
     function testValidateTokenThrowsExceptionNoTokenToValidate()
