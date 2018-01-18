@@ -262,26 +262,27 @@ class Tokens extends Base
      */
     public function isPresignedUrlValid($url, $secret)
     {
+        $query = [];
         $urlParts = parse_url($url);
-        parse_str($urlParts['query']);
+        parse_str($urlParts['query'], $query);
 
         // no expires?
-        if (!isset($expires)) {
+        if (!isset($query['expires'])) {
             return false;
         }
 
         // no signature?
-        if (!isset($signature)) {
+        if (!isset($query['signature'])) {
             return false;
         }
 
         // $expires less than current time?
-        if (intval($expires) < time()) {
+        if (intval($query['expires']) < time()) {
             return false;
         }
 
         // still here? Check sig
-        $valid = ($signature == $this->getSignature($this->removeQuerystringVar($url, "signature"), $secret));
+        $valid = ($query['signature'] == $this->getSignature($this->removeQuerystringVar($url, "signature"), $secret));
         $this->getStatsD()->increment(($valid) ? "presignUrl.valid" : "presignUrl.invalid");
         return $valid;
     }
