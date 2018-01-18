@@ -91,7 +91,7 @@ class TokensTest extends TestBase
     function testValidateTokenReturnsFalseIfTokenIsNotValid()
     {
         $this->assertEquals(
-            ValidationErrors:InvalidToken,
+            ValidationErrors::InvalidToken,
             $this->personaClient->validateToken(['access_token' => 'my token'])
         );
     }
