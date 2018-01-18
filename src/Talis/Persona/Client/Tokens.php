@@ -13,14 +13,15 @@ class Tokens extends Base
      * Validates the supplied token using JWT or a remote Persona server.
      * An optional scope can be supplied to validate against. If a token
      * is not provided within the parameter one will be extracted from
-     * either $_SERVER, $_GET or $_POST.
+     * either $_SERVER, $_GET or $_POST. If scope parameter is an array and at
+     * least one of the scopes can be validated, the result is a success.
      *
      * The order of validation is as follows: JWT, local Redis cache, then remote Persona.
      *
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scope: (string|array) specify this if you wish to validate a scoped token
-     * @return bool|string will return false if could not validate the token, else true
+     * @return int|boolean true on success else ValidationErrors enum
      * @throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      * @throws DomainException invalid public key
      * @throw InvalidArgumentException Invalid public key format
@@ -44,7 +45,10 @@ class Tokens extends Base
     }
 
     /**
-     * Validate the given token by using JWT
+     * Validate the given token by using JWT. If the $scopes attribute is
+     * provided and at least one of the scopes can be validated, the result is a
+     * success.
+     *
      * @param string $token a token to validate explicitly, if you do not
      *      specify one the method tries to find one
      * @param array|null $scopes specify this if you wish to validate a scoped token
@@ -58,33 +62,32 @@ class Tokens extends Base
     protected function validateTokenUsingJWT($token, $scopes, $cacheTTL = 300)
     {
         $cert = $this->retrieveJWTCertificate($cacheTTL);
+
         try {
             $decoded = (array)JWT::decode($token, $cert, ['RS256']);
         } catch (\DomainException $exception) {
             $this->getLogger()->error('Invalid signature', [$exception]);
-            return false;
+            return ValidationErrors::InvalidSignature;
         } catch (\InvalidArgumentException $exception) {
             $this->getLogger()->error('Invalid public key', [$exception]);
-            return false;
+            return ValidationErreors::InvalidPublicKey;
         } catch (\UnexpectedValueException $exception) {
             // Expired, before valid, invalid json, etc
             $this->getLogger()->debug('Invalid token', [$exception]);
-            return false;
+            return ValidationErrors::InvalidToken;
         }
 
         if ($scopes === null) {
             return true;
-        } else {
-            if (isset($decoded['scopeCount'])) {
-                // user scopes not included within
-                // the JWT as there are too many
-                throw new ScopesNotDefinedException();
-            }
+        } elseif (isset($decoded['scopeCount'])) {
+            // user scopes not included within
+            // the JWT as there are too many
+            throw new ScopesNotDefinedException();
         }
 
         $isSu = in_array('su', $decoded['scopes'], true);
         $hasScope = count(array_intersect($scopes, $decoded['scopes'])) > 0;
-        return $isSu || $hasScope ? true : false;
+        return $isSu || $hasScope ? true : ValidationErrors::Unauthorised;
     }
 
     /**
@@ -112,8 +115,8 @@ class Tokens extends Base
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scopes: (array) specify this if you wish to validate a scoped token
-     * @return bool|string will return false if could not validate the token, else true
-     * $throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
+     * @return int|boolean true on success else ValidationErrors enum
+     * @throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      */
     protected function validateTokenUsingPersona($token, $scopes)
     {
@@ -121,32 +124,17 @@ class Tokens extends Base
         $this->getStatsD()->increment('validateToken.cache.miss');
         $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
 
-        if (empty($scopes) === false) {
-            $suKey = array_search('su', $scopes, true);
-
-            if ($suKey === false) {
-                // When validating remotely persona will ensure at least one of
-                // the scopes validates against the token. As `su` should
-                // override all other scopes, it should always be appended to
-                // the `scope` parameter. If it isn't appended it would mean
-                // that the scopes must explicity exist.
-                array_unshift($scopes, 'su');
-            }
-
-            $url .= '?scope=' . join(',', $scopes);
-        }
-
         $this->getStatsD()->startTiming('validateToken.rest.get');
-        if ($this->personaCheckTokenIsValid($url)) {
-            $this->getStatsD()->endTiming('validateToken.rest.get');
-            $this->getStatsD()->increment('validateToken.rest.valid');
+        $success = $this->personaCheckTokenIsValid($url);
+        $this->getStatsD()->endTiming('validateToken.rest.get');
 
-            return true;
+        if ($success === true) {
+            $this->getStatsD()->increment('validateToken.rest.valid');
+        } else {
+            $this->getStatsD()->increment('validateToken.rest.invalid');
         }
 
-        $this->getStatsD()->endTiming('validateToken.rest.get');
-        $this->getStatsD()->increment('validateToken.rest.invalid');
-        return false;
+        return $success;
     }
 
     /**
@@ -163,7 +151,7 @@ class Tokens extends Base
      * @return array containing the token details
      * @throws \Exception if we were unable to generate a new token or if credentials were missing
      */
-    public function obtainNewToken($clientId = "", $clientSecret = "", $params = [])
+    public function obtainNewToken($clientId, $clientSecret, $params = [])
     {
         $this->getStatsD()->increment("obtainNewToken");
 
@@ -189,6 +177,7 @@ class Tokens extends Base
             }
 
             $url = $this->getPersonaHost() . $this->config['persona_oauth_route'];
+
             $this->getStatsD()->startTiming("obtainNewToken.rest.get");
             $token = $this->personaObtainNewToken($url, $query);
             $this->getStatsD()->endTiming("obtainNewToken.rest.get");
@@ -378,7 +367,15 @@ class Tokens extends Base
             );
         } catch (\Exception $exception) {
             $this->getLogger()->debug("Token invalid at server");
-            return false;
+
+            switch ($exception->getCode()) {
+                case 400:
+                case 401:
+                case 403:
+                    return ValidationErrors::Unauthorised;
+                default:
+                    return ValidationErrors::Unknown;
+            }
         }
 
         if ($body === null) {
@@ -386,7 +383,7 @@ class Tokens extends Base
                 "Token invalid at server, empty body"
             );
 
-            return false;
+            return ValidationErrors::EmptyResponse;
         }
 
         $this->getLogger()->debug("Token valid at server");
