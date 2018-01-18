@@ -2,6 +2,7 @@
 
 use \Firebase\JWT\JWT;
 use Talis\Persona\Client\Tokens;
+use Talis\Persona\Client\ValidationErrors;
 use Talis\Persona\Client\ScopesNotDefinedException;
 
 $appRoot = dirname(dirname(__DIR__));
@@ -35,12 +36,13 @@ class TokensTest extends TestBase
     function testMissingRequiredConfigParamsThrowsException()
     {
         $this->setExpectedException('InvalidArgumentException',
-            'Config provided does not contain values for: persona_host'
+            'Config provided does not contain values for: persona_host,persona_oauth_route'
         );
         $personaClient = new Tokens(
             [
                 'userAgent' => 'unittest',
                 'persona_host' => null,
+                'persona_oauth_route' => null,
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -52,6 +54,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -66,6 +69,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -84,6 +88,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -99,6 +104,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -114,6 +120,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -134,6 +141,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -150,6 +158,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -170,6 +179,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -185,6 +195,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -200,6 +211,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -215,6 +227,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -231,6 +244,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -246,6 +260,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -261,6 +276,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -277,6 +293,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -293,6 +310,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -311,6 +329,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -329,6 +348,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         ]);
@@ -348,6 +368,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         ]);
@@ -380,6 +401,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -422,6 +444,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -448,7 +471,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(false, $result);
+        $this->assertEquals(ValidationErrors::InvalidToken, $result);
     }
 
     /**
@@ -464,6 +487,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -490,7 +514,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(false, $result);
+        $this->assertEquals(ValidationErrors::InvalidToken, $result);
     }
 
     /**
@@ -505,6 +529,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -526,6 +551,13 @@ class TokensTest extends TestBase
             ->method('retrieveJWTCertificate')
             ->will($this->returnValue($this->_privateKey));
 
+        // I hate you PHP, why do you force me to do this? Remove the fatal
+        // error handler from PHPUnit so that the client can handle it.
+        $this->setUseErrorHandler(null);
+        print_r('?????????????????????????????????? ERROR HANDLER');
+        print_r('???????????????????????????????????????????????? ERRORORO');
+        print_r('???????????????????????????????????????????????? ERRORORO');
+
         $this->assertEquals(false, $mockClient->validateToken(
             [
                 'access_token' => $jwt,
@@ -546,6 +578,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -600,6 +633,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -652,112 +686,6 @@ class TokensTest extends TestBase
         $this->assertEquals($cachedTokenDetails, $tokenDetails);
     }
 
-    public function testRemoteValidationCallsUseSuScope()
-    {
-        $mockClient = $this->getMock(
-            'Talis\Persona\Client\Tokens',
-            ['personaCheckTokenIsValid', 'validateTokenUsingJWT'],
-            [
-                [
-                    'userAgent' => 'unittest',
-                    'persona_host' => 'localhost',
-                    'cacheBackend' => $this->cacheBackend,
-                ]
-            ]
-        );
-
-        $accessToken = json_encode(
-            [
-                'access_token' => JWT::encode(
-                    [
-                        'jwtid' => time(),
-                        'exp' => time() + 100,
-                        'nbf' => time() - 1,
-                        'audience' => 'standard_user',
-                        'scopeCount' => 50,
-                    ],
-                    $this->_privateKey,
-                    'RS256'
-                ),
-                'expires_in' => 100,
-                'token_type' => 'bearer',
-            ]
-        );
-
-        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
-            . $accessToken
-            . '?scope=su,invalidScope';
-
-        $mockClient
-            ->expects($this->once())
-            ->method('validateTokenUsingJWT')
-            ->will($this->throwException(new ScopesNotDefinedException()));
-
-        $mockClient
-            ->expects($this->once())
-            ->method('personaCheckTokenIsValid')
-            ->with($this->equalTo($expectedValidationUrl))
-            ->will($this->returnValue(true));
-
-        $this->assertTrue($mockClient->validateToken([
-            'access_token' => $accessToken,
-            'scope' => 'invalidScope',
-        ]));
-    }
-
-    public function testRemoteValidationCallsUseSuScopeNegativeResponse()
-    {
-        $mockClient = $this->getMock(
-            'Talis\Persona\Client\Tokens',
-            ['personaCheckTokenIsValid', 'validateTokenUsingJWT'],
-            [
-                [
-                    'userAgent' => 'unittest',
-                    'persona_host' => 'localhost',
-                    'cacheBackend' => $this->cacheBackend,
-                ]
-            ]
-        );
-
-        $accessToken = json_encode(
-            [
-                'access_token' => JWT::encode(
-                    [
-                        'jwtid' => time(),
-                        'exp' => time() + 100,
-                        'nbf' => time() - 1,
-                        'audience' => 'standard_user',
-                        'scopeCount' => 50,
-                    ],
-                    $this->_privateKey,
-                    'RS256'
-                ),
-                'expires_in' => 100,
-                'token_type' => 'bearer',
-            ]
-        );
-
-        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
-            . $accessToken
-            . '?scope=su,invalidScope';
-
-        $mockClient
-            ->expects($this->once())
-            ->method('validateTokenUsingJWT')
-            ->will($this->throwException(new ScopesNotDefinedException()));
-
-        $mockClient
-            ->expects($this->once())
-            ->method('personaCheckTokenIsValid')
-            ->with($this->equalTo($expectedValidationUrl))
-            ->will($this->returnValue(false));
-
-        $this->assertFalse($mockClient->validateToken([
-            'access_token' => $accessToken,
-            'scope' => 'invalidScope',
-        ]));
-    }
-
     public function testRemoteValidationCallsUseSuScopeCheckForSu()
     {
         $mockClient = $this->getMock(
@@ -767,6 +695,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -820,6 +749,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -845,7 +775,7 @@ class TokensTest extends TestBase
 
         $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
             . $accessToken
-            . '?scope=su,scope1,scope2';
+            . '?scope=scope1,scope2';
 
         $mockClient
             ->expects($this->once())
@@ -873,6 +803,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -926,6 +857,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -962,6 +894,7 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
+                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -995,6 +928,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest//.1',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1011,6 +945,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest//.1  (blah)',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1023,6 +958,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1034,6 +970,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/1.09',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1045,6 +982,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/1723-9095ba4',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1056,6 +994,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/3.02 (commenting; here)',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1067,6 +1006,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/13f3-00934fa4 (commenting; with; hash)',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1078,6 +1018,7 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest (comment; with; basic; name)',
                 'persona_host' => 'localhost',
+                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );

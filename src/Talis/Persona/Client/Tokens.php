@@ -63,6 +63,8 @@ class Tokens extends Base
     {
         $cert = $this->retrieveJWTCertificate($cacheTTL);
 
+        ErrorHandler::start(\E_ALL);
+
         try {
             $decoded = (array)JWT::decode($token, $cert, ['RS256']);
         } catch (\DomainException $exception) {
@@ -75,6 +77,11 @@ class Tokens extends Base
             // Expired, before valid, invalid json, etc
             $this->getLogger()->debug('Invalid token', [$exception]);
             return ValidationErrors::InvalidToken;
+        }
+
+        if ($exception = ErrorHandler::stop()) {
+            $this->getLogger()->error('Invalid public key', [$exception]);
+            return ValidationErreors::InvalidPublicKey;
         }
 
         if ($scopes === null) {
@@ -123,6 +130,10 @@ class Tokens extends Base
         // verify against persona
         $this->getStatsD()->increment('validateToken.cache.miss');
         $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
+
+        if (!empty($scopes)) {
+            $url .= "?scope=" . join(',', $scopes);
+        }
 
         $this->getStatsD()->startTiming('validateToken.rest.get');
         $success = $this->personaCheckTokenIsValid($url);
