@@ -33,7 +33,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->personaCache,
             ]
         );

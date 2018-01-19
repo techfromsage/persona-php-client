@@ -36,13 +36,12 @@ class TokensTest extends TestBase
     function testMissingRequiredConfigParamsThrowsException()
     {
         $this->setExpectedException('InvalidArgumentException',
-            'Config provided does not contain values for: persona_host,persona_oauth_route'
+            'Config provided does not contain values for: persona_host'
         );
         $personaClient = new Tokens(
             [
                 'userAgent' => 'unittest',
                 'persona_host' => null,
-                'persona_oauth_route' => null,
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -54,7 +53,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -69,7 +67,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -88,7 +85,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -104,7 +100,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -120,7 +115,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -141,7 +135,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -158,7 +151,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -179,7 +171,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -195,7 +186,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -211,7 +201,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -227,7 +216,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -244,7 +232,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -260,7 +247,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -276,7 +262,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -293,7 +278,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -310,7 +294,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -329,7 +312,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -348,7 +330,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         ]);
@@ -368,7 +349,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         ]);
@@ -401,7 +381,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -444,7 +423,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -487,7 +465,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -529,7 +506,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -569,7 +545,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -624,7 +599,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -686,7 +660,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -740,7 +713,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -794,7 +766,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -848,7 +819,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -885,7 +855,6 @@ class TokensTest extends TestBase
                 [
                     'userAgent' => 'unittest',
                     'persona_host' => 'localhost',
-                    'persona_oauth_route' => '/oauth/tokens',
                     'cacheBackend' => $this->cacheBackend,
                 ]
             ]
@@ -919,7 +888,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest//.1',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -936,7 +904,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest//.1  (blah)',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -949,7 +916,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -961,7 +927,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/1.09',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -973,7 +938,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/1723-9095ba4',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -985,7 +949,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/3.02 (commenting; here)',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -997,7 +960,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest/13f3-00934fa4 (commenting; with; hash)',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -1009,7 +971,6 @@ class TokensTest extends TestBase
             [
                 'userAgent' => 'unittest (comment; with; basic; name)',
                 'persona_host' => 'localhost',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
