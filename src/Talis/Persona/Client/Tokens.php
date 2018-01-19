@@ -21,7 +21,7 @@ class Tokens extends Base
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scope: (string|array) specify this if you wish to validate a scoped token
-     * @return int|boolean true on success else ValidationErrors enum
+     * @return int ValidationResults enum
      * @throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      * @throws DomainException invalid public key
      * @throw InvalidArgumentException Invalid public key format
@@ -53,7 +53,7 @@ class Tokens extends Base
      *      specify one the method tries to find one
      * @param array|null $scopes specify this if you wish to validate a scoped token
      * @param int $cacheTTL time to live value in seconds for the certificate to stay within cache
-     * @return bool|string will return false if could not validate the token, else true
+     * @return int ValidationResults enum
      * @throws ScopesNotDefinedException if the JWT token doesn't include the user's scopes
      * @throws Exception if not able to communicate with Persona to retrieve the public certificate
      * @throws DomainException invalid public key
@@ -75,18 +75,18 @@ class Tokens extends Base
             }
         } catch (\DomainException $exception) {
             $this->getLogger()->error('Invalid signature', [$exception]);
-            return ValidationErrors::InvalidSignature;
+            return ValidationResults::InvalidSignature;
         } catch (\InvalidArgumentException $exception) {
             $this->getLogger()->error('Invalid public key', [$exception]);
-            return ValidationErrors::InvalidPublicKey;
+            return ValidationResults::InvalidPublicKey;
         } catch (\UnexpectedValueException $exception) {
             // Expired, before valid, invalid json, etc
             $this->getLogger()->debug('Invalid token', [$exception]);
-            return ValidationErrors::InvalidToken;
+            return ValidationResults::InvalidToken;
         }
 
         if ($scopes === null) {
-            return true;
+            return ValidationResults::Success;
         } elseif (isset($decoded['scopeCount'])) {
             // user scopes not included within
             // the JWT as there are too many
@@ -95,7 +95,10 @@ class Tokens extends Base
 
         $isSu = in_array('su', $decoded['scopes'], true);
         $hasScope = count(array_intersect($scopes, $decoded['scopes'])) > 0;
-        return $isSu || $hasScope ? true : ValidationErrors::Unauthorised;
+
+        return $isSu || $hasScope
+            ? ValidationResults::Success
+            : ValidationResults::Unauthorised;
     }
 
     /**
@@ -123,7 +126,7 @@ class Tokens extends Base
      * @param array $params a set of optional parameters you can pass to this method <pre>
      *      access_token: (string) a token to validate explicitly, if you do not specify one the method tries to find one,
      *      scopes: (array) specify this if you wish to validate a scoped token
-     * @return int|boolean true on success else ValidationErrors enum
+     * @return int ValidationResults enum
      * @throws \Exception if you do not supply a token AND it cannot extract one from $_SERVER, $_GET, $_POST
      */
     protected function validateTokenUsingPersona($token, $scopes)
@@ -385,9 +388,9 @@ class Tokens extends Base
                 case 400:
                 case 401:
                 case 403:
-                    return ValidationErrors::Unauthorised;
+                    return ValidationResults::Unauthorised;
                 default:
-                    return ValidationErrors::Unknown;
+                    return ValidationResults::Unknown;
             }
         }
 
@@ -396,11 +399,11 @@ class Tokens extends Base
                 "Token invalid at server, empty body"
             );
 
-            return ValidationErrors::EmptyResponse;
+            return ValidationResults::EmptyResponse;
         }
 
         $this->getLogger()->debug("Token valid at server");
-        return true;
+        return ValidationResults::Success;
     }
 
     /**

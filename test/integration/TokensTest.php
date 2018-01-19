@@ -1,6 +1,6 @@
 <?php
 
-use Talis\Persona\Client\ValidationErrors;
+use Talis\Persona\Client\ValidationResults;
 use Talis\Persona\Client\Tokens;
 use Doctrine\Common\Cache\ArrayCache;
 
@@ -90,7 +90,7 @@ class TokensTest extends TestBase
     function testValidateTokenReturnsFalseIfTokenIsNotValid()
     {
         $this->assertEquals(
-            ValidationErrors::InvalidToken,
+            ValidationResults::InvalidToken,
             $this->personaClient->validateToken(['access_token' => 'my token'])
         );
     }
@@ -108,9 +108,10 @@ class TokensTest extends TestBase
         $token = $tokenDetails['access_token'];
 
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken(
-            ['access_token' => $token]
-        ));
+        $this->assertEquals(
+            ValidationResults::Success,
+            $this->personaClient->validateToken(['access_token' => $token])
+        );
     }
 
     function testValidateTokenInGET()
@@ -128,7 +129,7 @@ class TokensTest extends TestBase
         $_GET = ['access_token' => $token];
 
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken());
+        $this->assertEquals(ValidationResults::Success, $this->personaClient->validateToken());
     }
 
     function testValidateTokenInPOST()
@@ -145,7 +146,7 @@ class TokensTest extends TestBase
 
         $_POST = ['access_token' => $token];
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken());
+        $this->assertEquals(ValidationResults::Success, $this->personaClient->validateToken());
     }
 
 
@@ -164,7 +165,7 @@ class TokensTest extends TestBase
         $_SERVER = ['HTTP_BEARER' => 'Bearer ' . $token];
 
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken());
+        $this->assertEquals(ValidationResults::Success, $this->personaClient->validateToken());
     }
 
     function testValidateScopedToken()
@@ -184,7 +185,7 @@ class TokensTest extends TestBase
 
         // first validation call is validated by persona
         $this->assertEquals(
-            true,
+            ValidationResults::Success,
             $this->personaClient->validateToken(
                 [
                     'access_token' => $token,

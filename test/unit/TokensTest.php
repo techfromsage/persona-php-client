@@ -2,7 +2,7 @@
 
 use \Firebase\JWT\JWT;
 use Talis\Persona\Client\Tokens;
-use Talis\Persona\Client\ValidationErrors;
+use Talis\Persona\Client\ValidationResults;
 use Talis\Persona\Client\ScopesNotDefinedException;
 
 $appRoot = dirname(dirname(__DIR__));
@@ -408,7 +408,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(true, $result);
+        $this->assertEquals(ValidationResults::Success, $result);
     }
 
     /**
@@ -449,7 +449,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(ValidationErrors::InvalidToken, $result);
+        $this->assertEquals(ValidationResults::InvalidToken, $result);
     }
 
     /**
@@ -491,7 +491,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(ValidationErrors::InvalidToken, $result);
+        $this->assertEquals(ValidationResults::InvalidToken, $result);
     }
 
     /**
@@ -528,7 +528,7 @@ class TokensTest extends TestBase
             ->will($this->returnValue($this->_privateKey));
 
         $this->assertEquals(
-            ValidationErrors::InvalidPublicKey,
+            ValidationResults::InvalidPublicKey,
             $mockClient->validateToken(['access_token' => $jwt, 'scope' => 'su'])
         );
     }
@@ -840,10 +840,14 @@ class TokensTest extends TestBase
             'RS256'
         );
 
-        $this->assertTrue($mockClient->validateToken([
-            'access_token' => $jwt,
-            'scope' => ['scope1', 'scope2'],
-        ]));
+        $result = $mockClient->validateToken(
+            [
+                'access_token' => $jwt,
+                'scope' => ['scope1', 'scope2'],
+            ]
+        );
+
+        $this->assertEquals(ValidationResults::Success, $result);
     }
 
     public function testLocalValidationCallsMultipleScopesWithSu()
@@ -876,10 +880,14 @@ class TokensTest extends TestBase
             'RS256'
         );
 
-        $this->assertTrue($mockClient->validateToken([
-            'access_token' => $jwt,
-            'scope' => ['scope1', 'scope2', 'su'],
-        ]));
+        $result = $mockClient->validateToken(
+            [
+                'access_token' => $jwt,
+                'scope' => ['scope1', 'scope2', 'su'],
+            ]
+        );
+
+        $this->assertEquals(ValidationResults::Success, $result);
     }
 
     public function testUserAgentAllowsAnyChars()
