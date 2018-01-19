@@ -64,6 +64,10 @@ class Tokens extends Base
         $rawCert = $this->retrieveJWTCertificate($cacheTTL);
 
         try {
+            // JWT::decode calls openssl_verify which will cause a fatal error
+            // if the certificate is invalid. Calling openssl_pkey_get_public
+            // first ensures that the certificate is valid before progressing.
+
             if ($cert = openssl_pkey_get_public($rawCert)) {
                 $decoded = (array)JWT::decode($token, $cert, ['RS256']);
             } else {
