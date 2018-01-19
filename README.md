@@ -46,7 +46,6 @@ $cacheDriver->setRedis($redis);
 
 $personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'https://users.talis.com',
-    'persona_oauth_route' => '/oauth/tokens/',
     'userAgent' => 'my-app/2.0',
     'cacheBackend' =>  $cacheDriver,
 ));
@@ -62,7 +61,6 @@ Where applicable, each API call can override the global TTL by passing in a TTL 
 $cacheTTL = 300;
 $users = new Talis\Persona\Client\Users(array(
     'persona_host' => 'https://users.talis.com',
-    'persona_oauth_route' => '/oauth/tokens/',
     'userAgent' => 'my-app/2.0',
 ));
 $users->getUserByGupid($gupid, $token, $cacheTTL);
@@ -76,7 +74,6 @@ of the profile should use a 0 TTL to remove any cache.
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Tokens(array(
     'persona_host' => 'https://users.talis.com',
-    'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
     'cacheBackend' => $cacheBackend,
 ));
@@ -103,7 +100,6 @@ $tokenDetails = $personaClient->obtainNewToken(
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Users(array(
     'persona_host' => 'https://users.talis.com',
-    'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
     'cacheBackend' => $cacheBackend,
 ));
@@ -117,7 +113,6 @@ $profile = $personaClient->getUserByGupid('google:123', 'some token');
 // create an instance of the client
 $personaClient = new Talis\Persona\Client\Login(array(
     'persona_host' => 'https://users.talis.com',
-    'persona_oauth_route' => '/oauth/tokens',
     'userAgent' => 'my-app/2.0',
     'cacheBackend' => $cacheBackend,
 ));

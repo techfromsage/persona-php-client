@@ -36,7 +36,6 @@ class UsersTest extends TestBase
             [
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -44,7 +43,6 @@ class UsersTest extends TestBase
             [
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
@@ -150,7 +148,6 @@ class UsersTest extends TestBase
             [
                 'userAgent' => 'integrationtest',
                 'persona_host' => 'persona',
-                'persona_oauth_route' => '/oauth/tokens',
                 'cacheBackend' => $this->cacheBackend,
             ]
         );
