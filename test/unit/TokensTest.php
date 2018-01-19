@@ -2,6 +2,7 @@
 
 use \Firebase\JWT\JWT;
 use Talis\Persona\Client\Tokens;
+use Talis\Persona\Client\ValidationResults;
 use Talis\Persona\Client\ScopesNotDefinedException;
 
 $appRoot = dirname(dirname(__DIR__));
@@ -407,7 +408,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(true, $result);
+        $this->assertEquals(ValidationResults::Success, $result);
     }
 
     /**
@@ -448,7 +449,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(false, $result);
+        $this->assertEquals(ValidationResults::InvalidToken, $result);
     }
 
     /**
@@ -490,7 +491,7 @@ class TokensTest extends TestBase
             ]
         );
 
-        $this->assertEquals(false, $result);
+        $this->assertEquals(ValidationResults::InvalidToken, $result);
     }
 
     /**
@@ -526,12 +527,10 @@ class TokensTest extends TestBase
             ->method('retrieveJWTCertificate')
             ->will($this->returnValue($this->_privateKey));
 
-        $this->assertEquals(false, $mockClient->validateToken(
-            [
-                'access_token' => $jwt,
-                'scope' => 'su',
-            ]
-        ));
+        $this->assertEquals(
+            ValidationResults::InvalidPublicKey,
+            $mockClient->validateToken(['access_token' => $jwt, 'scope' => 'su'])
+        );
     }
 
     /**
@@ -652,112 +651,6 @@ class TokensTest extends TestBase
         $this->assertEquals($cachedTokenDetails, $tokenDetails);
     }
 
-    public function testRemoteValidationCallsUseSuScope()
-    {
-        $mockClient = $this->getMock(
-            'Talis\Persona\Client\Tokens',
-            ['personaCheckTokenIsValid', 'validateTokenUsingJWT'],
-            [
-                [
-                    'userAgent' => 'unittest',
-                    'persona_host' => 'localhost',
-                    'cacheBackend' => $this->cacheBackend,
-                ]
-            ]
-        );
-
-        $accessToken = json_encode(
-            [
-                'access_token' => JWT::encode(
-                    [
-                        'jwtid' => time(),
-                        'exp' => time() + 100,
-                        'nbf' => time() - 1,
-                        'audience' => 'standard_user',
-                        'scopeCount' => 50,
-                    ],
-                    $this->_privateKey,
-                    'RS256'
-                ),
-                'expires_in' => 100,
-                'token_type' => 'bearer',
-            ]
-        );
-
-        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
-            . $accessToken
-            . '?scope=su,invalidScope';
-
-        $mockClient
-            ->expects($this->once())
-            ->method('validateTokenUsingJWT')
-            ->will($this->throwException(new ScopesNotDefinedException()));
-
-        $mockClient
-            ->expects($this->once())
-            ->method('personaCheckTokenIsValid')
-            ->with($this->equalTo($expectedValidationUrl))
-            ->will($this->returnValue(true));
-
-        $this->assertTrue($mockClient->validateToken([
-            'access_token' => $accessToken,
-            'scope' => 'invalidScope',
-        ]));
-    }
-
-    public function testRemoteValidationCallsUseSuScopeNegativeResponse()
-    {
-        $mockClient = $this->getMock(
-            'Talis\Persona\Client\Tokens',
-            ['personaCheckTokenIsValid', 'validateTokenUsingJWT'],
-            [
-                [
-                    'userAgent' => 'unittest',
-                    'persona_host' => 'localhost',
-                    'cacheBackend' => $this->cacheBackend,
-                ]
-            ]
-        );
-
-        $accessToken = json_encode(
-            [
-                'access_token' => JWT::encode(
-                    [
-                        'jwtid' => time(),
-                        'exp' => time() + 100,
-                        'nbf' => time() - 1,
-                        'audience' => 'standard_user',
-                        'scopeCount' => 50,
-                    ],
-                    $this->_privateKey,
-                    'RS256'
-                ),
-                'expires_in' => 100,
-                'token_type' => 'bearer',
-            ]
-        );
-
-        $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
-            . $accessToken
-            . '?scope=su,invalidScope';
-
-        $mockClient
-            ->expects($this->once())
-            ->method('validateTokenUsingJWT')
-            ->will($this->throwException(new ScopesNotDefinedException()));
-
-        $mockClient
-            ->expects($this->once())
-            ->method('personaCheckTokenIsValid')
-            ->with($this->equalTo($expectedValidationUrl))
-            ->will($this->returnValue(false));
-
-        $this->assertFalse($mockClient->validateToken([
-            'access_token' => $accessToken,
-            'scope' => 'invalidScope',
-        ]));
-    }
-
     public function testRemoteValidationCallsUseSuScopeCheckForSu()
     {
         $mockClient = $this->getMock(
@@ -845,7 +738,7 @@ class TokensTest extends TestBase
 
         $expectedValidationUrl = $this->versionedPersonaHost() . '/oauth/tokens/'
             . $accessToken
-            . '?scope=su,scope1,scope2';
+            . '?scope=scope1,scope2';
 
         $mockClient
             ->expects($this->once())
@@ -947,10 +840,14 @@ class TokensTest extends TestBase
             'RS256'
         );
 
-        $this->assertTrue($mockClient->validateToken([
-            'access_token' => $jwt,
-            'scope' => ['scope1', 'scope2'],
-        ]));
+        $result = $mockClient->validateToken(
+            [
+                'access_token' => $jwt,
+                'scope' => ['scope1', 'scope2'],
+            ]
+        );
+
+        $this->assertEquals(ValidationResults::Success, $result);
     }
 
     public function testLocalValidationCallsMultipleScopesWithSu()
@@ -983,10 +880,14 @@ class TokensTest extends TestBase
             'RS256'
         );
 
-        $this->assertTrue($mockClient->validateToken([
-            'access_token' => $jwt,
-            'scope' => ['scope1', 'scope2', 'su'],
-        ]));
+        $result = $mockClient->validateToken(
+            [
+                'access_token' => $jwt,
+                'scope' => ['scope1', 'scope2', 'su'],
+            ]
+        );
+
+        $this->assertEquals(ValidationResults::Success, $result);
     }
 
     public function testUserAgentAllowsAnyChars()

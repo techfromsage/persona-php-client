@@ -1,9 +1,8 @@
 <?php
 
+use Talis\Persona\Client\ValidationResults;
 use Talis\Persona\Client\Tokens;
 use Doctrine\Common\Cache\ArrayCache;
-use Guzzle\Plugin\Mock\MockPlugin;
-use Guzzle\Http\Message\Response;
 
 $appRoot = dirname(dirname(__DIR__));
 if (!defined('APPROOT')) {
@@ -11,14 +10,6 @@ if (!defined('APPROOT')) {
 }
 
 require_once $appRoot . '/test/unit/TestBase.php';
-
-class MockableTokens extends Tokens
-{
-    public function getHTTPClient()
-    {
-        return parent::getHTTPClient();
-    }
-}
 
 class TokensTest extends TestBase
 {
@@ -38,7 +29,7 @@ class TokensTest extends TestBase
         $this->clientSecret = $personaConf['oauthSecret'];
 
         $this->personaCache = new ArrayCache();
-        $this->personaClient = new MockableTokens(
+        $this->personaClient = new Tokens(
             [
                 'userAgent' => 'integrationtest',
                 'persona_host' => $personaConf['host'],
@@ -88,21 +79,6 @@ class TokensTest extends TestBase
             ['scope' => 'wibble', 'useCache' => false]);
     }
 
-    function testObtainNewTokenThrowsExceptionIfInvalidScope()
-    {
-        $this->setExpectedException('Exception', 'Did not retrieve successful response code');
-
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(400));
-        $this->personaClient->getHTTPClient()->addSubscriber($mock);
-
-        $this->personaClient->obtainNewToken(
-            $this->clientId,
-            $this->clientSecret,
-            ['scope' => 'wibble', 'useCache' => false]
-        );
-    }
-
     function testValidateTokenThrowsExceptionNoTokenToValidate()
     {
         // Should throw exception if you dont pass in a token to validate
@@ -113,7 +89,8 @@ class TokensTest extends TestBase
 
     function testValidateTokenReturnsFalseIfTokenIsNotValid()
     {
-        $this->assertFalse(
+        $this->assertEquals(
+            ValidationResults::InvalidToken,
             $this->personaClient->validateToken(['access_token' => 'my token'])
         );
     }
@@ -131,9 +108,10 @@ class TokensTest extends TestBase
         $token = $tokenDetails['access_token'];
 
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken(
-            ['access_token' => $token]
-        ));
+        $this->assertEquals(
+            ValidationResults::Success,
+            $this->personaClient->validateToken(['access_token' => $token])
+        );
     }
 
     function testValidateTokenInGET()
@@ -151,7 +129,7 @@ class TokensTest extends TestBase
         $_GET = ['access_token' => $token];
 
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken());
+        $this->assertEquals(ValidationResults::Success, $this->personaClient->validateToken());
     }
 
     function testValidateTokenInPOST()
@@ -168,7 +146,7 @@ class TokensTest extends TestBase
 
         $_POST = ['access_token' => $token];
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken());
+        $this->assertEquals(ValidationResults::Success, $this->personaClient->validateToken());
     }
 
 
@@ -187,7 +165,7 @@ class TokensTest extends TestBase
         $_SERVER = ['HTTP_BEARER' => 'Bearer ' . $token];
 
         // first validation call is validated by persona
-        $this->assertEquals(true, $this->personaClient->validateToken());
+        $this->assertEquals(ValidationResults::Success, $this->personaClient->validateToken());
     }
 
     function testValidateScopedToken()
@@ -207,7 +185,7 @@ class TokensTest extends TestBase
 
         // first validation call is validated by persona
         $this->assertEquals(
-            true,
+            ValidationResults::Success,
             $this->personaClient->validateToken(
                 [
                     'access_token' => $token,

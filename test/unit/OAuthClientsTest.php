@@ -85,46 +85,6 @@ class OAuthClientsTest extends TestBase
         $this->assertEquals($expectedResponse['scope'], $client['scope']);
     }
 
-    // update oauth client tests
-    function testUpdateOAuthClientNoGupid()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new OAuthClients(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->updateOAuthClient();
-    }
-
-    function testUpdateOAuthClientNoProperties()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new OAuthClients(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->updateOAuthClient('123');
-    }
-
-    function testUpdateOAuthClientNoToken()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new OAuthClients(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->updateOAuthClient('123', []);
-    }
-
     function testUpdateOAuthClientEmptyGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
