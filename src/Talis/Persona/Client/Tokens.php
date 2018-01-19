@@ -61,27 +61,24 @@ class Tokens extends Base
      */
     protected function validateTokenUsingJWT($token, $scopes, $cacheTTL = 300)
     {
-        $cert = $this->retrieveJWTCertificate($cacheTTL);
-
-        ErrorHandler::start(\E_ALL);
+        $rawCert = $this->retrieveJWTCertificate($cacheTTL);
 
         try {
-            $decoded = (array)JWT::decode($token, $cert, ['RS256']);
+            if ($cert = openssl_pkey_get_public($rawCert)) {
+                $decoded = (array)JWT::decode($token, $cert, ['RS256']);
+            } else {
+                throw new \InvalidArgumentException('cannot parse public key');
+            }
         } catch (\DomainException $exception) {
             $this->getLogger()->error('Invalid signature', [$exception]);
             return ValidationErrors::InvalidSignature;
         } catch (\InvalidArgumentException $exception) {
             $this->getLogger()->error('Invalid public key', [$exception]);
-            return ValidationErreors::InvalidPublicKey;
+            return ValidationErrors::InvalidPublicKey;
         } catch (\UnexpectedValueException $exception) {
             // Expired, before valid, invalid json, etc
             $this->getLogger()->debug('Invalid token', [$exception]);
             return ValidationErrors::InvalidToken;
-        }
-
-        if ($exception = ErrorHandler::stop()) {
-            $this->getLogger()->error('Invalid public key', [$exception]);
-            return ValidationErreors::InvalidPublicKey;
         }
 
         if ($scopes === null) {
