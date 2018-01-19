@@ -164,46 +164,6 @@ class UsersTest extends TestBase
         $this->assertEquals('Max Payne', $users[0]['profile']['name']);
     }
 
-    // createUser tests
-    function testCreateUserNoGupid()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->createUser();
-    }
-
-    function testCreateUserNoProfile()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->createUser('gupid');
-    }
-
-    function testCreateUserNoToken()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->createUser('gupid', 'profile');
-    }
-
     function testCreateUserEmptyGupid()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid gupid');
@@ -317,46 +277,6 @@ class UsersTest extends TestBase
         $this->assertEquals($expectedResponse, $mockClient->createUser('123', ['email' => ''], '123'));
     }
 
-    // update user tests
-    function testUpdateUserNoGupid()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->updateUser();
-    }
-
-    function testUpdateUserNoProfile()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->updateUser('123');
-    }
-
-    function testUpdateUserNoToken()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->updateUser('123', []);
-    }
-
     function testUpdateUserEmptyGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
@@ -467,46 +387,6 @@ class UsersTest extends TestBase
         $this->assertEquals($expectedResponse, $mockClient->updateUser('123', ['email' => ''], '123'));
     }
 
-    // addGupidToUser tests
-    function testAddGupidToUserNoGuid()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->addGupidToUser();
-    }
-
-    function testAddGupidToUserNoGupid()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->addGupidToUser('123');
-    }
-
-    function testAddGupidToUserNoToken()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->addGupidToUser('123', '456');
-    }
-
     function testAddGupidToUserInvalidGuid()
     {
         $this->setExpectedException('Exception', 'Invalid guid');
@@ -589,46 +469,6 @@ class UsersTest extends TestBase
             ->method('performRequest')
             ->will($this->returnValue($expectedResponse));
         $this->assertEquals($expectedResponse, $mockClient->addGupidToUser('123', '456', '987'));
-    }
-
-    // mergeUsers tests
-    function testMergeUsersNoOldGuid()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 1');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->mergeUsers();
-    }
-
-    function testMergeUsersNoNewGuid()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 2');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->mergeUsers('123');
-    }
-
-    function testMergeUsesrNoToken()
-    {
-        $this->setExpectedException('Exception', 'Missing argument 3');
-        $personaClient = new Users(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->mergeUsers('123', '456');
     }
 
     function testMergeUsersInvalidOldGuid()

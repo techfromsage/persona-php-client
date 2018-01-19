@@ -12,33 +12,6 @@ require_once $appRoot . '/test/unit/TestBase.php';
 
 class LoginTest extends TestBase
 {
-    // requireAuth tests
-    function testRequireAuthNoProvider()
-    {
-        $this->setExpectedException('InvalidArgumentException',
-            'Missing argument 1 for Talis\Persona\Client\Login::requireAuth()');
-
-        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    '%s %s %s',
-                    $errstr,
-                    $errfile,
-                    $errline
-                )
-            );
-        });
-
-        $personaClient = new Login(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->requireAuth();
-    }
-
     function testRequireAuthInvalidProvider()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid provider');
@@ -53,31 +26,6 @@ class LoginTest extends TestBase
         $personaClient->requireAuth(['test'], 'appid', 'appsecret');
     }
 
-    function testRequireAuthNoAppId()
-    {
-        $this->setExpectedException('InvalidArgumentException',
-            'Missing argument 2 for Talis\Persona\Client\Login::requireAuth()');
-
-        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    '%s %s %s',
-                    $errstr,
-                    $errfile,
-                    $errline
-                )
-            );
-        });
-        $personaClient = new Login(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->requireAuth('trapdoor');
-    }
-
     function testRequireAuthInvalidAppId()
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid appId');
@@ -90,31 +38,6 @@ class LoginTest extends TestBase
             ]
         );
         $personaClient->requireAuth('trapdoor', ['appid'], 'appsecret');
-    }
-
-    function testRequireAuthNoAppSecret()
-    {
-        $this->setExpectedException('InvalidArgumentException',
-            'Missing argument 3 for Talis\Persona\Client\Login::requireAuth()');
-
-        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    '%s %s %s',
-                    $errstr,
-                    $errfile,
-                    $errline
-                )
-            );
-        });
-        $personaClient = new Login(
-            [
-                'userAgent' => 'unittest',
-                'persona_host' => 'localhost',
-                'cacheBackend' => $this->cacheBackend,
-            ]
-        );
-        $personaClient->requireAuth('trapdoor', 'appId');
     }
 
     function testRequireAuthInvalidAppSecret()
