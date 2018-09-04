@@ -983,4 +983,164 @@ class TokensTest extends TestBase
             ]
         );
     }
+
+    public function testListScopes()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            [ 'retrieveJWTCertificate' ],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $mockClient->expects($this->once())
+            ->method('retrieveJWTCertificate')
+            ->will($this->returnValue($this->_publicKey));
+
+        $jwt = JWT::encode(
+            [
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                'scopes' => ['scope1', 'scope2'],
+            ],
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $scopes = $mockClient->listScopes($jwt);
+        $this->assertEquals(['scope1', 'scope2'], $scopes);
+    }
+
+    public function testListScopesInvalidDomain()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            [ 'retrieveJWTCertificate' ],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $mockClient->expects($this->once())
+            ->method('retrieveJWTCertificate')
+            ->will($this->returnValue($this->_publicKey));
+
+        $jwt = JWT::encode(
+            [
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                // missing scopes attribute
+            ],
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $this->setExpectedException(DomainException::class);
+        $mockClient->listScopes($jwt);
+    }
+
+    public function testListScopesScopeCount()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            [
+                'retrieveJWTCertificate',
+                'callPersona',
+            ],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $jwt = JWT::encode(
+            [
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                'scopeCount' => 10,
+            ],
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())
+            ->method('retrieveJWTCertificate')
+            ->will($this->returnValue($this->_publicKey));
+
+        $mockClient->expects($this->once())
+            ->method('callPersona')
+            ->with("localhost/3/oauth/tokens/{$jwt}")
+            ->willReturn([
+                'expires' => time() + 1000,
+                'access_token' => $jwt,
+                'scopes' => 'scope1 scope2',
+            ]);
+
+        $scopes = $mockClient->listScopes($jwt);
+        $this->assertEquals(['scope1', 'scope2'], $scopes);
+    }
+
+    public function testListScopesScopeCountInvalidDomain()
+    {
+        $mockClient = $this->getMock(
+            'Talis\Persona\Client\Tokens',
+            [
+                'retrieveJWTCertificate',
+                'callPersona',
+            ],
+            [
+                [
+                    'userAgent' => 'unittest',
+                    'persona_host' => 'localhost',
+                    'cacheBackend' => $this->cacheBackend,
+                ]
+            ]
+        );
+
+        $jwt = JWT::encode(
+            [
+                'jwtid' => time(),
+                'exp' => time() + 100,
+                'nbf' => time() - 1,
+                'audience' => 'standard_user',
+                'scopeCount' => 10,
+            ],
+            $this->_privateKey,
+            'RS256'
+        );
+
+        $mockClient->expects($this->once())
+            ->method('retrieveJWTCertificate')
+            ->will($this->returnValue($this->_publicKey));
+
+        $mockClient->expects($this->once())
+            ->method('callPersona')
+            ->with("localhost/3/oauth/tokens/{$jwt}")
+            ->willReturn([
+                'expires' => time() + 1000,
+                'access_token' => $jwt,
+                // missing scopes
+            ]);
+
+        $this->setExpectedException(DomainException::class);
+        $mockClient->listScopes($jwt);
+    }
 }

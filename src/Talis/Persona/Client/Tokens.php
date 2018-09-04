@@ -329,17 +329,17 @@ class Tokens extends Base
     public function listScopes($token, $cacheTTL = 300)
     {
         $publicCert = $this->retrieveJWTCertificate($cacheTTL);
-        $decodedToken = $this->decodedToken($token, $publicCert);
+        $decodedToken = $this->decodeToken($token, $publicCert);
 
         if (isset($decodedToken['scopes'])) {
-            return str_split(' ', $decodedToken['scopes']);
+            return $decodedToken['scopes'];
         }
 
         if (isset($decodedToken['scopeCount'])) {
             $meta = $this->personaRetrieveTokenMetadata($token);
 
             if (isset($meta['scopes'])) {
-                return $meta['scopes'];
+                return explode(' ', $meta['scopes']);
             }
 
             throw new \DomainException('token metadata missing scopes attribute');
@@ -372,7 +372,7 @@ class Tokens extends Base
                 throw new \Exception('Malformed auth header');
             }
             return $matches[1];
-        n}
+        }
 
         if (isset($_GET['access_token'])) {
             return $_GET['access_token'];
@@ -438,7 +438,7 @@ class Tokens extends Base
         } catch (\Exception $exception) {
             $this->getLogger()->error(
                 'unable to retrieve token metadata',
-                $exception
+                ['exception' => $exception]
             );
 
             switch ($exception->getCode()) {
