@@ -62,7 +62,7 @@ class Tokens extends Base
         $publicCert = $this->retrieveJWTCertificate($cacheTTL);
 
         try {
-            $decodedToken = $this->decodedToken($token, $publicCert);
+            $decodedToken = $this->decodeToken($token, $publicCert);
         } catch (\InvalidValidationException $e) {
             return $e->getCode();
         }
