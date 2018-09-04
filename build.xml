@@ -63,7 +63,7 @@
 
     <target name="unittest" depends="clean">
         <exec dir="${unit.test.dir}" executable="${vendor.dir}/bin/phpunit" failonerror="true">
-            <arg line="--log-junit ${build.dir}/unittest-report.xml"/>
+            <arg line="--filter testListScopes --log-junit ${build.dir}/unittest-report.xml"/>
         </exec>
     </target>
 

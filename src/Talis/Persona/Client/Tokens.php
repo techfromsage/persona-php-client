@@ -331,14 +331,14 @@ class Tokens extends Base
         $publicCert = $this->retrieveJWTCertificate($cacheTTL);
         $decodedToken = $this->decodeToken($token, $publicCert);
 
-        if (isset($decodedToken['scopes'])) {
+        if (isset($decodedToken['scopes']) && is_array($decodedToken['scopes'])) {
             return $decodedToken['scopes'];
         }
 
         if (isset($decodedToken['scopeCount'])) {
             $meta = $this->personaRetrieveTokenMetadata($token);
 
-            if (isset($meta['scopes'])) {
+            if (isset($meta['scopes']) && is_string($meta['scopes'])) {
                 return explode(' ', $meta['scopes']);
             }
 
