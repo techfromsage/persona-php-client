@@ -63,7 +63,7 @@ class Tokens extends Base
 
         try {
             $decodedToken = $this->decodeToken($token, $publicCert);
-        } catch (\InvalidValidationException $e) {
+        } catch (InvalidValidationException $e) {
             return $e->getCode();
         }
 
