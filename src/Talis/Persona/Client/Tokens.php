@@ -56,49 +56,79 @@ class Tokens extends Base
      * @return int ValidationResults enum
      * @throws ScopesNotDefinedException if the JWT token doesn't include the user's scopes
      * @throws Exception if not able to communicate with Persona to retrieve the public certificate
-     * @throws DomainException invalid public key
-     * @throw InvalidArgumentException invalid public key format
      */
     protected function validateTokenUsingJWT($token, $scopes, $cacheTTL = 300)
     {
-        $rawCert = $this->retrieveJWTCertificate($cacheTTL);
+        $publicCert = $this->retrieveJWTCertificate($cacheTTL);
 
         try {
-            // JWT::decode calls openssl_verify which will cause a fatal error
-            // if the certificate is invalid. Calling openssl_pkey_get_public
-            // first ensures that the certificate is valid before progressing.
-
-            if ($cert = openssl_pkey_get_public($rawCert)) {
-                $decoded = (array)JWT::decode($token, $cert, ['RS256']);
-            } else {
-                throw new \InvalidArgumentException('cannot parse public key');
-            }
-        } catch (\DomainException $exception) {
-            $this->getLogger()->error('Invalid signature', [$exception]);
-            return ValidationResults::InvalidSignature;
-        } catch (\InvalidArgumentException $exception) {
-            $this->getLogger()->error('Invalid public key', [$exception]);
-            return ValidationResults::InvalidPublicKey;
-        } catch (\UnexpectedValueException $exception) {
-            // Expired, before valid, invalid json, etc
-            $this->getLogger()->debug('Invalid token', [$exception]);
-            return ValidationResults::InvalidToken;
+            $decodedToken = $this->decodedToken($token, $publicCert);
+        } catch (\InvalidValidationException $e) {
+            return $e->getCode();
         }
 
         if ($scopes === null) {
             return ValidationResults::Success;
-        } elseif (isset($decoded['scopeCount'])) {
+        } elseif (isset($decodedToken['scopeCount'])) {
             // user scopes not included within
             // the JWT as there are too many
             throw new ScopesNotDefinedException();
         }
 
-        $isSu = in_array('su', $decoded['scopes'], true);
-        $hasScope = count(array_intersect($scopes, $decoded['scopes'])) > 0;
+        $isSu = in_array('su', $decodedToken['scopes'], true);
+        $hasScope = count(array_intersect($scopes, $decodedToken['scopes'])) > 0;
 
         return $isSu || $hasScope
             ? ValidationResults::Success
             : ValidationResults::Unauthorised;
+    }
+
+    /**
+     * Validate and decode a JWT token
+     *
+     * @param string $token a token to validate explicitly, if you do not
+     *      specify one the method tries to find one
+     * @param string $publicCert public key to validate the token
+     * @return array decoded token
+     *
+     * @throws DomainException invalid public key
+     * @throws InvalidArgumentException empty public key
+     * @throws UnexpectedValueException invalid token
+     */
+    protected function decodeToken($token, $rawPublicCert)
+    {
+        try {
+            // JWT::decode calls openssl_verify which will cause a fatal error
+            // if the certificate is invalid. Calling openssl_pkey_get_public
+            // first ensures that the certificate is valid before progressing.
+            if ($pubCert = openssl_pkey_get_public($rawPublicCert)) {
+                return (array) JWT::decode($token, $pubCert, ['RS256']);
+            }
+
+            throw new \InvalidArgumentException('cannot parse public key');
+        } catch (\DomainException $exception) {
+            $this->getLogger()->error('Invalid signature', [$exception]);
+            throw new InvalidValidationException(
+                'Invalid signature',
+                ValidationResults::InvalidSignature,
+                $exception
+            );
+        } catch (\InvalidArgumentException $exception) {
+            $this->getLogger()->error('Invalid public key', [$exception]);
+            throw new InvalidValidationException(
+                'Invalid public key',
+                ValidationResults::InvalidPublicKey,
+                $exception
+            );
+        } catch (\UnexpectedValueException $exception) {
+            // Expired, before valid, invalid json, etc
+            $this->getLogger()->debug('Invalid token', [$exception]);
+            throw new InvalidValidationException(
+                'Invalid token',
+                ValidationResults::InvalidToken,
+                $exception
+            );
+        }
     }
 
     /**
@@ -133,14 +163,10 @@ class Tokens extends Base
     {
         // verify against persona
         $this->getStatsD()->increment('validateToken.cache.miss');
-        $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
 
-        if (!empty($scopes)) {
-            $url .= "?scope=" . join(',', $scopes);
-        }
 
         $this->getStatsD()->startTiming('validateToken.rest.get');
-        $success = $this->personaCheckTokenIsValid($url);
+        $success = $this->personaCheckTokenIsValid($token, $scopes);
         $this->getStatsD()->endTiming('validateToken.rest.get');
 
         if ($success === true) {
@@ -292,6 +318,37 @@ class Tokens extends Base
     }
 
     /**
+     * List all scopes that belong to a given token
+     * @param string token JWT token
+     * @return array list of scopes
+     *
+     * @throws InvalidValidationException invalid signature, key or token
+     * @throws \DomainException decoded token or metadata does not adhere to
+     * domain models
+     */
+    public function listScopes($token, $cacheTTL = 300)
+    {
+        $publicCert = $this->retrieveJWTCertificate($cacheTTL);
+        $decodedToken = $this->decodedToken($token, $publicCert);
+
+        if (isset($decodedToken['scopes'])) {
+            return str_split(' ', $decodedToken['scopes']);
+        }
+
+        if (isset($decodedToken['scopeCount'])) {
+            $meta = $this->personaRetrieveTokenMetadata($token);
+
+            if (isset($meta['scopes'])) {
+                return $meta['scopes'];
+            }
+
+            throw new \DomainException('token metadata missing scopes attribute');
+        }
+
+        throw new \DomainException('decoded token is both scope attributes');
+    }
+
+    /**
      * Attempts to find an access token based on the current request.
      * It first looks at $_SERVER headers for a Bearer, failing that
      * it checks the $_GET and $_POST for the access_token param.
@@ -315,7 +372,7 @@ class Tokens extends Base
                 throw new \Exception('Malformed auth header');
             }
             return $matches[1];
-        }
+        n}
 
         if (isset($_GET['access_token'])) {
             return $_GET['access_token'];
@@ -363,14 +420,11 @@ class Tokens extends Base
     }
 
     /**
-     * This method wraps the curl request that is made to persona and
-     * returns true or false depending on whether or not persona was
-     * able to validate the token.
-     *
-     * @param $url string this is the full qualified url that will be hit
-     * @return bool true if persona responds that the token was valid
+     * Call Persona
+     * @param string $url fully qualified url that will be hit
+     * @return array body from http response
      */
-    protected function personaCheckTokenIsValid($url)
+    protected function callPersona($url)
     {
         try {
             $body = $this->performRequest(
@@ -382,28 +436,74 @@ class Tokens extends Base
                 ]
             );
         } catch (\Exception $exception) {
-            $this->getLogger()->debug("Token invalid at server");
+            $this->getLogger()->error(
+                'unable to retrieve token metadata',
+                $exception
+            );
 
             switch ($exception->getCode()) {
                 case 400:
                 case 401:
                 case 403:
-                    return ValidationResults::Unauthorised;
+                    throw new InvalidValidationException(
+                        "authorisation/authentication issue: {$exception->getCode()}",
+                        ValidationResults::Unauthorised
+                    );
                 default:
-                    return ValidationResults::Unknown;
+                    throw new InvalidValidationException(
+                        "unknown communication error: {$exception->getCode()}",
+                        ValidationResults::Unknown
+                    );
             }
         }
 
-        if ($body === null) {
-            $this->getLogger()->debug(
-                "Token invalid at server, empty body"
+        if (empty($body)) {
+            throw new InvalidValidationException(
+                'empty body in response',
+                ValidationResults::EmptyResponse
             );
+        }
 
-            return ValidationResults::EmptyResponse;
+        return $body;
+    }
+
+    /**
+     * This method wraps the curl request that is made to persona and
+     * returns true or false depending on whether or not persona was
+     * able to validate the token.
+     *
+     * @param string $token token to validate
+     * @param array $scopes optional scopes to validate
+     * @return int ValidationResults enum
+     */
+    protected function personaCheckTokenIsValid($token, $scopes = [])
+    {
+        $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
+
+        if (!empty($scopes)) {
+            $url .= "?scope=" . join(',', $scopes);
+        }
+
+        try {
+            $this->callPersona($url);
+        } catch(InvalidValidationException $e) {
+            return $e->getCode();
         }
 
         $this->getLogger()->debug("Token valid at server");
         return ValidationResults::Success;
+    }
+
+    /**
+     * Retrieve a token's metadata
+     * @param string $token token to retrieve the metadata for
+     * @return array metadata
+     * @throws InvalidValidationException
+     */
+    protected function personaRetrieveTokenMetadata($token)
+    {
+        $url = $this->getPersonaHost() . $this->config['persona_oauth_route'] . '/' . $token;
+        return $this->callPersona($url);
     }
 
     /**
